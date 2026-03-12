@@ -1,0 +1,36 @@
+{
+    "label" : "lock",
+    "action" : "pidof hyprlock || hyprlock -q",
+    "text" : "Lock",
+    "keybind" : "l"
+}
+{
+    "label" : "logout",
+    "action" : "niri msg action quit --skip-confirmation",
+    "text" : "Logout",
+    "keybind" : "e"
+}
+{
+    "label" : "sleep",
+    "action" : "pidof hyprlock || (hyprlock -q & sleep 1) && systemctl suspend",
+    "text" : "Sleep",
+    "keybind" : "z"
+}
+{
+    "label" : "shutdown",
+    "action" : "systemctl poweroff",
+    "text" : "Shutdown",
+    "keybind" : "s"
+}
+{
+    "label" : "reboot",
+    "action" : "systemctl reboot",
+    "text" : "Reboot",
+    "keybind" : "r"
+}
+{
+    "label" : "windows",
+    "action" : "$HOME/scripts/boot-to-windows.sh",
+    "text" : "Windows",
+    "keybind" : "w"
+}

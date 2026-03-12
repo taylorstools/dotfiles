@@ -1,0 +1,9 @@
+[config]
+
+[templates.custom]
+input_path  = "~/.config/matugen/custom.toml"
+output_path = "~/.config/matugen/colors.conf"
+
+[templates.custom_css]
+input_path  = "~/.config/matugen/custom-css.toml"
+output_path = "~/.config/matugen/colors.css"

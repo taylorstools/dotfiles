@@ -1,0 +1,98 @@
+binds {
+    // Apps
+    Mod+T               { spawn "kitty"; }
+    Mod+E               { spawn "thunar"; }
+    Mod+B               { spawn "google-chrome-stable"; }
+    Ctrl+Shift+Escape   { spawn "missioncenter"; }
+
+    // Run apps as root
+    Mod+Shift+E { spawn  "sh" "-c" "sudo -EH thunar"; }
+    Mod+Shift+T { spawn  "sh" "-c" "sudo -E HOME=/root kitty"; }
+
+    // Screenshot
+    Print   { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
+
+    // Niri related
+    Mod+Q       { close-window; }
+    Mod+Up      { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action maximize-window-to-edges"; }
+    Mod+Return  { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action maximize-window-to-edges"; }
+    Mod+F       { toggle-window-floating; }
+
+    // Navigation
+    Mod+Left        { focus-column-left; }
+    Mod+Right       { focus-column-right; }
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Up    { move-window-to-workspace-up; }
+    Mod+Shift+Down  { move-window-to-workspace-down; }
+
+    // Resize window height
+    //Mod+Shift+Up    { set-window-height "50%"; }
+    //Mod+Shift+Down  { set-window-height "100%"; }
+
+    // Workspaces
+    Mod+Prior   { focus-workspace-previous; }
+    Mod+Next    { focus-workspace-down; }
+    Mod+1       { focus-workspace 1; }
+    Mod+2       { focus-workspace 2; }
+    Mod+3       { focus-workspace 3; }
+    Mod+4       { focus-workspace 4; }
+    Mod+5       { focus-workspace 5; }
+    Mod+6       { focus-workspace 6; }
+    Mod+7       { focus-workspace 7; }
+    Mod+8       { focus-workspace 8; }
+    Mod+9       { focus-workspace 9; }
+
+    // DMS
+    Mod+D   { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
+    Mod+V   { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
+    Mod+N   { spawn "dms" "ipc" "call" "notepad" "toggle"; }
+
+    // Overview
+    Mod+Space   { toggle-overview; }
+
+    // Runner
+    Mod+R   { spawn "sh" "-c" "exec kitty --title Runner $HOME/scripts/runner.sh"; }
+
+    // Lock screen
+    Mod+L   { spawn "sh" "-c" "pidof hyprlock || hyprlock -q"; }
+
+    // Toggle keep awake on/off
+    Mod+K   { spawn "sh" "-c" "$HOME/scripts/hypridle/toggle-hypridle.sh"; }
+
+    // Wlogout
+    Ctrl+Alt+Delete { spawn "sh" "-c" "pkill wlogout || wlogout --buttons-per-row 6"; }
+
+    // Change wallpaper
+    Mod+Shift+W { spawn "sh" "-c" "$HOME/scripts/dms_change-wallpaper.sh"; }
+
+    // Toggle night mode
+    Mod+Shift+B { spawn "dms" "ipc" "call" "night" "toggle"; }
+
+    // Color picker
+    Mod+C   { spawn "dms" "color" "pick" "-a"; }
+
+    // Secondary menu
+    Mod+X   { spawn "sh" "-c" "pkill wlr-which-key || wlr-which-key"; }
+
+    // Change display refresh rate and scale
+    Mod+Shift+R { spawn "sh" "-c" "$HOME/scripts/niri_change-refresh-rate.sh"; }
+    Mod+Minus   { spawn "sh" "-c" "$HOME/scripts/niri_change-screen-scale.sh --decrease"; }
+    Mod+Equal   { spawn "sh" "-c" "$HOME/scripts/niri_change-screen-scale.sh --increase"; }
+
+    // ChatGPT
+    Mod+Shift+F23   { spawn "xdg-open" "https://chatgpt.com"; } // Copilot key
+
+    // Laptop specific keybinds
+    xf86MonBrightnessDown   { spawn "sh" "-c" "$HOME/scripts/dms_change-screen-brightness.sh -decrease"; }
+    xf86MonBrightnessUp     { spawn "sh" "-c" "$HOME/scripts/dms_change-screen-brightness.sh -increase"; }
+
+    XF86KbdLightOnOff       { spawn "sh" "-c" "$HOME/scripts/dms_change-kbd-backlight.sh"; }
+
+    XF86AudioLowerVolume    { spawn "sh" "-c" "dms ipc call audio decrement 5"; }
+    XF86AudioRaiseVolume    { spawn "sh" "-c" "dms ipc call audio increment 5"; }
+
+    XF86AudioMute           { spawn "sh" "-c" "dms ipc call audio mute"; }
+
+    XF86AudioMicMute        { spawn "sh" "-c" "dms ipc call audio micmute"; }
+}

@@ -1,0 +1,65 @@
+{
+  "commandRunner": {
+    "enabled": true,
+    "noTrigger": true,
+    "trigger": ">"
+  },
+  "sathiAi": {
+    "enabled": true
+  },
+  "wallpaperShufflerPlugin": {
+    "enabled": true,
+    "wallpaperPath": "~/Wallpapers",
+    "shuffleInterval": "3"
+  },
+  "dankActions": {
+    "enabled": true,
+    "variants": [
+      {
+        "icon": "filter_none",
+        "displayText": "",
+        "displayCommand": "",
+        "clickCommand": "niri msg action maximize-window-to-edges",
+        "middleClickCommand": "",
+        "rightClickCommand": "",
+        "updateInterval": 0,
+        "showIcon": true,
+        "showText": false,
+        "visibilityCommand": "",
+        "visibilityInterval": 0,
+        "id": "variant_1769045661335",
+        "name": "Maximize/Minimize Window"
+      },
+      {
+        "icon": "close",
+        "displayText": "",
+        "displayCommand": "",
+        "clickCommand": "niri msg action close-window",
+        "middleClickCommand": "",
+        "rightClickCommand": "",
+        "updateInterval": 0,
+        "showIcon": true,
+        "showText": false,
+        "visibilityCommand": "",
+        "visibilityInterval": 0,
+        "id": "variant_1769058958735",
+        "name": "Close Window"
+      }
+    ]
+  },
+  "BetterClock": {
+    "enabled": true
+  },
+  "worldClock": {
+    "enabled": true
+  },
+  "customRunningApps": {
+    "enabled": true,
+    "itemPercentage": 74,
+    "spaceBetweenItems": 8,
+    "indicatorType": "circle"
+  },
+  "BetterRunningApps": {
+    "enabled": true
+  }
+}

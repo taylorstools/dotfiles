@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Snipping Tool
+Comment=Take a screenshot
+Icon=image-crop
+Exec=/home/taylor/scripts/snipping-tool.sh
+TryExec=wlogout
+Terminal=false
+Type=Application
+Categories=Settings;
+X-Desktop-File-Install-Version=0.28
+StartupNotify=false
+Path=

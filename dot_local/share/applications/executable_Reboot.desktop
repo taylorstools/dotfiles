@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Reboot
+Comment=Reboot system
+Icon=vm-restart
+Exec=sh -c 'pkill wlogout || wlogout --buttons-per-row 6'
+TryExec=wlogout
+Terminal=false
+Type=Application
+Categories=Settings;
+StartupNotify=false
+X-Desktop-File-Install-Version=0.28
+Path=
