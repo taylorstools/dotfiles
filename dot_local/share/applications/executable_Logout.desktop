@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Logout
+Comment=Logout system
+Icon=application-exit
+Exec=sh -c 'pkill wlogout || wlogout --buttons-per-row 6'
+TryExec=wlogout
+Terminal=false
+Type=Application
+Categories=Settings;
+X-Desktop-File-Install-Version=0.28
+StartupNotify=false
+Path=

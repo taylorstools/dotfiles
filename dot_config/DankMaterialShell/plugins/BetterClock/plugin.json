@@ -1,0 +1,15 @@
+{
+    "id": "BetterClock",
+    "name": "Better Clock",
+    "description": "Better Clock",
+    "version": "1.0",
+    "compositors": ["niri"],
+    "author": "Taylor",
+    "icon": "widgets",
+    "firstParty": false,
+    "component": "./BetterClock.qml",
+    "permissions": [
+        "settings_read",
+        "settings_write"
+    ]
+}

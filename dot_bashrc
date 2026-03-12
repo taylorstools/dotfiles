@@ -1,0 +1,25 @@
+[[ $- != *i* ]] && return
+case $- in
+	*i*) ;;
+	*) return ;;
+esac
+
+# Binds
+bind '"\C-a": unix-line-discard'
+
+# Aliases
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias cls='clear'
+alias ls='exa -a --icons --color=always --group-directories-first'
+alias ll='exa -alF --icons --color=always --group-directories-first'
+
+# Prompt
+PS1='\[\033[36m\]\w > \[\033[0m\]'
+
+export XDG_CONFIG_HOME="$HOME/.config"
+
+export SCM_CHECK=true
+
+fastfetch --logo-type small
+eval "$(zoxide init --cmd cd bash)"

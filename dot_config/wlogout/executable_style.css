@@ -1,0 +1,108 @@
+@import url("/home/taylor/.config/matugen/colors.css");
+
+* {
+    font-family: "Inter Light";
+	font-size: 15pt;
+	background-image: none;
+	transition: 200ms;
+	box-shadow: none;
+}
+
+window {
+	background-image: url("/home/taylor/.config/.EffectsWallpaper.png");
+	background-size: cover;
+	background-position: center;
+}
+
+button {
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: transparent;
+	transition: all 0.2s cubic-bezier(.55, 0.0, .28, 1.682), box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* Buttons */
+
+#lock {
+	margin: 10px;
+	border-radius: 20px;
+	background-image: image(url("icons/active/lock.png"));
+	color: @light;
+	background-size: 60px;
+}
+
+#lock:hover {
+	background-image: image(url("icons/hover/lock.png"));
+	color: @lighter;
+	background-size: 85px;
+}
+
+#logout {
+	margin: 10px;
+	border-radius: 20px;
+	background-image: image(url("icons/active/logout.png"));
+	color: @light;
+	background-size: 60px;
+}
+
+#logout:hover {
+	background-image: image(url("icons/hover/logout.png"));
+	color: @lighter;
+	background-size: 85px;
+}
+
+#sleep {
+	margin: 10px;
+	border-radius: 20px;
+	background-image: image(url("icons/active/sleep.png"));
+	color: @light;
+	background-size: 60px;
+}
+
+#sleep:hover {
+	background-image: image(url("icons/hover/sleep.png"));
+	color: @lighter;
+	background-size: 85px;
+}
+
+#shutdown {
+	margin: 10px;
+	border-radius: 20px;
+	background-image: image(url("icons/active/shutdown.png"));
+	color: @light;
+	background-size: 60px;
+}
+
+#shutdown:hover {
+	background-image: image(url("icons/hover/shutdown.png"));
+	color: @lighter;
+	background-size: 85px;
+}
+
+#reboot {
+	margin: 10px;
+	border-radius: 20px;
+	background-image: image(url("icons/active/reboot.png"));
+	color: @light;
+	background-size: 60px;
+}
+
+#reboot:hover {
+	background-image: image(url("icons/hover/reboot.png"));
+	color: @lighter;
+	background-size: 85px;
+}
+
+#windows {
+	margin: 10px;
+	border-radius: 20px;
+	background-image: image(url("icons/active/windows.png"));
+	color: @light;
+	background-size: 60px;
+}
+
+#windows:hover {
+	background-image: image(url("icons/hover/windows.png"));
+	color: @lighter;
+	background-size: 85px;
+}

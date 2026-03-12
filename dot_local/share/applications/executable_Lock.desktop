@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Lock
+Comment=Lock system
+Icon=udiskie-lock
+Exec=sh -c 'pkill wlogout || wlogout --buttons-per-row 6'
+TryExec=wlogout
+Terminal=false
+Type=Application
+Categories=Settings;
+X-Desktop-File-Install-Version=0.28
+StartupNotify=false

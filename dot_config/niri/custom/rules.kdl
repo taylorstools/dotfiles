@@ -1,0 +1,51 @@
+// Put swaybg inside the overview backdrop.
+layer-rule {
+    match namespace="^wallpaper$"
+    place-within-backdrop true
+}
+
+window-rule {
+    match title="Runner"
+    open-floating true
+    min-width 850
+    max-width 850
+    min-height 420
+    max-height 420
+}
+
+window-rule {
+    match app-id="com.gabm.satty"
+    open-floating true
+    max-width 1200
+    max-height 750
+}
+
+window-rule {
+    match app-id="org.gnome.Calculator"
+    open-floating true
+}
+
+window-rule {
+    match app-id="yad"
+    open-floating true
+}
+
+window-rule {
+    match app-id="io.missioncenter.MissionCenter"
+    open-maximized false
+    open-floating true
+    min-width 1000
+    max-width 1000
+    min-height 650
+    max-height 650
+}
+
+window-rule {
+    match app-id=r#"^gnome-calculator$"#
+    match app-id=r#"^galculator$"#
+    match app-id=r#"^blueman-manager$"#
+    match app-id=r#"^org\.gnome\.Nautilus$"#
+    match app-id=r#"^steam$"#
+    match app-id=r#"^xdg-desktop-portal$"#
+    open-floating true
+}

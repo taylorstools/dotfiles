@@ -1,0 +1,26 @@
+[Default Applications]
+text/html=google-chrome.desktop
+x-scheme-handler/http=google-chrome.desktop
+x-scheme-handler/https=google-chrome.desktop
+x-scheme-handler/about=google-chrome.desktop
+x-scheme-handler/unknown=google-chrome.desktop
+application/octet-stream=org.kde.kate.desktop
+application/x-zerosize=org.kde.kate.desktop
+image/jpeg=qimgv.desktop
+application/x-shellscript=vscodium.desktop
+text/plain=vscodium.desktop
+text/x-shellscript=vscodium.desktop
+text/x-python=vscodium.desktop
+text/x-perl=vscodium.desktop
+text/x-ruby=vscodium.desktop
+text/*=vscodium.desktop
+image/png=qimgv.desktop
+
+[Added Associations]
+application/x-shellscript=org.kde.kate.desktop;vscodium-wayland.desktop;
+application/json=org.kde.kate.desktop;
+application/octet-stream=org.kde.kate.desktop;
+application/x-zerosize=org.kde.kate.desktop;
+image/jpeg=qimgv.desktop;
+application/xml=org.kde.kate.desktop;
+text/x-qml=vscodium-wayland.desktop;

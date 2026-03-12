@@ -1,0 +1,2 @@
+@define-color light #{{ colors.tertiary.light.hex_stripped }};
+@define-color lighter #{{ colors.tertiary.default.hex_stripped }};

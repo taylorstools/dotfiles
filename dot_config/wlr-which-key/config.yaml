@@ -1,0 +1,47 @@
+# Theming
+font: JetBrains Mono Nerd Font 12
+background: "#000000E5"
+color: "#ffffff"
+border: "#000000"
+separator: " ➜ "
+border_width: 0
+corner_r: 10
+padding: 25
+anchor: center
+inhibit_compositor_keyboard_shortcuts: false
+auto_kbd_layout: true
+
+menu:
+  - key: "r"
+    desc: Run
+    cmd: exec kitty --title Runner $HOME/scripts/runner.sh
+  - key: "t"
+    desc: Terminal (Root)
+    cmd: sudo -E HOME=/root kitty
+  - key: "e"
+    desc: File Explorer (Root)
+    cmd: sudo -EH thunar
+  - key: "m"
+    desc: Task Manager
+    cmd: missioncenter
+  - key: "k"
+    desc: Disk Management
+    cmd: sudo -EH gparted
+  - key: "s"
+    desc: Snipping Tool
+    cmd: $HOME/scripts/snipping-tool.sh
+  - key: "b"
+    desc: Toggle Night Mode
+    cmd: dms ipc call night toggle
+  - key: "n"
+    desc: Night Mode Strength
+    cmd: $HOME/scripts/dms_change-night-mode-temperature.sh
+  - key: "a"
+    desc: Toggle Keep Awake
+    cmd: $HOME/scripts/hypridle/toggle-hypridle.sh
+  - key: "w"
+    desc: Change Wallpaper
+    cmd: $HOME/scripts/dms_change-wallpaper.sh
+  - key: "p"
+    desc: Power
+    cmd: pkill wlogout || wlogout --buttons-per-row 6

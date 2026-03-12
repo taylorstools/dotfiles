@@ -1,0 +1,16 @@
+// Include dms files
+include "dms/colors.kdl"
+include "dms/layout.kdl"
+include "dms/alttab.kdl"
+include "dms/binds.kdl"
+include "dms/outputs.kdl"
+include "dms/cursor.kdl"
+
+// Include custom configs
+include "custom/animations.kdl"
+include "custom/binds.kdl"
+include "custom/input.kdl"
+include "custom/layout.kdl"
+include "custom/misc.kdl"
+include "custom/rules.kdl"
+include "custom/startup.kdl"

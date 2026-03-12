@@ -1,0 +1,31 @@
+layout {
+    background-color "transparent"
+    center-focused-column "never"
+    default-column-display "tabbed"
+    preset-column-widths {
+        proportion 0.5
+    }
+    preset-window-heights {
+        proportion 1.0
+    }
+    tab-indicator {
+        width 16
+        gap 6
+        gaps-between-tabs 5
+        length total-proportion=0.75
+        position "top"
+        place-within-column
+        hide-when-single-tab
+        corner-radius 5
+    }
+    default-column-width { proportion 0.5; }
+    shadow {
+        on
+        softness 5
+        spread 1
+        offset x=0 y=0
+        color "#000"
+    }
+    struts {
+    }
+}

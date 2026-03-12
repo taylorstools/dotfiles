@@ -1,0 +1,15 @@
+{
+    "id": "BetterRunningApps",
+    "name": "Better Running Apps",
+    "description": "Better Running Apps",
+    "version": "1.0",
+    "compositors": ["niri"],
+    "author": "Taylor",
+    "icon": "widgets",
+    "firstParty": false,
+    "component": "./BetterRunningApps.qml",
+    "permissions": [
+        "settings_read",
+        "settings_write"
+    ]
+}
