@@ -31,7 +31,7 @@ binds {
     //Mod+Shift+Down  { set-window-height "100%"; }
 
     // Workspaces
-    Mod+Prior   { focus-workspace-previous; }
+    Mod+Prior   { focus-workspace-up; }
     Mod+Next    { focus-workspace-down; }
     Mod+1       { focus-workspace 1; }
     Mod+2       { focus-workspace 2; }
