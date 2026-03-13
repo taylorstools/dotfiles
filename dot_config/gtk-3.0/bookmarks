@@ -3,7 +3,8 @@ file:///home/taylor/Documents
 file:///home/taylor/Music
 file:///home/taylor/Pictures
 file:///home/taylor/Videos
-file:///home/taylor/.config
-file:///home/taylor/scripts
-smb://192.168.0.63/taylornas/jellyfin jellyfin
+file:///home/taylor/.dotfiles .dotfiles
+file:///home/taylor/.dotfiles/dot_config
+file:///home/taylor/.dotfiles/scripts scripts
 smb://192.168.0.63/taylornas/ TaylorNAS
+smb://192.168.0.63/taylornas/jellyfin jellyfin
