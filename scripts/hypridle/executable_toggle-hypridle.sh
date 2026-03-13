@@ -3,9 +3,9 @@
 if pidof hypridle > /dev/null; then
     # Toggle keep awake on
     pkill -x hypridle
-    notify-send -a "Keep Awake ON" "PC will now stay awake." -i "changes-allow-symbolic"
+    dms ipc call toast info "PC will now stay awake"
 else
     # Toggle keep awake off
     hypridle &
-    notify-send -a "Keep Awake OFF" "PC will now dim, lock, and sleep." -i "changes-prevent-symbolic"
+    dms ipc call toast info "PC will now dim, lock, and sleep"
 fi
