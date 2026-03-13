@@ -19,7 +19,7 @@
         "icon": "filter_none",
         "displayText": "",
         "displayCommand": "",
-        "clickCommand": "niri msg action maximize-window-to-edges",
+        "clickCommand": "niri msg action reset-window-height; niri msg action maximize-window-to-edges",
         "middleClickCommand": "",
         "rightClickCommand": "",
         "updateInterval": 0,
