@@ -5,7 +5,7 @@ spawn-sh-at-startup "(pidof hyprlock || hyprlock -q) || niri msg action quit --s
 spawn-sh-at-startup "pidof hypridle || hypridle &"
 
 // swaybg
-spawn-sh-at-startup "swaybg -m fill -i \"$HOME/.config/EffectsWallpaper.png\" &"
+spawn-sh-at-startup "swaybg -m fill -i \"$HOME/.config/.EffectsWallpaper.png\" &"
 
 // Script that makes background image for hyprlock and wlogout
 spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
