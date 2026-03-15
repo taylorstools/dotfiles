@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 PIDFILE="$XDG_RUNTIME_DIR/save-brightness-and-dim.sh.pid"
