@@ -65,6 +65,7 @@
   services.flatpak.enable = true;
   services.samba.enable = true;
   programs.firefox.enable = true;
+  programs.bash.enable = true;
 
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
@@ -110,13 +111,6 @@
         # in later on. Defaults to 'true'.
         AutoEnable = true;
       };
-    };
-  };
-
-  programs.bash = {
-    enable = true;
-    shellAliases = {
-      update = "nix flake update --flake ~/.dotfiles/nixos && sudo nixos-rebuild switch --flake ~/.dotfiles/nixos#$(hostname)";
     };
   };
 
