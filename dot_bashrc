@@ -13,6 +13,9 @@ alias grep='grep --color=auto'
 alias cls='clear'
 alias ls='exa -a --icons --color=always --group-directories-first'
 alias ll='exa -alF --icons --color=always --group-directories-first'
+if [ -f /etc/os-release ] && grep -q '^ID=nixos' /etc/os-release; then
+  alias update='nix flake update --flake ~/.dotfiles/nixos && sudo nixos-rebuild switch --flake ~/.dotfiles/nixos#$(hostname)'
+fi
 
 # Prompt
 PS1='\[\033[36m\]\w > \[\033[0m\]'

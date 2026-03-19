@@ -1,11 +1,6 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
-  imports =
-    [
-      #./hardware-configuration.nix
-    ];
-
   # Hostname
   networking.hostName = "bedroompc";
 
