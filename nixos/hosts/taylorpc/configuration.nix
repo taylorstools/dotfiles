@@ -7,6 +7,23 @@
   services = {
     tumbler.enable = true;
     upower.enable = true;
+    keyd = {
+      enable = true;
+      keyboards = {
+        default = {
+          # match all keyboards
+          ids = [ "*" ];
+          settings = {
+            main = {
+              leftmeta = "overload(meta, macro(leftmeta+d))";
+            };
+          };
+          extraConfig = ''
+            overload_tap_timeout = 150
+          '';
+        };
+      };
+    };
   };
 
   programs = {
