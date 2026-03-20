@@ -1,0 +1,228 @@
+{
+  "appUsageRanking": {
+    "com.google.Chrome": {
+      "name": "Google Chrome",
+      "exec": "/usr/bin/google-chrome-stable %U",
+      "icon": "google-chrome",
+      "comment": "Access the Internet",
+      "usageCount": 8,
+      "lastUsed": 1768973609837
+    },
+    "vscodium-wayland": {
+      "name": "VSCodium - Wayland",
+      "exec": "/usr/bin/codium --enable-features=UseOzonePlatform,WaylandWindowDecorations --ozone-platform=wayland %F",
+      "icon": "vscodium",
+      "comment": "Code Editing. Redefined.",
+      "usageCount": 27,
+      "lastUsed": 1771743883066
+    },
+    "Lock": {
+      "name": "Lock",
+      "exec": "/home/taylor/.config/hypr/UserScripts/wlogout.sh",
+      "icon": "udiskie-lock",
+      "comment": "Lock system",
+      "usageCount": 2,
+      "lastUsed": 1771281633784
+    },
+    "microsoft-edge": {
+      "name": "Microsoft Edge",
+      "exec": "/usr/bin/microsoft-edge-stable %U",
+      "icon": "microsoft-edge",
+      "comment": "Access the Internet",
+      "usageCount": 5,
+      "lastUsed": 1768969827686
+    },
+    "icon-explorer": {
+      "name": "Icon-Explorer",
+      "exec": "/opt/icon-explorer/icon-explorer",
+      "icon": "/opt/icon-explorer/ui/icon-explorer.png",
+      "comment": "",
+      "usageCount": 1,
+      "lastUsed": 1769044510110
+    },
+    "dev.aylur.icon-browser": {
+      "name": "Icon Browser",
+      "exec": "/usr/bin/icon-browser",
+      "icon": "application-x-executable",
+      "comment": "Find the right icon to use in your application",
+      "usageCount": 3,
+      "lastUsed": 1769841912677
+    },
+    "google-chrome": {
+      "name": "Google Chrome",
+      "exec": "",
+      "icon": "google-chrome",
+      "comment": "Access the Internet",
+      "usageCount": 39,
+      "lastUsed": 1773116454655
+    },
+    "kitty": {
+      "name": "kitty",
+      "exec": "",
+      "icon": "kitty",
+      "comment": "Fast, feature-rich, GPU based terminal",
+      "usageCount": 5,
+      "lastUsed": 1771791369674
+    },
+    "code-oss": {
+      "name": "Code - OSS",
+      "exec": "code-oss %F",
+      "icon": "com.visualstudio.code.oss",
+      "comment": "Code Editing. Redefined.",
+      "usageCount": 1,
+      "lastUsed": 1769148948041
+    },
+    "nwg-look": {
+      "name": "GTK Settings",
+      "exec": "nwg-look",
+      "icon": "nwg-look",
+      "comment": "Customizes GTK3 look and feel settings",
+      "usageCount": 10,
+      "lastUsed": 1773378232340
+    },
+    "vscodium": {
+      "name": "VSCodium",
+      "exec": "",
+      "icon": "vscodium",
+      "comment": "Code Editing. Redefined.",
+      "usageCount": 121,
+      "lastUsed": 1773613518497
+    },
+    "firefox": {
+      "name": "Firefox",
+      "exec": "/usr/lib/firefox/firefox %u",
+      "icon": "firefox",
+      "comment": "Browse the World Wide Web",
+      "usageCount": 2,
+      "lastUsed": 1773977080155
+    },
+    "obsidian": {
+      "name": "Obsidian",
+      "exec": "",
+      "icon": "obsidian",
+      "comment": "Obsidian",
+      "usageCount": 2,
+      "lastUsed": 1770955310448
+    },
+    "com.obsproject.Studio": {
+      "name": "OBS Studio",
+      "exec": "obs",
+      "icon": "com.obsproject.Studio",
+      "comment": "Free and Open Source Streaming/Recording Software",
+      "usageCount": 1,
+      "lastUsed": 1769892741082
+    },
+    "thunar": {
+      "name": "Thunar File Manager",
+      "exec": "",
+      "icon": "org.xfce.thunar",
+      "comment": "Browse the filesystem with the file manager",
+      "usageCount": 9,
+      "lastUsed": 1772929482923
+    },
+    "ca.desrt.dconf-editor": {
+      "name": "dconf Editor",
+      "exec": "dconf-editor",
+      "icon": "ca.desrt.dconf-editor",
+      "comment": "Directly edit your entire configuration database",
+      "usageCount": 3,
+      "lastUsed": 1770037678104
+    },
+    "org.kde.kate": {
+      "name": "Kate",
+      "exec": "kate -b %U",
+      "icon": "kate",
+      "comment": "KDE Advanced Text Editor",
+      "usageCount": 2,
+      "lastUsed": 1771219937870
+    },
+    "bitwarden": {
+      "name": "Bitwarden",
+      "exec": "bitwarden-desktop %u",
+      "icon": "bitwarden",
+      "comment": "A secure and free password manager for all of your devices.",
+      "usageCount": 2,
+      "lastUsed": 1771198218482
+    },
+    "hyprshot": {
+      "name": "HyprShot GUI",
+      "exec": "/usr/bin/hyprshot-gui",
+      "icon": "camera-photo",
+      "comment": "GTK4-based screenshot tool using Hyprshot",
+      "usageCount": 5,
+      "lastUsed": 1771227257417
+    },
+    "Snipping Tool": {
+      "name": "Snipping Tool",
+      "exec": "/home/taylor/scripts/snipping-tool.sh",
+      "icon": "image-crop",
+      "comment": "Sleep system",
+      "usageCount": 6,
+      "lastUsed": 1773613403148
+    },
+    "Reboot": {
+      "name": "Reboot",
+      "exec": "pkill wlogout || wlogout --buttons-per-row 6",
+      "icon": "vm-restart",
+      "comment": "Reboot system",
+      "usageCount": 7,
+      "lastUsed": 1771281896624
+    },
+    "Logout": {
+      "name": "Logout",
+      "exec": "/home/taylor/.config/hypr/UserScripts/wlogout.sh",
+      "icon": "application-exit",
+      "comment": "Logout system",
+      "usageCount": 3,
+      "lastUsed": 1771281636196
+    },
+    "Shutdown": {
+      "name": "Shutdown",
+      "exec": "/home/taylor/.config/hypr/UserScripts/wlogout.sh",
+      "icon": "system-shutdown-panel",
+      "comment": "Shutdown system",
+      "usageCount": 4,
+      "lastUsed": 1771281647729
+    },
+    "Sleep": {
+      "name": "Sleep",
+      "exec": "/home/taylor/.config/hypr/UserScripts/wlogout.sh",
+      "icon": "vm-suspend",
+      "comment": "Sleep system",
+      "usageCount": 3,
+      "lastUsed": 1771281643025
+    },
+    "org.gnome.Calculator": {
+      "name": "Calculator",
+      "exec": "gnome-calculator",
+      "icon": "org.gnome.Calculator",
+      "comment": "Perform arithmetic, scientific or financial calculations",
+      "usageCount": 8,
+      "lastUsed": 1773114488607
+    },
+    "org.kde.kdeconnect.app": {
+      "name": "KDE Connect",
+      "exec": "kdeconnect-app",
+      "icon": "kdeconnect",
+      "comment": "Make all your devices one",
+      "usageCount": 1,
+      "lastUsed": 1771904581418
+    },
+    "org.upscayl.Upscayl": {
+      "name": "Upscayl",
+      "exec": "upscayl %U",
+      "icon": "org.upscayl.Upscayl",
+      "comment": "Upscale Images with AI",
+      "usageCount": 3,
+      "lastUsed": 1772957079543
+    },
+    "org.qbittorrent.qBittorrent": {
+      "name": "qBittorrent",
+      "exec": "qbittorrent %U",
+      "icon": "qbittorrent",
+      "comment": "Download and share files over BitTorrent",
+      "usageCount": 3,
+      "lastUsed": 1773291194642
+    }
+  }
+}
