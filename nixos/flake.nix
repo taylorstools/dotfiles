@@ -18,6 +18,8 @@
         ./hosts/${hostName}/hardware-configuration.nix
       ];
     };
+
+    pkgs = import nixpkgs { inherit system; };
   in {
     nixosConfigurations = {
       bedroompc = mkHost "bedroompc";
@@ -25,6 +27,15 @@
       # future hosts go here:
       # laptop = mkHost "laptop";
       # server = mkHost "server";
+    };
+
+    apps.${system} = {
+      bootstrap = {
+        type = "app";
+        program = "${self}/bootstrap.sh";
+        # optionally you can add runtimeInputs if your script depends on packages
+        # runtimeInputs = [ pkgs.git pkgs.nix ];
+      };
     };
   };
 }
