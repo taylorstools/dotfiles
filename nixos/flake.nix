@@ -33,8 +33,7 @@
       bootstrap = {
         type = "app";
         program = "${self}/bootstrap.sh";
-        # optionally you can add runtimeInputs if your script depends on packages
-        # runtimeInputs = [ pkgs.git pkgs.nix ];
+        runtimeInputs = [ pkgs.git pkgs.nix ];
       };
     };
   };
