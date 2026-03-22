@@ -66,12 +66,14 @@
   # Common applications and services
   services.flatpak.enable = true;
   services.samba.enable = true;
+  services.gvfs.enable = true;
   programs.firefox.enable = true;
   programs.bash.enable = true;
 
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
     chezmoi
+    cifs-utils
     eza
     fastfetch
     gh
@@ -82,6 +84,7 @@
     mission-center
     posy-cursors
     qbittorrent
+    samba
     tela-icon-theme
     vscodium
     wget
