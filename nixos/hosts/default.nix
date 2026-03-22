@@ -73,7 +73,7 @@
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
     chezmoi
-    cifs-utils
+    efibootmgr
     eza
     fastfetch
     gh
@@ -84,7 +84,6 @@
     mission-center
     posy-cursors
     qbittorrent
-    samba
     tela-icon-theme
     vscodium
     wget
