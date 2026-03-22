@@ -32,6 +32,8 @@
   # Disable X11
   services.xserver.enable = false;
 
+  services.upower.enable = true;
+
   # Enable printing
   services.printing.enable = true;
 

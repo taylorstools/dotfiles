@@ -24,9 +24,6 @@
     nixosConfigurations = {
       bedroompc = mkHost "bedroompc";
       taylorpc = mkHost "taylorpc";
-      # future hosts go here:
-      # laptop = mkHost "laptop";
-      # server = mkHost "server";
     };
 
     apps.${system} = {
