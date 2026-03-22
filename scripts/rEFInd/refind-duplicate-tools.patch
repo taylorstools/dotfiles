@@ -1,0 +1,9 @@
+diff --git a/refind/main.c b/refind/main.c
+index 4b1a2f7..8c3d9a2 100644
+--- a/refind/main.c
++++ b/refind/main.c
+@@ -1243,7 +1243,9 @@
+-    SetMem(Tools, sizeof(Tools), 0);
++    if (Tools != NULL) {
++        SetMem(Tools, sizeof(Tools), 0);
++    }
