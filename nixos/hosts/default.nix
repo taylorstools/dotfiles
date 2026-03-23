@@ -118,5 +118,23 @@
     };
   };
 
-  system.stateVersion = "25.11";
+  system = {
+    autoUpgrade = {
+      enable = true;
+      dates = "daily";
+      flake = "${config.users.users.taylor.home}/.dotfiles/nixos";
+      flags = [
+        "--update-input" "nixpkgs"
+      ];
+      allowReboot = false;
+    };
+
+    stateVersion = "25.11";
+  };
+
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 7d";
+  };
 }

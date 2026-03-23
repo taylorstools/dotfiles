@@ -53,8 +53,14 @@
 
   programs = {
     niri.enable = true;
-    thunar.enable = true;
 
+    thunar = {
+      enable = true;
+      plugins = with pkgs; [
+        thunar-archive-plugin
+      ];
+    };
+    
     dms-shell = {
       enable = true;
 
@@ -73,13 +79,13 @@
     adw-gtk3
     brightnessctl
     fd
+    file-roller
     fzf
     hypridle
     hyprlock
     keyd
     nwg-look
     swaybg
-    thunar-archive-plugin
     wlogout
     wlr-which-key
     xdg-desktop-portal
