@@ -1,15 +1,14 @@
-# shell.nix
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Use the absolute path
-  refindSrc = pkgs.lib.cleanSource /home/taylor/rEFInd;
+  refindSrc = pkgs.lib.cleanSource /home/taylor/rEFI2nd;
 in
 
 pkgs.mkShell {
   buildInputs = [
     (pkgs.refind.overrideAttrs (old: {
       src = refindSrc;
+      patches = [];
     }))
     pkgs.efibootmgr
   ];
