@@ -13,4 +13,4 @@ git -C ~/rEFInd apply "$patch_file" || true
 # Build and install rEFInd
 nix-shell ~/scripts/rEFInd/shell.nix --run "sudo refind-install"
 
-sudo cp -r ~/scripts/rEFInd/refind/. /boot/EFI/refind/
+sudo cp -r ~/.dotfiles/refind/. /boot/EFI/refind/
