@@ -4,8 +4,8 @@ set -e
 
 REPO="https://github.com/taylorstools/dotfiles"
 DOTFILES_DIR="$HOME/.dotfiles"
-GREEN="\e[32m"
-RESET="\e[0m"
+GREEN=$'\e[32m'
+RESET=$'\e[0m'
 
 echo -e "${GREEN}Installing required packages...${RESET}"
 nix-shell -p git nix --run "true"
@@ -37,6 +37,12 @@ select HOST in "${hosts[@]}"; do
   fi
 done
 
+if [[ "$HOST" == "taylorpc" ]]; then
+  echo
+  read -rp "${GREEN}Do you want to configure rEFInd? [Y/n]${RESET} " REFIND_ANSWER
+  REFIND_ANSWER=${REFIND_ANSWER:-y}
+fi
+
 echo
 echo -e "${GREEN}Updating Nix flake...${RESET}"
 nix --extra-experimental-features "nix-command flakes" \
@@ -52,9 +58,19 @@ nix profile install nixpkgs#chezmoi
 
 echo
 echo -e "${GREEN}Applying dotfiles...${RESET}"
-chezmoi init --apply "$DOTFILES_DIR"
+chezmoi init --apply "$DOTFILES_DIR" --force
 
-echo
+case "$REFIND_ANSWER" in
+  [yY]|[yY][eE][sS])
+    echo
+    echo -e "${GREEN}Configuring rEFInd...${RESET}"
+    "$HOME/scripts/rEFInd/nix_install-refind.sh"
+    ;;
+  *)
+    echo
+    ;;
+esac
+
 echo -e "${GREEN}Done!${RESET}"
 read -rp "Do you want to reboot now? [Y/n] " REBOOT_ANSWER
 REBOOT_ANSWER=${REBOOT_ANSWER:-y}
