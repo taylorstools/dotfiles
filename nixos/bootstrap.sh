@@ -37,11 +37,20 @@ select HOST in "${hosts[@]}"; do
   fi
 done
 
+if [[ -z "$HOST" ]]; then
+  echo
+  echo "No host selected, aborting."
+  exit 1
+fi
+
 if [[ "$HOST" == "taylorpc" ]]; then
   echo
   read -rp "${GREEN}Do you want to configure rEFInd? [Y/n]${RESET} " REFIND_ANSWER
   REFIND_ANSWER=${REFIND_ANSWER:-y}
 fi
+
+rm -f "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
+sudo nixos-generate-config --show-hardware-config > "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
 
 echo
 echo -e "${GREEN}Updating Nix flake...${RESET}"
