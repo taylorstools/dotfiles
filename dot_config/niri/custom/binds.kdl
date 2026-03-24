@@ -7,7 +7,7 @@ binds {
 
     // Run apps as root
     Mod+Shift+E { spawn  "sh" "-c" "sudo -EH thunar"; }
-    Mod+Shift+T { spawn  "sh" "-c" "sudo -E HOME=/root kitty"; }
+    Mod+Shift+T { spawn  "sh" "-c" "kitty -e sudo -i"; }
 
     // Screenshot
     Print   { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
