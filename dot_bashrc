@@ -8,7 +8,6 @@ esac
 bind '"\C-a": unix-line-discard'
 
 # Aliases
-alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias cls='clear'
 alias ls='exa -a --icons --color=always --group-directories-first'
