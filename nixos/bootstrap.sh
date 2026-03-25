@@ -49,8 +49,7 @@ if [[ "$HOST" == "taylorpc" ]]; then
   REFIND_ANSWER=${REFIND_ANSWER:-y}
 fi
 
-rm -f "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
-sudo nixos-generate-config --show-hardware-config > "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
+sudo cp -f "/etc/nixos/hardware-configuration.nix" "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
 
 echo
 echo -e "${GREEN}Updating Nix flake...${RESET}"
@@ -79,6 +78,8 @@ case "$REFIND_ANSWER" in
     echo
     ;;
 esac
+
+[ -d /etc/nixos ] && sudo rm -rf /etc/nixos/. 
 
 echo -e "${GREEN}Done!${RESET}"
 read -rp "Do you want to reboot now? [Y/n] " REBOOT_ANSWER
