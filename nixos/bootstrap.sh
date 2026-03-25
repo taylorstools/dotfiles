@@ -79,13 +79,12 @@ case "$REFIND_ANSWER" in
     ;;
 esac
 
-[ -d /etc/nixos ] && sudo rm -rf /etc/nixos/. 
-
 echo -e "${GREEN}Done!${RESET}"
 read -rp "Do you want to reboot now? [Y/n] " REBOOT_ANSWER
 REBOOT_ANSWER=${REBOOT_ANSWER:-y}
 
 case "$REBOOT_ANSWER" in
   [yY]|[yY][eE][sS])
+    [ -d /etc/nixos ] && sudo rm -rf /etc/nixos/.
     sudo reboot;;
 esac
