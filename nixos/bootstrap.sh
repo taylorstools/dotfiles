@@ -62,7 +62,7 @@ sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
 
 echo
 echo -e "${GREEN}Installing chezmoi...${RESET}"
-nix profile install nixpkgs#chezmoi
+nix profile add nixpkgs#chezmoi
 
 echo
 echo -e "${GREEN}Applying dotfiles...${RESET}"
