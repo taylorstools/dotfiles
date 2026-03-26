@@ -26,12 +26,13 @@
       taylorpc = mkHost "taylorpc";
     };
 
-    apps.${system} = {
-      bootstrap = {
-        type = "app";
-        program = "${self}/bootstrap.sh";
+    apps.${system}.bootstrap = {
+      type = "app";
+      program = "${pkgs.writeShellApplication {
+        name = "bootstrap";
         runtimeInputs = [ pkgs.git pkgs.nix ];
-      };
+        text = builtins.readFile ./bootstrap.sh;
+      }}/bin/bootstrap";
     };
   };
 }
