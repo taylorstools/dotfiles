@@ -85,6 +85,6 @@ REBOOT_ANSWER=${REBOOT_ANSWER:-y}
 
 case "$REBOOT_ANSWER" in
   [yY]|[yY][eE][sS])
-    [ -d /etc/nixos ] && sudo rm -rf /etc/nixos/.
+    [ -d /etc/nixos ] && sudo rm -rf /etc/nixos
     sudo reboot;;
 esac
