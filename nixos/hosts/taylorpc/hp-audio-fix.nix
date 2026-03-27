@@ -7,7 +7,7 @@ stdenv.mkDerivation {
     owner = "xoocoon";
     repo = "hp-15-ew0xxx-snd-fix";
     rev = "main";
-    sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    sha256 = "sha256-V6Qkt7yGzHtgg0oGaBjrkOTAm9J9QYM9buqdnkf9NL4=";
   };
 
   buildInputs = linuxPackages.kernel.moduleBuildDependencies;
