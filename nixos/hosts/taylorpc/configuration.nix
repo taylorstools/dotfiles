@@ -7,7 +7,11 @@
     ../../modules/niri.nix
   ];
 
-  boot.extraModulePackages = [
-    (pkgs.linuxPackages.callPackage ./hp-audio-fix.nix {})
+  boot.kernelParams = [
+    "snd_hda_intel.dmic_detect=0"
   ];
+
+  boot.extraModprobeConfig = ''
+    options snd-hda-intel model=alc287-hp
+  '';
 }
