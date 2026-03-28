@@ -1,7 +1,10 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
+let
+  avatar = inputs.self + "/hosts/taylor.png";
+in
 {
-  # systemd
+  # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.timeout = 1;
@@ -26,7 +29,7 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Linux kernel
+  # Kernel
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Disable X11
@@ -34,10 +37,10 @@
 
   services.upower.enable = true;
 
-  # Enable printing
+  # Printing
   services.printing.enable = true;
 
-  # Enable pipewire
+  # Audio (PipeWire)
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -47,6 +50,18 @@
     pulse.enable = true;
   };
 
+  # ✅ Avatar (AccountsService)
+  systemd.tmpfiles.rules = [
+    "d /var/lib/AccountsService/icons 0755 root root -"
+    "C /var/lib/AccountsService/icons/taylor 0644 root root ${avatar}"
+  ];
+
+  environment.etc."AccountsService/users/taylor".text = ''
+    [User]
+    Icon=/var/lib/AccountsService/icons/taylor
+  '';
+
+  # SSH
   services.openssh = {
     enable = true;
     settings = {
@@ -54,29 +69,30 @@
     };
   };
 
-  # Taylor user
+  # User
   users.users.taylor = {
     isNormalUser = true;
     description = "Taylor";
     extraGroups = [ "networkmanager" "wheel" "input" ];
   };
 
-  # Don't require password to use sudo
+  # Sudo
   security.sudo.wheelNeedsPassword = false;
 
-  # Allow unfree packages
+  # Allow unfree
   nixpkgs.config.allowUnfree = true;
 
-  # Enable flakes and nix-command
+  # Nix features
   nix.settings.experimental-features = [ "flakes" "nix-command" ];
 
-  # Common applications and services
+  # Services / Programs
   services.flatpak.enable = true;
   services.samba.enable = true;
   services.gvfs.enable = true;
   programs.firefox.enable = true;
   programs.bash.enable = true;
 
+  # Packages
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
     chezmoi
@@ -97,6 +113,7 @@
     zoxide
   ];
 
+  # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
     inter
@@ -108,23 +125,16 @@
     powerOnBoot = true;
     settings = {
       General = {
-        # Shows battery charge of connected devices on supported
-        # Bluetooth adapters. Defaults to 'false'.
         Experimental = true;
-        # When enabled other devices can connect faster to us, however
-        # the tradeoff is increased power consumption. Defaults to
-        # 'false'.
         FastConnectable = true;
       };
       Policy = {
-        # Enable all controllers when they are found. This includes
-        # adapters present on start as well as adapters that are plugged
-        # in later on. Defaults to 'true'.
         AutoEnable = true;
       };
     };
   };
 
+  # System settings
   system = {
     autoUpgrade = {
       enable = true;
@@ -139,6 +149,7 @@
     stateVersion = "25.11";
   };
 
+  # Garbage collection
   nix.gc = {
     automatic = true;
     dates = "daily";
