@@ -1,7 +1,7 @@
 { config, pkgs, lib, self, ... }:
 
 let
-  avatar = self + "/hosts/taylor.png";
+  avatar = ./taylor.png;
 in
 {
   # Bootloader
@@ -50,10 +50,10 @@ in
     pulse.enable = true;
   };
 
-  # ✅ Avatar (AccountsService)
+  # Profile icon
   systemd.tmpfiles.rules = [
     "d /var/lib/AccountsService/icons 0755 root root -"
-    "C /var/lib/AccountsService/icons/taylor 0644 root root ${avatar}"
+    "C+ /var/lib/AccountsService/icons/taylor 0644 root root ${avatar}"
   ];
 
   environment.etc."AccountsService/users/taylor".text = ''
