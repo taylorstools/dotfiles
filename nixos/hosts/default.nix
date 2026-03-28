@@ -1,7 +1,7 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, self, ... }:
 
 let
-  avatar = inputs.self + "/hosts/taylor.png";
+  avatar = self + "/hosts/taylor.png";
 in
 {
   # Bootloader
