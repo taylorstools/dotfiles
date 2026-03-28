@@ -12,6 +12,10 @@
     mkHost = hostName: nixpkgs.lib.nixosSystem {
       inherit system;
 
+      specialArgs = {
+        inherit self;
+      };
+
       modules = [
         ./hosts/default.nix
         ./hosts/${hostName}/configuration.nix
