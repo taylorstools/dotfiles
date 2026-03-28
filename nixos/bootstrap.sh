@@ -43,6 +43,7 @@ if [[ -z "$HOST" ]]; then
   exit 1
 fi
 
+REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
   echo
   read -rp "${GREEN}Do you want to configure rEFInd? [Y/n]${RESET} " REFIND_ANSWER
