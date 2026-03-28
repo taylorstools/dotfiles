@@ -47,11 +47,18 @@
     pulse.enable = true;
   };
 
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+    };
+  };
+
   # Taylor user
   users.users.taylor = {
     isNormalUser = true;
     description = "Taylor";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
   };
 
   # Don't require password to use sudo

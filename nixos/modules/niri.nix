@@ -27,6 +27,7 @@
     };
 
     tumbler.enable = true;
+
     keyd = {
       enable = true;
       keyboards = {
@@ -81,6 +82,7 @@
     fd
     file-roller
     fzf
+    gparted
     hypridle
     hyprlock
     keyd
@@ -94,5 +96,26 @@
     xdg-user-dirs
     xwayland-satellite
     yad
+    ydotool
   ];
+
+  systemd.user.services.ydotoold = {
+    description = "ydotool daemon";
+
+    serviceConfig = {
+      ExecStart = "${pkgs.ydotool}/bin/ydotoold";
+
+      Restart = "always";
+
+      SupplementaryGroups = [ "input" ];
+      DeviceAllow = [
+        "/dev/uinput rw"
+      ];
+      PrivateDevices = false;
+    };
+
+    wantedBy = [ "default.target" ];
+  };
+
+  boot.kernelModules = [ "uinput" ];
 }
