@@ -69,6 +69,10 @@ echo
 echo -e "${GREEN}Applying dotfiles...${RESET}"
 chezmoi init --apply "$DOTFILES_DIR" --force
 
+echo
+echo -e "${GREEN}Setting user directories...${RESET}"
+"$HOME/scripts/update-user-dirs.sh"
+
 case "$REFIND_ANSWER" in
   [yY]|[yY][eE][sS])
     echo
