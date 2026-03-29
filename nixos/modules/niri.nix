@@ -94,6 +94,7 @@
     xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk
     xdg-user-dirs
+    xsettingsd
     xwayland-satellite
     yad
     ydotool

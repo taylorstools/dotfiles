@@ -1,6 +1,7 @@
-{ config, pkgs, lib, self, ... }:
+{ config, pkgs, lib, ... }:
 
 let
+  username = "taylor";
   avatar = ./taylor.png;
 in
 {
@@ -50,18 +51,16 @@ in
     pulse.enable = true;
   };
 
-  # Profile icon
   systemd.tmpfiles.rules = [
     "d /var/lib/AccountsService/icons 0755 root root -"
-    "C+ /var/lib/AccountsService/icons/taylor 0644 root root ${avatar}"
+
+    # Link icon into place (store path -> runtime path)
+    "L+ /var/lib/AccountsService/icons/${username} - - - - ${avatar}"
+
+    # Create AccountsService user file
+    "f+ /var/lib/AccountsService/users/${username} 0600 root root - [User]\\nIcon=/var/lib/AccountsService/icons/${username}\\n"
   ];
 
-  environment.etc."AccountsService/users/taylor".text = ''
-    [User]
-    Icon=/var/lib/AccountsService/icons/taylor
-  '';
-
-  # SSH
   services.openssh = {
     enable = true;
     settings = {
@@ -70,7 +69,7 @@ in
   };
 
   # User
-  users.users.taylor = {
+  users.users.${username} = {
     isNormalUser = true;
     description = "Taylor";
     extraGroups = [ "networkmanager" "wheel" "input" ];
@@ -139,7 +138,7 @@ in
     autoUpgrade = {
       enable = true;
       dates = "daily";
-      flake = "${config.users.users.taylor.home}/.dotfiles/nixos";
+      flake = "${config.users.users.${username}.home}/.dotfiles/nixos";
       flags = [
         "--update-input" "nixpkgs"
       ];
