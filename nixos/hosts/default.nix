@@ -3,6 +3,12 @@
 let
   username = "taylor";
   avatar = ./taylor.png;
+
+  myTela = pkgs.tela-icon-theme.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      cp ${./thunar.svg} $out/share/icons/Tela/scalable/apps/thunar.svg
+    '';
+  });
 in
 {
   # Bootloader
@@ -40,6 +46,7 @@ in
 
   # Printing
   services.printing.enable = true;
+  services.printing.drivers = [ pkgs.hplip pkgs.hplipWithPlugin ];
 
   # Audio (PipeWire)
   services.pulseaudio.enable = false;
@@ -101,14 +108,16 @@ in
     gh
     git
     google-chrome
+    hplip
     imagemagick
     kitty
     mission-center
     posy-cursors
     qbittorrent
-    tela-icon-theme
+    myTela
     vscodium
     wget
+    xdg-user-dirs
     zoxide
   ];
 
