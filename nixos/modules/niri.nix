@@ -93,7 +93,7 @@
     xdg-desktop-portal
     xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk
-    xdg-user-dirs
+    xed-editor
     xsettingsd
     xwayland-satellite
     yad
