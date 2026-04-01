@@ -48,6 +48,11 @@ in
   services.printing.enable = true;
   services.printing.drivers = [ pkgs.hplip pkgs.hplipWithPlugin ];
 
+  # Encryption
+  boot.initrd.systemd.enable = true;
+  boot.initrd.systemd.tpm2.enable = true;
+  security.tpm2.enable = true;
+
   # Audio (PipeWire)
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
