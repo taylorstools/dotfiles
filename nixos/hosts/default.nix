@@ -103,6 +103,11 @@ in
   programs.firefox.enable = true;
   programs.bash.enable = true;
 
+  programs.git.enable = true;
+  programs.git.config = {
+    safe.directory = [ "/home/taylor/.dotfiles" ];
+  };
+
   # Packages
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
@@ -111,7 +116,6 @@ in
     eza
     fastfetch
     gh
-    git
     google-chrome
     hplip
     imagemagick
