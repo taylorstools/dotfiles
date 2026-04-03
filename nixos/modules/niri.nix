@@ -48,13 +48,6 @@
     };
   };
 
-  security = {
-    pam.services.login.enableGnomeKeyring = true;
-    pam.services.greetd.enableGnomeKeyring = true;
-    pam.services.greetd-password.enableGnomeKeyring = true;
-  };
-  services.dbus.packages = [ pkgs.gnome-keyring pkgs.gcr ];
-
   programs = {
     niri.enable = true;
 
