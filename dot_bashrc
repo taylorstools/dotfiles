@@ -7,14 +7,25 @@ esac
 # Binds
 bind '"\C-a": unix-line-discard'
 
-# Aliases
+# ===== ALIASES =====
 alias grep='grep --color=auto'
 alias cls='clear'
 alias ls='exa -a --icons --color=always --group-directories-first'
 alias ll='exa -alF --icons --color=always --group-directories-first'
+
+# Update NixOS flake and rebuild system
 if [ -f /etc/os-release ] && grep -q '^ID=nixos' /etc/os-release; then
   alias update='nix flake update --flake ~/.dotfiles/nixos && sudo nixos-rebuild switch --flake ~/.dotfiles/nixos#$(hostname)'
 fi
+
+# git push script
+push() {
+  if [ -z "$1" ]; then
+    echo "Usage: push \"commit message\""
+    return 1
+  fi
+  git add . && git commit -m "$1" && git push
+}
 
 # Prompt
 PS1='\[\033[36m\]\w > \[\033[0m\]'
