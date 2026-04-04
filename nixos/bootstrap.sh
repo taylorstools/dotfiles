@@ -89,7 +89,7 @@ REBOOT_ANSWER=${REBOOT_ANSWER:-y}
 
 case "$REBOOT_ANSWER" in
   [yY]|[yY][eE][sS])
-    [ -d $HOME/rEFI2nd ] && rm -rf $HOME/rEFI2nd
-    [ -d /etc/nixos ] && sudo rm -rf /etc/nixos
+    [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
+    [ -d "/etc/nixos" ] && sudo rm -rf "/etc/nixos"
     sudo reboot;;
 esac
