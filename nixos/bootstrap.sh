@@ -23,6 +23,7 @@ for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
 done
 
 # Prompt user to select host
+echo
 HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose the host for this configuration:")
 
 [ -z "$HOST" ] && { echo; echo "No host selected."; exit 1; }
@@ -30,7 +31,6 @@ HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose the host for th
 # Ask user if they want to configure rEFInd
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
-  echo
   read -rp "${GREEN}Do you want to configure rEFInd? [Y/n]:${RESET} " REFIND_ANSWER
   REFIND_ANSWER=${REFIND_ANSWER:-y}
 fi
