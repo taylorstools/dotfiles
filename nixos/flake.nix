@@ -34,7 +34,7 @@
       type = "app";
       program = "${pkgs.writeShellApplication {
         name = "bootstrap";
-        runtimeInputs = [ pkgs.git pkgs.nix ];
+        runtimeInputs = [ pkgs.git pkgs.nix pkgs.chezmoi pkgs.gum ];
         text = builtins.readFile ./bootstrap.sh;
       }}/bin/bootstrap";
     };

@@ -7,10 +7,6 @@ DOTFILES_DIR="$HOME/.dotfiles"
 GREEN=$'\e[32m'
 RESET=$'\e[0m'
 
-echo -e "${GREEN}Installing required packages...${RESET}"
-nix-shell -p git nix --run "true"
-
-echo
 echo -e "${GREEN}Cloning dotfiles...${RESET}"
 if [ ! -d "$DOTFILES_DIR" ]; then
   git clone "$REPO" "$DOTFILES_DIR"
@@ -26,9 +22,6 @@ for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
   [ -d "$dir" ] || continue
   hosts+=("$(basename "$dir")")
 done
-
-# Install gum
-nix profile add nixpkgs#gum
 
 # Prompt user to select host
 HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose the host for this configuration:")
@@ -57,11 +50,7 @@ echo -e "${GREEN}Applying system configuration...${RESET}"
 sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
 
 echo
-echo -e "${GREEN}Installing chezmoi...${RESET}"
-nix profile add nixpkgs#chezmoi
-
-echo
-echo -e "${GREEN}Applying dotfiles...${RESET}"
+echo -e "${GREEN}Applying dotfiles with chezmoi...${RESET}"
 chezmoi init --apply "$DOTFILES_DIR" --force
 
 echo
