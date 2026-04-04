@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    lanzaboote = (import ./lon.nix).inputs.lanzaboote;
+    lanzaboote.url = "github:nix-community/lanzaboote/v1.0.0";
   };
 
   outputs = { self, nixpkgs, lanzaboote, ... }:
