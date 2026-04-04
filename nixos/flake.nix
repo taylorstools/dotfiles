@@ -3,9 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    lanzaboote = (import ./lon.nix).inputs.lanzaboote;
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, lanzaboote, ... }:
   let
     system = "x86_64-linux";
 
@@ -17,6 +18,7 @@
       };
 
       modules = [
+        lanzaboote.nixosModules.lanzaboote
         ./hosts/default.nix
         ./hosts/${hostName}/configuration.nix
         ./hosts/${hostName}/hardware-configuration.nix
