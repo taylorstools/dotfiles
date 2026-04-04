@@ -16,7 +16,6 @@ else
 fi
 
 # List all applicable hosts
-echo
 hosts=()
 for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
   [ -d "$dir" ] || continue
