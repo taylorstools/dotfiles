@@ -41,7 +41,7 @@ fi
 
 # Prompt user only if flag not provided
 if [[ -z "$ENABLE" ]]; then
-  read -rp "Enable LUKS auto-unlock with TPM? [Y/n]: " RESP
+  read -rp "${GREEN}Enable LUKS auto-unlock with TPM? [Y/n]:${RESET} " RESP
   RESP=${RESP:-Y}
   if [[ "$RESP" =~ ^[Yy]$ ]]; then
     ENABLE=true
