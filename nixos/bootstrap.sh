@@ -60,7 +60,7 @@ echo -e "${GREEN}Setting user directories...${RESET}"
 
 echo
 # Enable/disable autounlock for LUKS with TPM
-"$HOME/scripts/luks-tpm-autounlock.sh"
+"$HOME/scripts/luks-tpm-autounlock.sh" --hostname $HOST
 
 case "$REFIND_ANSWER" in
   [yY]|[yY][eE][sS])
