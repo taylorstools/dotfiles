@@ -36,8 +36,10 @@ if [[ "$HOST" == "taylorpc" ]]; then
 fi
 
 # Copy hardware-configuration.nix to ~/.dotfiles/nixos hosts dir
-sudo cp -f "/etc/nixos/hardware-configuration.nix" \
-  "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
+[ -f "/etc/nixos/hardware-configuration.nix" ] && \
+  sudo cp -f \
+    "/etc/nixos/hardware-configuration.nix" \
+    "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
 
 echo
 echo -e "${GREEN}Updating Nix flake...${RESET}"
