@@ -1,6 +1,10 @@
 { config, pkgs, lib, ... }:
 
 {
+  imports = [
+    #./luks-tpm-autounlock.nix
+  ];
+
   # Hostname
   networking.hostName = "bedroompc";
 
