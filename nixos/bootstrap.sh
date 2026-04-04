@@ -27,6 +27,7 @@ for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
   hosts+=("$(basename "$dir")")
 done
 
+# Prompt user to select host
 echo -e "${GREEN}Choose the host for this configuration:${RESET}"
 PS3="==> "
 select HOST in "${hosts[@]}"; do
@@ -43,6 +44,7 @@ if [[ -z "$HOST" ]]; then
   exit 1
 fi
 
+# Ask user if they want to configure rEFInd
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
   echo
@@ -50,7 +52,9 @@ if [[ "$HOST" == "taylorpc" ]]; then
   REFIND_ANSWER=${REFIND_ANSWER:-y}
 fi
 
-sudo cp -f "/etc/nixos/hardware-configuration.nix" "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
+# Copy hardware-configuration.nix to ~/.dotfiles/nixos hosts dir
+sudo cp -f "/etc/nixos/hardware-configuration.nix" \
+  "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
 
 echo
 echo -e "${GREEN}Updating Nix flake...${RESET}"
@@ -90,6 +94,7 @@ REBOOT_ANSWER=${REBOOT_ANSWER:-y}
 
 case "$REBOOT_ANSWER" in
   [yY]|[yY][eE][sS])
+    [ -d $HOME/rEFI2nd ] && rm -rf $HOME/rEFI2nd
     [ -d /etc/nixos ] && sudo rm -rf /etc/nixos
     sudo reboot;;
 esac
