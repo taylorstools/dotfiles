@@ -34,4 +34,4 @@ case "${1:-}" in
 esac
 
 # Set brightness level
-dms brightness set "$BACKLIGHT" "$new" --exponential
+dms brightness set "$BACKLIGHT" "$new"
