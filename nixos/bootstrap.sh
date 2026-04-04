@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 REPO="https://github.com/taylorstools/dotfiles"
 DOTFILES_DIR="$HOME/.dotfiles"
@@ -27,28 +27,19 @@ for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
   hosts+=("$(basename "$dir")")
 done
 
-# Prompt user to select host
-echo -e "${GREEN}Choose the host for this configuration:${RESET}"
-PS3="==> "
-select HOST in "${hosts[@]}"; do
-  if [ -n "$HOST" ]; then
-    echo
-    echo "Selected host: $HOST"
-    break
-  fi
-done
+# Install gum
+nix profile add nixpkgs#gum
 
-if [[ -z "$HOST" ]]; then
-  echo
-  echo "No host selected, aborting."
-  exit 1
-fi
+# Prompt user to select host
+HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose the host for this configuration:")
+
+[ -z "$HOST" ] && { echo; echo "No host selected."; exit 1; }
 
 # Ask user if they want to configure rEFInd
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
   echo
-  read -rp "${GREEN}Do you want to configure rEFInd? [Y/n]${RESET} " REFIND_ANSWER
+  read -rp "${GREEN}Do you want to configure rEFInd? [Y/n]:${RESET} " REFIND_ANSWER
   REFIND_ANSWER=${REFIND_ANSWER:-y}
 fi
 
@@ -77,6 +68,10 @@ echo
 echo -e "${GREEN}Setting user directories...${RESET}"
 "$HOME/scripts/update-user-dirs.sh"
 
+echo
+# Enable/disable autounlock for LUKS with TPM
+"$HOME/scripts/luks-tpm-autounlock.sh"
+
 case "$REFIND_ANSWER" in
   [yY]|[yY][eE][sS])
     echo
@@ -89,7 +84,7 @@ case "$REFIND_ANSWER" in
 esac
 
 echo -e "${GREEN}Done!${RESET}"
-read -rp "Do you want to reboot now? [Y/n] " REBOOT_ANSWER
+read -rp "Do you want to reboot now? [Y/n]: " REBOOT_ANSWER
 REBOOT_ANSWER=${REBOOT_ANSWER:-y}
 
 case "$REBOOT_ANSWER" in
