@@ -17,7 +17,7 @@
       };
 
       modules = [
-        ./hosts/default.nix
+        ./modules/default.nix
         ./hosts/${hostName}/configuration.nix
         ./hosts/${hostName}/hardware-configuration.nix
       ];

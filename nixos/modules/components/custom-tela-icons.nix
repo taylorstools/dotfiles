@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 let
   tela-custom = pkgs.tela-icon-theme.overrideAttrs (old: {
