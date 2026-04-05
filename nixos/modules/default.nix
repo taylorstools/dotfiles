@@ -1,18 +1,29 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [
+    ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
+    ./components/git.nix
+    ./components/ssh.nix
     ./components/user.nix
   ];
 
-  # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.timeout = 1;
+  # Allow unfree
+  nixpkgs.config.allowUnfree = true;
 
-  # Networking
-  networking.networkmanager.enable = true;
+  # Nix features
+  nix.settings.experimental-features = [ "flakes" "nix-command" ];
+
+  # Bootloader
+  boot.loader = {
+    systemd-boot.enable = true;
+    efi.canTouchEfiVariables = true;
+    timeout = 1;
+  };
+
+  # Kernel
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Time zone
   time.timeZone = "America/Phoenix";
@@ -31,17 +42,14 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Kernel
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Networking
+  networking.networkmanager.enable = true;
+
+  # Power management
+  services.upower.enable = true;
 
   # Disable X11
   services.xserver.enable = false;
-
-  services.upower.enable = true;
-
-  # Printing
-  services.printing.enable = true;
-  services.printing.drivers = [ pkgs.hplip pkgs.hplipWithPlugin ];
 
   # Audio (PipeWire)
   services.pulseaudio.enable = false;
@@ -53,30 +61,31 @@
     pulse.enable = true;
   };
 
-  services.openssh = {
+  # Bluetooth
+  hardware.bluetooth = {
     enable = true;
+    powerOnBoot = true;
     settings = {
-      PermitRootLogin = "no";
+      General = {
+        Experimental = true;
+        FastConnectable = true;
+      };
+      Policy = {
+        AutoEnable = true;
+      };
     };
   };
 
-  # Allow unfree
-  nixpkgs.config.allowUnfree = true;
+  # Printing
+  services.printing.enable = true;
+  services.printing.drivers = [ pkgs.hplip pkgs.hplipWithPlugin ];
 
-  # Nix features
-  nix.settings.experimental-features = [ "flakes" "nix-command" ];
-
-  # Services / Programs
+  # Services/programs
   services.flatpak.enable = true;
   services.samba.enable = true;
   services.gvfs.enable = true;
   programs.firefox.enable = true;
   programs.bash.enable = true;
-
-  programs.git.enable = true;
-  programs.git.config = {
-    safe.directory = [ "/home/taylor/.dotfiles" ];
-  };
 
   # Packages
   environment.systemPackages = with pkgs; [
@@ -85,9 +94,7 @@
     efibootmgr
     eza
     fastfetch
-    gh
     google-chrome
-    hplip
     imagemagick
     kitty
     mission-center
@@ -104,21 +111,6 @@
     nerd-fonts.jetbrains-mono
     inter
   ];
-
-  # Bluetooth
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
-    settings = {
-      General = {
-        Experimental = true;
-        FastConnectable = true;
-      };
-      Policy = {
-        AutoEnable = true;
-      };
-    };
-  };
 
   system.stateVersion = "25.11";
 }
