@@ -28,7 +28,7 @@
     hosts = builtins.attrNames (
       nixpkgs.lib.filterAttrs
         (_name: type: type == "directory")
-        (builtins.readDir hostsDir)
+        (builtins.readDir ./hosts)
     );
   in {
     nixosConfigurations = builtins.listToAttrs (
