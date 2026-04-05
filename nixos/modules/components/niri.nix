@@ -1,13 +1,6 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
-  imports = [
-    ./components/dms.nix
-    ./components/greetd.nix
-    ./components/keyd.nix
-    ./components/thunar.nix
-  ];
-
   services.gnome.gnome-keyring.enable = true;
 
   programs.niri.enable = true;
