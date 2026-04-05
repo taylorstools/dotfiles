@@ -2,7 +2,7 @@
 
 let
   username = "taylor";
-  #avatar = ./taylor.png;
+  avatar = ./components/assets/taylor.png;
 in
 {
   imports = [
