@@ -2,7 +2,7 @@
 
 let
   username = "taylor";
-  avatar = ./taylor.png;
+  #avatar = ./taylor.png;
 in
 {
   imports = [
