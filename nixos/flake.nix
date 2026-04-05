@@ -26,9 +26,9 @@
 
     # Automatically create hosts based on dirs in "hosts" folder
     hosts = builtins.attrNames (
-      builtins.filterAttrs
+      nixpkgs.lib.filterAttrs
         (_name: type: type == "directory")
-        (builtins.readDir ./hosts)
+        (builtins.readDir hostsDir)
     );
   in {
     nixosConfigurations = builtins.listToAttrs (
