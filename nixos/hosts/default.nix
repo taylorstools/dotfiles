@@ -3,12 +3,6 @@
 let
   username = "taylor";
   avatar = ./taylor.png;
-
-  myTela = pkgs.tela-icon-theme.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      cp ${./thunar.svg} $out/share/icons/Tela/scalable/apps/thunar.svg
-    '';
-  });
 in
 {
   # Bootloader
@@ -118,7 +112,6 @@ in
     mission-center
     posy-cursors
     qbittorrent
-    myTela
     vscodium
     wget
     xdg-user-dirs
