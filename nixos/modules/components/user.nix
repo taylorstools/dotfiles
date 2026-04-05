@@ -5,6 +5,15 @@ let
   avatar = ./components/assets/taylor.png;
 in
 {
+  users.users.${username} = {
+    isNormalUser = true;
+    description = "Taylor";
+    extraGroups = [ "networkmanager" "wheel" "input" ];
+  };
+
+  # Passwordless sudo
+  security.sudo.wheelNeedsPassword = false;
+
   systemd.tmpfiles.rules = [
     "d /var/lib/AccountsService/icons 0755 root root -"
     "L+ /var/lib/AccountsService/icons/${username} - - - - ${avatar}"
