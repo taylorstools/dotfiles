@@ -6,6 +6,7 @@
   };
 
   outputs = { self, nixpkgs, ... }:
+
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs { inherit system; };
@@ -38,11 +39,12 @@
       }) hosts
     );
 
+    # Create bootstrap script app
     apps.${system}.bootstrap = {
       type = "app";
       program = "${pkgs.writeShellApplication {
         name = "bootstrap";
-        runtimeInputs = [ pkgs.git pkgs.nix pkgs.chezmoi pkgs.gum ];
+        runtimeInputs = [ pkgs.nix pkgs.git pkgs.chezmoi pkgs.gum ];
         text = builtins.readFile ./bootstrap.sh;
       }}/bin/bootstrap";
     };
