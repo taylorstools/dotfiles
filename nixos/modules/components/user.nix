@@ -2,7 +2,7 @@
 
 let
   username = "taylor";
-  avatar = ./components/assets/taylor.png;
+  avatar = ./assets/taylor.png;
 in
 {
   users.users.${username} = {
