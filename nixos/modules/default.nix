@@ -120,25 +120,5 @@
     };
   };
 
-  # System settings
-  system = {
-    autoUpgrade = {
-      enable = true;
-      dates = "daily";
-      flake = "${config.users.users.${username}.home}/.dotfiles/nixos";
-      flags = [
-        "--update-input" "nixpkgs"
-      ];
-      allowReboot = false;
-    };
-
-    stateVersion = "25.11";
-  };
-
-  # Garbage collection
-  nix.gc = {
-    automatic = true;
-    dates = "daily";
-    options = "--delete-older-than 7d";
-  };
+  system.stateVersion = "25.11";
 }
