@@ -5,6 +5,6 @@
 
   imports = [
     ./luks-tpm-autounlock.nix
-    ../../modules/niri.nix
+    ../../modules/laptop.nix
   ];
 }
