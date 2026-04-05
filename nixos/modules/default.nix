@@ -78,7 +78,11 @@
 
   # Printing
   services.printing.enable = true;
-  services.printing.drivers = [ pkgs.hplip pkgs.hplipWithPlugin ];
+  services.printing.drivers = [ pkgs.hplip ];
+
+  # Optional: enable HP's proprietary plugin support (needed for some models)
+  hardware.sane.enable = true;        # if you also want scanning
+  hardware.sane.extraBackends = [ pkgs.hplipWithPlugin ];
 
   # Services/programs
   services.flatpak.enable = true;
