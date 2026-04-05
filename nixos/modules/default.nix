@@ -5,6 +5,10 @@ let
   avatar = ./taylor.png;
 in
 {
+  imports = [
+    ./components/custom-tela-icons.nix
+  ];
+
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
