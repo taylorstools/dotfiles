@@ -3,7 +3,7 @@
 {
   imports = [
     ./components/custom-tela-icons.nix
-    ./components/profile-picture.nix
+    ./components/user.nix
   ];
 
   # Bootloader
@@ -59,16 +59,6 @@
       PermitRootLogin = "no";
     };
   };
-
-  # User
-  users.users.${username} = {
-    isNormalUser = true;
-    description = "Taylor";
-    extraGroups = [ "networkmanager" "wheel" "input" ];
-  };
-
-  # Sudo
-  security.sudo.wheelNeedsPassword = false;
 
   # Allow unfree
   nixpkgs.config.allowUnfree = true;
