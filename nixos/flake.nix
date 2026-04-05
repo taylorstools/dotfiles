@@ -8,6 +8,7 @@
   outputs = { self, nixpkgs, ... }:
   let
     system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
 
     mkHost = hostName: nixpkgs.lib.nixosSystem {
       inherit system;
@@ -23,12 +24,19 @@
       ];
     };
 
-    pkgs = import nixpkgs { inherit system; };
+    # Automatically create hosts based on dirs in "hosts" folder
+    hosts = builtins.attrNames (
+      builtins.filterAttrs
+        (_name: type: type == "directory")
+        (builtins.readDir ./hosts)
+    );
   in {
-    nixosConfigurations = {
-      bedroompc = mkHost "bedroompc";
-      taylorpc = mkHost "taylorpc";
-    };
+    nixosConfigurations = builtins.listToAttrs (
+      map (hostName: {
+        name = hostName;
+        value = mkHost hostName;
+      }) hosts
+    );
 
     apps.${system}.bootstrap = {
       type = "app";
