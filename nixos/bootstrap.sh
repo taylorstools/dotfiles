@@ -2,9 +2,14 @@
 
 set -euo pipefail
 
+if [ "$(id -u)" -eq 0 ]; then
+  echo "Error: Script should not be ran with sudo or as root."
+  exit 1
+fi
+
 REPO="https://github.com/taylorstools/dotfiles"
 DOTFILES_DIR="$HOME/.dotfiles"
-GREEN=$'\e[32m'
+GREEN=$'\e[32m'z
 RESET=$'\e[0m'
 
 echo -e "${GREEN}Cloning dotfiles...${RESET}"
