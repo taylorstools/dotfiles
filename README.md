@@ -2,7 +2,7 @@
 Dotfiles for my NixOS systems, managed by [chezmoi](https://github.com/twpayne/chezmoi).
 
 ## Installation script
-Install a minimal NixOS system, boot into it, connect to Wi-Fi with `nmtui`, then run this command to configure the system:
+Install a minimal NixOS system, boot into it, connect to Wi-Fi with `nmtui` if needed, then run this command to configure the system:
 ```sh
 nix run github:taylorstools/dotfiles?dir=nixos#bootstrap --extra-experimental-features "nix-command flakes"
 ```
