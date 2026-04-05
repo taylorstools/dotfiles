@@ -5,6 +5,7 @@
     ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
     ./components/git.nix
+    ./components/printing.nix
     ./components/ssh.nix
     ./components/user.nix
   ];
@@ -75,17 +76,6 @@
       };
     };
   };
-
-  # Printing
-  services.printing.enable = true;
-  services.printing.drivers = [ pkgs.hplip ];
-
-  # Optional: enable HP's proprietary plugin support (needed for some models)
-  hardware.sane.enable = true;        # if you also want scanning
-  hardware.sane.extraBackends = [ pkgs.hplipWithPlugin ];
-  services.avahi.enable = true;
-  services.avahi.nssmdns4 = true;   # allows .local mDNS resolution
-  services.avahi.openFirewall = true;
 
   # Services/programs
   services.flatpak.enable = true;
