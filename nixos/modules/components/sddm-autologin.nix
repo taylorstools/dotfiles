@@ -9,7 +9,7 @@ in
     sddm.enable = true;
     autoLogin = {
       enable = true;
-      user = ${username};
+      user = username;
     };
   };
 }
