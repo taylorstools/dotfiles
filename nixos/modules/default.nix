@@ -1,12 +1,9 @@
 { config, pkgs, lib, ... }:
 
-let
-  username = "taylor";
-  avatar = ./components/assets/taylor.png;
-in
 {
   imports = [
     ./components/custom-tela-icons.nix
+    ./components/profile-picture.nix
   ];
 
   # Bootloader
@@ -55,16 +52,6 @@ in
     alsa.support32Bit = true;
     pulse.enable = true;
   };
-
-  systemd.tmpfiles.rules = [
-    "d /var/lib/AccountsService/icons 0755 root root -"
-
-    # Link icon into place (store path -> runtime path)
-    "L+ /var/lib/AccountsService/icons/${username} - - - - ${avatar}"
-
-    # Create AccountsService user file
-    "f+ /var/lib/AccountsService/users/${username} 0600 root root - [User]\\nIcon=/var/lib/AccountsService/icons/${username}\\n"
-  ];
 
   services.openssh = {
     enable = true;
