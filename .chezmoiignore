@@ -3,3 +3,13 @@ nixos/
 nixos/**
 refind/
 refind/**
+
+// taylorpc specific dotfiles
+{{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
+  .config/DankMaterialShell
+{{- end }}
+
+// HTPC specific dotfiles
+{{- if ne .chezmoi.hostname "taylorpc" }}
+  .config/DankMaterialShell
+{{- end }}
