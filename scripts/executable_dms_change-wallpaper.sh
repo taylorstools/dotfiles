@@ -4,7 +4,6 @@ set -euo pipefail
 
 WALLPAPER_DIR="$HOME/Wallpapers"
 CURRENT_WALLPAPER="$(dms ipc call wallpaper get || true)"
-EFFECTS_WALLPAPER="$HOME/.config/.EffectsWallpaper.png"
 
 FIND_ARGS=(
   "$WALLPAPER_DIR"
