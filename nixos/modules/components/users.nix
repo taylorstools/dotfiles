@@ -14,10 +14,6 @@ in
   # Passwordless sudo
   security.sudo.wheelNeedsPassword = false;
 
-  # Disable root login
-  users.mutableUsers = false;
-  users.users.root.hashedPassword = "!";
-
   # Profile picture
   systemd.tmpfiles.rules = [
     "d /var/lib/AccountsService/icons 0755 root root -"
