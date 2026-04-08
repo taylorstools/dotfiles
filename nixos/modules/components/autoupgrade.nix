@@ -8,6 +8,7 @@ in
   system.autoUpgrade = {
     enable = true;
     dates = "daily";
+    persistent = true;
     flake = "${config.users.users.${username}.home}/.dotfiles/nixos";
     flags = [
       "--update-input" "nixpkgs"
