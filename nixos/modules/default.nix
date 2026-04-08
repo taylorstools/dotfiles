@@ -7,26 +7,21 @@
     ./components/git.nix
     ./components/printing.nix
     ./components/ssh.nix
-    ./components/user.nix
+    ./components/users.nix
   ];
 
-  # Allow unfree
   nixpkgs.config.allowUnfree = true;
 
-  # Nix features
   nix.settings.experimental-features = [ "flakes" "nix-command" ];
 
-  # Bootloader
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
     timeout = 1;
   };
 
-  # Kernel
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  # Time zone
   time.timeZone = "America/Phoenix";
 
   # Locale
@@ -43,7 +38,6 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Networking
   networking.networkmanager.enable = true;
 
   # Power management
@@ -52,7 +46,7 @@
   # Disable X11
   services.xserver.enable = false;
 
-  # Audio (PipeWire)
+  # PipeWire
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -62,7 +56,6 @@
     pulse.enable = true;
   };
 
-  # Bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -77,14 +70,17 @@
     };
   };
 
-  # Services/programs
-  services.flatpak.enable = true;
-  services.samba.enable = true;
-  services.gvfs.enable = true;
-  programs.firefox.enable = true;
-  programs.bash.enable = true;
+  services = {
+    flatpak.enable = true;
+    samba.enable = true;
+    gvfs.enable = true;
+  };
 
-  # Packages
+  programs = {
+    firefox.enable = true;
+    bash.enable = true;
+  };
+
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
     chezmoi
@@ -103,7 +99,6 @@
     zoxide
   ];
 
-  # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
     inter

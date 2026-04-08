@@ -1,9 +1,13 @@
 { config, pkgs, ... }:
 
 {
-  services.gnome.gnome-keyring.enable = true;
+  imports = [
+    ./keyd.nix
+  ];
 
   programs.niri.enable = true;
+
+  services.gnome.gnome-keyring.enable = true;
 
   environment.systemPackages = with pkgs; [
     brightnessctl

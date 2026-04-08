@@ -2,15 +2,21 @@
 
 {  
   # Printing
-  services.printing.enable = true;
-  services.printing.drivers = [ pkgs.hplip ];
+  services.printing = {
+    enable = true;
+    drivers = [ pkgs.hplip ];
+  };
 
   # Scanning
-  hardware.sane.enable = true;
-  hardware.sane.extraBackends = [ pkgs.hplipWithPlugin ];
+  hardware.sane = {
+    enable = true;
+    extraBackends = [ pkgs.hplipWithPlugin ];
+  };
 
   # Automatic discovery
-  services.avahi.enable = true;
-  services.avahi.nssmdns4 = true;
-  services.avahi.openFirewall = true;
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
 }
