@@ -9,7 +9,7 @@ fi
 
 REPO="https://github.com/taylorstools/dotfiles"
 DOTFILES_DIR="$HOME/.dotfiles"
-GREEN=$'\e[32m'z
+GREEN=$'\e[32m'
 RESET=$'\e[0m'
 
 echo -e "${GREEN}Cloning dotfiles...${RESET}"
