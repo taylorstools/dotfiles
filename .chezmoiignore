@@ -6,7 +6,7 @@ refind/**
 
 // taylorpc specific dotfiles
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
-  .config/DankMaterialShell
+  //.config/autostart
 {{- end }}
 
 // HTPC specific dotfiles
