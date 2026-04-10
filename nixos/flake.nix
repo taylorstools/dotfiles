@@ -49,6 +49,15 @@
           text = builtins.readFile ./bootstrap.sh;
         }}/bin/bootstrap";
       };
+
+      unstable-switch = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "unstable-switch";
+          runtimeInputs = [ pkgs.nix pkgs.gum ];
+          text = builtins.readFile ./unstable-switch.sh;
+        }}/bin/unstable-switch";
+      };
     };
   };
 }
