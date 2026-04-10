@@ -173,21 +173,22 @@ fi
 # ---------------------------------------------------------------------------
 # Helper: run a command as the target user inside the chroot.
 # nixos-enter automatically bind-mounts /proc, /sys, /dev, etc.
+# runuser is used instead of su — it doesn't require PAM authentication,
+# which is unavailable inside a chroot.
 # ---------------------------------------------------------------------------
 run_as_user() {
-  # We pass the command as a single quoted string to su -c so that the
-  # shell inside the chroot expands $HOME correctly for that user.
   nixos-enter --root "$MOUNT_POINT" -- \
-    su -l "$USERNAME" -c "$*"
+    runuser -l "$USERNAME" -c "$*"
 }
 
 # ---------------------------------------------------------------------------
-# Update the Nix flake (as the user, so ~/.config/nix/... is respected)
+# Update the Nix flake from the live ISO directly — no chroot needed,
+# and avoids daemon/auth issues. DOTFILES_HOST is the path on the ISO side.
 # ---------------------------------------------------------------------------
 echo
 echo -e "${GREEN}Updating Nix flake...${RESET}"
-run_as_user "nix --extra-experimental-features 'nix-command flakes' \
-  flake update --flake '$DOTFILES_CHROOT/nixos'"
+nix --extra-experimental-features "nix-command flakes" \
+  flake update --flake "$DOTFILES_HOST/nixos"
 
 # ---------------------------------------------------------------------------
 # Apply system configuration (nixos-rebuild must run as root in the chroot)
