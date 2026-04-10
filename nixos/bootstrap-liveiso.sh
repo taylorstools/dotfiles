@@ -31,7 +31,7 @@ echo
 
 read -rp "Enter the root partition (e.g. /dev/sda2, /dev/nvme0n1p2): " ROOT_PART
 
-read -rp "Enter the EFI/boot partition (leave blank to skip): " EFI_PART
+read -rp "Enter the EFI/boot partition (leave blank if none): " EFI_PART
 EFI_PART="${EFI_PART:-}"
 
 read -rp "EFI mount point inside the system [/boot]: " EFI_MOUNT_REL
@@ -195,8 +195,24 @@ nix --extra-experimental-features "nix-command flakes" \
 # ---------------------------------------------------------------------------
 echo
 echo -e "${GREEN}Applying system configuration...${RESET}"
+
+# Verify the EFI partition is mounted — the bootloader installer requires it.
+if [ -n "$EFI_PART" ]; then
+  EFI_MOUNT_ABS="$MOUNT_POINT$EFI_MOUNT_REL"
+  if ! mountpoint -q "$EFI_MOUNT_ABS"; then
+    echo "Error: $EFI_MOUNT_ABS is not mounted. Mounting $EFI_PART now..."
+    mkdir -p "$EFI_MOUNT_ABS"
+    mount "$EFI_PART" "$EFI_MOUNT_ABS"
+  fi
+elif ! mountpoint -q "$MOUNT_POINT$EFI_MOUNT_REL"; then
+  echo "Warning: No EFI partition was provided and $EFI_MOUNT_REL is not mounted."
+  echo "If your system uses systemd-boot or GRUB in EFI mode, bootloader installation will fail."
+  read -rp "Continue anyway? [y/N]: " CONTINUE_ANYWAY
+  [[ "${CONTINUE_ANYWAY:-n}" =~ ^[yY] ]] || exit 1
+fi
+
 nixos-enter --root "$MOUNT_POINT" -- \
-  nixos-rebuild switch --flake "$DOTFILES_CHROOT/nixos#$HOST" \
+  nixos-rebuild boot --flake "$DOTFILES_CHROOT/nixos#$HOST" \
     --option sandbox false
 
 # ---------------------------------------------------------------------------
