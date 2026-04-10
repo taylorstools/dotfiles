@@ -38,11 +38,40 @@ read -rp "EFI mount point inside the system [/boot]: " EFI_MOUNT_REL
 EFI_MOUNT_REL="${EFI_MOUNT_REL:-/boot}"
 
 # ---------------------------------------------------------------------------
+# Unlock LUKS if the root partition is encrypted
+# ---------------------------------------------------------------------------
+LUKS_NAME="cryptroot"
+MOUNT_SOURCE="$ROOT_PART"
+
+if cryptsetup isLuks "$ROOT_PART" 2>/dev/null; then
+  echo
+  echo -e "${GREEN}LUKS encryption detected on $ROOT_PART.${RESET}"
+
+  # Re-use an already-open mapping if present (e.g. user ran this twice)
+  if [ -e "/dev/mapper/$LUKS_NAME" ]; then
+    echo "Mapper /dev/mapper/$LUKS_NAME already exists, re-using it."
+  else
+    cryptsetup luksOpen "$ROOT_PART" "$LUKS_NAME"
+  fi
+
+  MOUNT_SOURCE="/dev/mapper/$LUKS_NAME"
+
+  # Close the LUKS device after unmounting in cleanup
+  cleanup() {
+    echo
+    echo "Cleaning up mounts..."
+    umount -R "$MOUNT_POINT" 2>/dev/null || true
+    cryptsetup luksClose "$LUKS_NAME" 2>/dev/null || true
+  }
+  trap cleanup EXIT
+fi
+
+# ---------------------------------------------------------------------------
 # Mount the installed system
 # ---------------------------------------------------------------------------
 echo
-echo -e "${GREEN}Mounting $ROOT_PART -> $MOUNT_POINT...${RESET}"
-mount "$ROOT_PART" "$MOUNT_POINT"
+echo -e "${GREEN}Mounting $MOUNT_SOURCE -> $MOUNT_POINT...${RESET}"
+mount "$MOUNT_SOURCE" "$MOUNT_POINT"
 
 if [ -n "$EFI_PART" ]; then
   EFI_MOUNT_ABS="$MOUNT_POINT$EFI_MOUNT_REL"
@@ -175,16 +204,16 @@ run_as_user "chezmoi init --apply '$DOTFILES_CHROOT' --force"
 # ---------------------------------------------------------------------------
 echo
 echo -e "${GREEN}Setting user directories...${RESET}"
-run_as_user "$HOME/scripts/update-user-dirs.sh"
+run_as_user "\$HOME/scripts/update-user-dirs.sh"
 
 echo
-run_as_user "$HOME/scripts/luks-tpm-autounlock.sh --hostname '$HOST'"
+run_as_user "\$HOME/scripts/luks-tpm-autounlock.sh --hostname '$HOST'"
 
 case "$REFIND_ANSWER" in
   [yY]|[yY][eE][sS])
     echo
     echo -e "${GREEN}Configuring rEFInd...${RESET}"
-    run_as_user "$HOME/scripts/rEFInd/nix_install-refind.sh"
+    run_as_user "\$HOME/scripts/rEFInd/nix_install-refind.sh"
     ;;
 esac
 
@@ -205,9 +234,10 @@ REBOOT_ANSWER="${REBOOT_ANSWER:-y}"
 
 case "$REBOOT_ANSWER" in
   [yY]|[yY][eE][sS])
-    # Disable the cleanup trap — we unmount explicitly before rebooting
+    # Disable the cleanup trap — we unmount and close LUKS explicitly before rebooting
     trap - EXIT
     umount -R "$MOUNT_POINT" 2>/dev/null || true
+    cryptsetup luksClose "$LUKS_NAME" 2>/dev/null || true
     reboot
     ;;
   *)
