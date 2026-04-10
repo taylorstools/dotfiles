@@ -175,16 +175,16 @@ run_as_user "chezmoi init --apply '$DOTFILES_CHROOT' --force"
 # ---------------------------------------------------------------------------
 echo
 echo -e "${GREEN}Setting user directories...${RESET}"
-run_as_user "~/scripts/update-user-dirs.sh"
+run_as_user "$HOME/scripts/update-user-dirs.sh"
 
 echo
-run_as_user "~/scripts/luks-tpm-autounlock.sh --hostname '$HOST'"
+run_as_user "$HOME/scripts/luks-tpm-autounlock.sh --hostname '$HOST'"
 
 case "$REFIND_ANSWER" in
   [yY]|[yY][eE][sS])
     echo
     echo -e "${GREEN}Configuring rEFInd...${RESET}"
-    run_as_user "~/scripts/rEFInd/nix_install-refind.sh"
+    run_as_user "$HOME/scripts/rEFInd/nix_install-refind.sh"
     ;;
 esac
 
