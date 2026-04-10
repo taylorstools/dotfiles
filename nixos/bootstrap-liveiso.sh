@@ -196,7 +196,8 @@ nix --extra-experimental-features "nix-command flakes" \
 echo
 echo -e "${GREEN}Applying system configuration...${RESET}"
 nixos-enter --root "$MOUNT_POINT" -- \
-  nixos-rebuild switch --flake "$DOTFILES_CHROOT/nixos#$HOST"
+  nixos-rebuild switch --flake "$DOTFILES_CHROOT/nixos#$HOST" \
+    --option sandbox false
 
 # ---------------------------------------------------------------------------
 # Apply dotfiles with chezmoi (as user)
