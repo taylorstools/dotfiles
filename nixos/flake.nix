@@ -39,24 +39,26 @@
       }) hosts
     );
 
-    # Create bootstrap script app
-    apps.${system}.bootstrap = {
-      type = "app";
-      program = "${pkgs.writeShellApplication {
-        name = "bootstrap";
-        runtimeInputs = [ pkgs.nix pkgs.git pkgs.chezmoi pkgs.gum ];
-        text = builtins.readFile ./bootstrap.sh;
-      }}/bin/bootstrap";
-    };
+    apps.${system} = {
+      # Create bootstrap script app
+      bootstrap = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "bootstrap";
+          runtimeInputs = [ pkgs.nix pkgs.git pkgs.chezmoi pkgs.gum ];
+          text = builtins.readFile ./bootstrap.sh;
+        }}/bin/bootstrap";
+      };
 
-    # Create bootstrap script app (run in live ISO)
-    apps.${system}.bootstrap-liveiso = {
-      type = "app";
-      program = "${pkgs.writeShellApplication {
-        name = "bootstrap-liveiso";
-        runtimeInputs = [ pkgs.nix pkgs.git pkgs.chezmoi pkgs.gum ];
-        text = builtins.readFile ./bootstrap-liveiso.sh;
-      }}/bin/bootstrap-liveiso";
+      # Create bootstrap script app (run in live ISO)
+      bootstrap-liveiso = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "bootstrap-liveiso";
+          runtimeInputs = [ pkgs.nix pkgs.git pkgs.chezmoi pkgs.gum ];
+          text = builtins.readFile ./bootstrap-liveiso.sh;
+        }}/bin/bootstrap-liveiso";
+      };
     };
   };
 }
