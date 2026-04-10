@@ -47,9 +47,14 @@ if cryptsetup isLuks "$ROOT_PART" 2>/dev/null; then
   echo
   echo -e "${GREEN}LUKS encryption detected on $ROOT_PART.${RESET}"
 
-  # Re-use an already-open mapping if present (e.g. user ran this twice)
-  if [ -e "/dev/mapper/$LUKS_NAME" ]; then
-    echo "Mapper /dev/mapper/$LUKS_NAME already exists, re-using it."
+  # Check if the partition is already open under any mapper name
+  EXISTING_MAPPING=$(dmsetup deps -o devname 2>/dev/null \
+    | awk -F'[: ()]' -v dev="$(basename "$ROOT_PART")" \
+        '$0 ~ dev { print $1 }' | head -n1)
+
+  if [ -n "$EXISTING_MAPPING" ]; then
+    echo "Partition is already unlocked as /dev/mapper/$EXISTING_MAPPING, re-using it."
+    LUKS_NAME="$EXISTING_MAPPING"
   else
     cryptsetup luksOpen "$ROOT_PART" "$LUKS_NAME"
   fi
