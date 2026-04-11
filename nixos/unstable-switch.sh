@@ -88,8 +88,14 @@ prompt BOOT_PART "EFI/boot partition (e.g. /dev/sda1, /dev/nvme0n1p1)"
 ROOT_DEV="$ROOT_PART"
 
 if $LUKS_ENCRYPTED; then
-  if mapper_active "$LUKS_NAME"; then
-    warn "LUKS mapper /dev/mapper/$LUKS_NAME already exists, skipping unlock."
+  # Check if this partition is already mapped under any name
+  EXISTING_MAPPER=$(dmsetup deps -o devname 2>/dev/null \
+    | awk -F'[:(]' -v dev="$(basename "$ROOT_PART")" '$2 ~ dev {print $1}' \
+    | tr -d ' ' | head -n1)
+
+  if [[ -n "$EXISTING_MAPPER" ]]; then
+    warn "Already mapped as /dev/mapper/$EXISTING_MAPPER, skipping unlock."
+    LUKS_NAME="$EXISTING_MAPPER"
   else
     info "Unlocking LUKS partition $ROOT_PART..."
     cryptsetup luksOpen "$ROOT_PART" "$LUKS_NAME" \
