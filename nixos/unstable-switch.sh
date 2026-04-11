@@ -89,9 +89,7 @@ ROOT_DEV="$ROOT_PART"
 
 if $LUKS_ENCRYPTED; then
   # Check if this partition is already mapped under any name
-  EXISTING_MAPPER=$(dmsetup deps -o devname 2>/dev/null \
-    | awk -F'[:(]' -v dev="$(basename "$ROOT_PART")" '$2 ~ dev {print $1}' \
-    | tr -d ' ' | head -n1)
+  EXISTING_MAPPER=$(lsblk -lno NAME "$ROOT_PART" 2>/dev/null | tail -n +2 | head -n1)
 
   if [[ -n "$EXISTING_MAPPER" ]]; then
     warn "Already mapped as /dev/mapper/$EXISTING_MAPPER, skipping unlock."
