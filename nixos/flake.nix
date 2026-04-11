@@ -50,6 +50,7 @@
         }}/bin/bootstrap";
       };
 
+      # Script to switch to unstable branch within live ISO after install
       unstable-switch = {
         type = "app";
         program = "${pkgs.writeShellApplication {
