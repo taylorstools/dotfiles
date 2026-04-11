@@ -53,7 +53,6 @@ fi
 # ===== Enroll TPM into LUKS device =====
 
 if [[ "$ENABLE" == true ]]; then
-  echo ""
   DEVICE=$(
     nix-shell -p tpm2-tools gum --run '
       set -e
