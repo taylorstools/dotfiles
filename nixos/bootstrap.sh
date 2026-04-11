@@ -44,6 +44,7 @@ HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose the host for th
 
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
+  echo
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
