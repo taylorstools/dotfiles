@@ -72,7 +72,7 @@ sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
 
 echo ""
 gum log --level info "Applying dotfiles with chezmoi..."
-chezmoi init --apply "$DOTFILES_DIR" --force
+chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
 
 # ===== Set user directories =====
 
