@@ -8,12 +8,13 @@ LUKS_NAME="rescue-cryptroot"
 
 die() { gum log --level error "$*"; exit 1; }
 
-# Heading
-
 gum style \
   --border double --border-foreground 39 \
   --padding "1 4" --margin "1 0" \
-  --bold "NixOS Rescue — Switch to Unstable"
+  --bold "NixOS - Switch to Unstable"
+
+gum style \
+  --bold "Must be run from NixOS live ISO!"
 
 # ===== Select partition =====
 
