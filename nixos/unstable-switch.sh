@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 MOUNT_ROOT="/mnt"
@@ -6,14 +7,14 @@ LUKS_NAME="rescue-cryptroot"
 
 die() { gum log --level error "$*"; exit 1; }
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# Heading
 
 gum style \
   --border double --border-foreground 39 \
   --padding "1 4" --margin "1 0" \
   --bold "NixOS Rescue — Switch to Unstable"
 
-# ── Partition selection ───────────────────────────────────────────────────────
+# ===== Select partition =====
 
 # Build a list of block devices for gum to display
 BLOCK_DEVICES=$(lsblk -lno NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT \
@@ -32,7 +33,7 @@ BOOT_PART=$(echo "$BLOCK_DEVICES" \
   | awk '{print $1}')
 [[ -b "$BOOT_PART" ]] || die "Not a block device: $BOOT_PART"
 
-# ── Unlock LUKS if needed ─────────────────────────────────────────────────────
+# ===== Unlock LUKS =====
 
 ROOT_DEV="$ROOT_PART"
 
@@ -61,7 +62,7 @@ if sudo cryptsetup isLuks "$ROOT_PART" 2>/dev/null; then
   ROOT_DEV="/dev/mapper/$LUKS_NAME"
 fi
 
-# ── Mount root ────────────────────────────────────────────────────────────────
+# ===== Mount root partition =====
 
 if mountpoint -q "$MOUNT_ROOT" 2>/dev/null || grep -q " $MOUNT_ROOT " /proc/mounts 2>/dev/null; then
   gum log --level warn "$MOUNT_ROOT already mounted, skipping."
@@ -70,7 +71,7 @@ else
   sudo mount "$ROOT_DEV" "$MOUNT_ROOT" || die "Failed to mount root partition."
 fi
 
-# ── Mount boot ────────────────────────────────────────────────────────────────
+# ===== Mount boot partition =====
 
 BOOT_MOUNT="$MOUNT_ROOT/boot"
 sudo mkdir -p "$BOOT_MOUNT"
@@ -82,7 +83,7 @@ else
   sudo mount "$BOOT_PART" "$BOOT_MOUNT" || die "Failed to mount boot partition."
 fi
 
-# ── Summary + confirm ─────────────────────────────────────────────────────────
+# ===== Summary and confirm =====
 
 echo ""
 gum style --foreground 39 "  Root : $ROOT_DEV -> $MOUNT_ROOT"
@@ -91,7 +92,8 @@ echo ""
 
 gum confirm "Proceed to nixos-enter and switch to unstable?" || { echo "Aborted."; exit 0; }
 
-# ── Patch configuration.nix ───────────────────────────────────────────────────
+# ===== Patch configuration.nix =====
+# Logrotate needs to be disabled or else everything dies
 
 NIXOS_CONFIG="$MOUNT_ROOT/etc/nixos/configuration.nix"
 
@@ -104,7 +106,7 @@ else
   gum log --level info "Patched configuration.nix"
 fi
 
-# ── nixos-enter and rebuild ───────────────────────────────────────────────────
+# ===== nixos-enter and rebuild =====
 
 gum log --level info "Entering chroot and switching to unstable..."
 echo ""
