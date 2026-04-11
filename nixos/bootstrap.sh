@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+clear
 
 if [ "$(id -u)" -eq 0 ]; then
   gum log --level error "Script should not be ran with sudo or as root."

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+clear
 
 MOUNT_ROOT="/mnt"
 LUKS_NAME="rescue-cryptroot"
