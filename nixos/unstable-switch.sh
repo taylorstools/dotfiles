@@ -158,7 +158,7 @@ nixos-enter --root "$MOUNT_ROOT" -- bash -c '
   echo "[*] Updating channels..."
   nix-channel --update
   echo "[*] Rebuilding system (this may take a while)..."
-  nixos-rebuild switch --upgrade
+  nixos-rebuild boot --upgrade
   echo ""
   echo "[✓] Done! You can now reboot into your unstable system."
 '
