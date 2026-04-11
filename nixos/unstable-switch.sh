@@ -30,10 +30,10 @@ list_block_devices() {
 prompt() {
   local var="$1" msg="$2" default="${3:-}"
   if [[ -n "$default" ]]; then
-    read -rp "$(echo -e "${YELLOW}?${NC} ${msg} [${default}]: ")" "$var"
+    read -rp "$(echo -e "${YELLOW}?${NC} ${msg} [${default}]: ")" "${var?}"
     [[ -z "${!var}" ]] && eval "$var='$default'"
   else
-    read -rp "$(echo -e "${YELLOW}?${NC} ${msg}: ")" "$var"
+    read -rp "$(echo -e "${YELLOW}?${NC} ${msg}: ")" "${var?}"
   fi
 }
 
