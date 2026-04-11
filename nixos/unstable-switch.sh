@@ -22,6 +22,7 @@ gum style \
 BLOCK_DEVICES=$(lsblk -lno NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT \
   | awk '$3 == "part" {printf "/dev/%s\t%s\t%s\t%s\n", $1, $2, $4, $5}')
 
+echo
 gum log --level info "Select your root partition:"
 ROOT_PART=$(echo "$BLOCK_DEVICES" \
   | gum choose --header "Root partition (your encrypted/main OS partition)" \
