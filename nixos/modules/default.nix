@@ -88,6 +88,7 @@
     eza
     fastfetch
     google-chrome
+    gum
     imagemagick
     kitty
     mission-center
