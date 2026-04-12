@@ -59,6 +59,16 @@
           text = builtins.readFile ./unstable-switch.sh;
         }}/bin/unstable-switch";
       };
+
+      # Script to fix mismatched LUKS UUIDs within live ISO after install
+      fix-luks = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "fix-luks";
+          runtimeInputs = [ pkgs.nix pkgs.gum ];
+          text = builtins.readFile ./fix-luks.sh;
+        }}/bin/fix-luks";
+      };
     };
   };
 }
