@@ -22,7 +22,7 @@ nix run github:taylorstools/dotfiles?dir=nixos#bootfix --extra-experimental-feat
 
 A script will run which will check your installed system's `hardware-configuration.nix` for a UUID mismatch in this part of the config:
 
-```sh
+```nix
 boot.initrd.luks.devices."luks-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX".device = "/dev/disk/by-uuid/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX";
 ```
 
