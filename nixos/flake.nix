@@ -62,13 +62,13 @@
 
       # Script to fix mismatched LUKS UUIDs within live ISO after install
       # This still seems to be a bug: https://github.com/NixOS/nixpkgs/issues/62444
-      fix-luks = {
+      bootfix = {
         type = "app";
         program = "${pkgs.writeShellApplication {
-          name = "fix-luks";
+          name = "bootfix";
           runtimeInputs = [ pkgs.nix pkgs.gum ];
-          text = builtins.readFile ./fix-luks.sh;
-        }}/bin/fix-luks";
+          text = builtins.readFile ./bootfix.sh;
+        }}/bin/bootfix";
       };
     };
   };
