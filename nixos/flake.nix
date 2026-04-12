@@ -61,6 +61,7 @@
       };
 
       # Script to fix mismatched LUKS UUIDs within live ISO after install
+      # This still seems to be a bug: https://github.com/NixOS/nixpkgs/issues/62444
       fix-luks = {
         type = "app";
         program = "${pkgs.writeShellApplication {
