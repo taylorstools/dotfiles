@@ -19,6 +19,7 @@
     loupe
     nwg-look
     python3
+    slurp
     wlogout
     wlr-which-key
     xdg-desktop-portal
