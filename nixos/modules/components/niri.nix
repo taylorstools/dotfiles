@@ -14,6 +14,7 @@
     fd
     fzf
     gparted
+    grim
     hypridle
     loupe
     nwg-look

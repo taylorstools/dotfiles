@@ -3,8 +3,8 @@
 {
   boot.initrd.systemd.enable = true;
 
-  boot.initrd.luks.devices."luks-58db4817-c1ce-49cd-841d-98255ac1dbac" = {
-    device = "/dev/disk/by-uuid/58db4817-c1ce-49cd-841d-98255ac1dbac";
+  boot.initrd.luks.devices."luks-4431368b-431b-4edf-9690-a8a7abb59452" = {
+    device = "/dev/disk/by-uuid/4431368b-431b-4edf-9690-a8a7abb59452";
     crypttabExtraOpts = [ "tpm2-device=auto" ];
   };
 }

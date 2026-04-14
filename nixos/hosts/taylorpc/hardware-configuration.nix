@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [ (modulesPath + "/hardware/cpu/intel-npu.nix")
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "uas" "sd_mod" ];
@@ -14,14 +15,14 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/mapper/luks-58db4817-c1ce-49cd-841d-98255ac1dbac";
+    { device = "/dev/mapper/luks-4431368b-431b-4edf-9690-a8a7abb59452";
       fsType = "ext4";
     };
 
-  boot.initrd.luks.devices."luks-58db4817-c1ce-49cd-841d-98255ac1dbac".device = "/dev/disk/by-uuid/58db4817-c1ce-49cd-841d-98255ac1dbac";
+  boot.initrd.luks.devices."luks-4431368b-431b-4edf-9690-a8a7abb59452".device = "/dev/disk/by-uuid/4431368b-431b-4edf-9690-a8a7abb59452";
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/CDB2-6A28";
+    { device = "/dev/disk/by-uuid/3019-22C3";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
@@ -29,5 +30,6 @@
   swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  hardware.cpu.intel.npu.enable = true;
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
