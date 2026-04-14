@@ -19,6 +19,7 @@
     loupe
     nwg-look
     python3
+    satty
     slurp
     wlogout
     wlr-which-key
