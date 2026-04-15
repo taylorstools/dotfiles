@@ -55,8 +55,6 @@ chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
 
 # ===== Set user directories =====
 
-echo ""
-gum log --level info "Setting user directories..."
 "$HOME/scripts/update-user-dirs.sh"
 
 # ===== LUKS TPM autounlock =====
