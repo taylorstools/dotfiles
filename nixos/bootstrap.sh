@@ -61,8 +61,6 @@ gum log --level info "Setting user directories..."
 
 # ===== LUKS TPM autounlock =====
 
-echo ""
-gum log --level info "Configuring LUKS TPM autounlock..."
 "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
 
 # ===== Copy hardware configuration =====
