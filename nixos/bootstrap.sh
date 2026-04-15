@@ -48,6 +48,24 @@ if [[ "$HOST" == "taylorpc" ]]; then
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
+# ===== Apply dotfiles =====
+
+echo ""
+gum log --level info "Applying dotfiles with chezmoi..."
+chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
+
+# ===== Set user directories =====
+
+echo ""
+gum log --level info "Setting user directories..."
+"$HOME/scripts/update-user-dirs.sh"
+
+# ===== LUKS TPM autounlock =====
+
+echo ""
+gum log --level info "Configuring LUKS TPM autounlock..."
+"$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
+
 # ===== Copy hardware configuration =====
 
 if [ -f "/etc/nixos/hardware-configuration.nix" ]; then
@@ -69,24 +87,6 @@ nix --extra-experimental-features "nix-command flakes" \
 echo ""
 gum log --level info "Applying system configuration..."
 sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
-
-# ===== Apply dotfiles =====
-
-echo ""
-gum log --level info "Applying dotfiles with chezmoi..."
-chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
-
-# ===== Set user directories =====
-
-echo ""
-gum log --level info "Setting user directories..."
-"$HOME/scripts/update-user-dirs.sh"
-
-# ===== LUKS TPM autounlock =====
-
-echo ""
-gum log --level info "Configuring LUKS TPM autounlock..."
-"$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST"
 
 # ===== rEFInd =====
 
