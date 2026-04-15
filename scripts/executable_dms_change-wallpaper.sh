@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-WALLPAPER_DIR="$HOME/Wallpapers"
+WALLPAPER_DIR="$HOME/.dotfiles/Wallpapers"
 CURRENT_WALLPAPER="$(dms ipc call wallpaper get || true)"
 
 FIND_ARGS=(
