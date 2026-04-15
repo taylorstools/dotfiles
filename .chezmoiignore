@@ -3,6 +3,8 @@ nixos/
 nixos/**
 refind/
 refind/**
+Wallpapers/
+Wallpapers/**
 
 // taylorpc specific dotfiles
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}

@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-mkdir -p "$HOME/Wallpapers"
+mkdir -p "$HOME/.dotfiles/Wallpapers"
 EFFECTSWALLPAPEROUTPUT="$HOME/.config/.EffectsWallpaper.png"
 STATE="/tmp/dms-current-wallpaper"
 
