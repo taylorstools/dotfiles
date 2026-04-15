@@ -9,6 +9,7 @@ fi
 
 HOSTNAME=""
 ENABLE=""
+NOREBUILD=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -24,6 +25,10 @@ while [[ $# -gt 0 ]]; do
       ENABLE=false
       shift
       ;;
+    --norebuild)
+      NOREBUILD=true
+      shift
+      ;;
     *)
       gum log --level error "Unknown argument: $1"
       exit 1
@@ -32,7 +37,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$HOSTNAME" ]]; then
-  gum log --level error "Usage: $0 --hostname <hostname> [--enable|--disable]"
+  gum log --level error "Usage: $0 --hostname <hostname> [--enable|--disable] [--norebuild]"
   exit 1
 fi
 
@@ -159,10 +164,15 @@ gum log --level info "Edited configuration.nix for $HOSTNAME to $action luks-tpm
 
 # ===== Rebuild system =====
 
-echo ""
-gum log --level info "Rebuilding system configuration..."
-sudo nixos-rebuild switch --flake "$HOME/.dotfiles/nixos#$HOSTNAME"
+[[ "$NOREBUILD" == true ]] || {
+  echo ""
+  gum log --level info "Rebuilding system configuration..."
+  sudo nixos-rebuild switch --flake "$HOME/.dotfiles/nixos#$HOSTNAME"
+}
 
 action=$($ENABLE && echo "ENABLED" || echo "DISABLED")
 echo ""
 gum log --level info "LUKS TPM auto-unlock $action."
+[[ "$NOREBUILD" == true ]] && {
+  gum log --level info "Configuration rebuild required before changes go into effect."
+}
