@@ -77,7 +77,6 @@ gum style \
   --padding "1 4" --margin "1 0" \
   --bold "Flake Update & Rebuild"
 
-echo ""
 gum log --level info "Updating Nix flake..."
 nix --extra-experimental-features "nix-command flakes" \
   flake update --flake "$DOTFILES_DIR/nixos"
