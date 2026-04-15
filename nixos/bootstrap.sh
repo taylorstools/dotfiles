@@ -72,6 +72,11 @@ fi
 
 # ===== Update flake =====
 
+gum style \
+  --border double --border-foreground 39 \
+  --padding "1 4" --margin "1 0" \
+  --bold "Flake Update & Rebuild"
+
 echo ""
 gum log --level info "Updating Nix flake..."
 nix --extra-experimental-features "nix-command flakes" \
@@ -92,7 +97,7 @@ fi
 # ===== Done =====
 
 echo ""
-gum log --level info "Bootstrap complete."
+gum log --level info "BOOTSTRAP SCRIPT COMPLETE."
 
 if gum confirm "Reboot now?"; then
   [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
