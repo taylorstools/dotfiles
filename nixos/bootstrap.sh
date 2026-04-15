@@ -50,7 +50,6 @@ fi
 
 # ===== Apply dotfiles =====
 
-echo ""
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
 
@@ -91,8 +90,6 @@ sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
 # ===== rEFInd =====
 
 if [[ "$REFIND_ANSWER" == "y" ]]; then
-  echo ""
-  gum log --level info "Configuring rEFInd..."
   "$HOME/scripts/rEFInd/nix_install-refind.sh"
 fi
 
