@@ -16,6 +16,7 @@
     gparted
     grim
     hypridle
+    libinput-gestures
     loupe
     nwg-look
     python3
