@@ -9,6 +9,8 @@
 
   services.gnome.gnome-keyring.enable = true;
 
+  systemd.packages = [ pkgs.libinput-gestures ];
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     fd
@@ -16,7 +18,6 @@
     gparted
     grim
     hypridle
-    libinput-gestures
     loupe
     nwg-look
     python3
