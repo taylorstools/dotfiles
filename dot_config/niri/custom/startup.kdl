@@ -9,3 +9,6 @@ spawn-sh-at-startup "swaybg -m fill -i \"$HOME/.config/.EffectsWallpaper.png\" &
 
 // Script that makes background image for hyprlock and wlogout
 spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
+
+// libinput-gestures
+spawn-sh-at-startup "systemctl --user start libinput-gestures &"
