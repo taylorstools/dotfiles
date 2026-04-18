@@ -93,6 +93,7 @@
     kitty
     mission-center
     posy-cursors
+    python
     qbittorrent
     vscodium
     wget
