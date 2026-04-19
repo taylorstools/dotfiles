@@ -54,10 +54,7 @@
     pulse.enable = true;
   };
 
-  networking = {
-    wireguard.enable = true;
-    networkmanager.enable = true;
-  };
+  networking.networkmanager.enable = true;
 
   hardware.bluetooth = {
     enable = true;
@@ -100,7 +97,6 @@
     qbittorrent
     vscodium
     wget
-    wireguard-tools
     xdg-user-dirs
     zoxide
   ];
