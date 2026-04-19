@@ -7,6 +7,8 @@
     ./components/xbox-controller.nix
   ];
 
+  programs.steam.enable = true;
+
   environment.systemPackages = with pkgs; [
     jellyfin-media-player
   ];
