@@ -38,8 +38,6 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  networking.networkmanager.enable = true;
-
   # Power management
   services.upower.enable = true;
 
@@ -55,6 +53,11 @@
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+
+  networking = {
+    wireguard.enable = true;
+    networkmanager.enable = true;
+  }
 
   hardware.bluetooth = {
     enable = true;
