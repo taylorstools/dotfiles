@@ -100,6 +100,7 @@
     qbittorrent
     vscodium
     wget
+    wireguard-tools
     xdg-user-dirs
     zoxide
   ];
