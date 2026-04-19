@@ -77,8 +77,9 @@
   };
 
   programs = {
-    firefox.enable = true;
     bash.enable = true;
+    firefox.enable = true;
+    kdeconnect.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
