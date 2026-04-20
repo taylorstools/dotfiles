@@ -9,6 +9,53 @@ Wallpapers{,/**}
   .config/kde.org{,/**}
   .config/kdedefaults{,/**}
   .config/Kvantum{,/**}
+  .config/kconf_updaterc
+  .config/plasmashellrc
+  .config/kscreenlockerrc
+  .config/ksplashrc
+  .config/kwalletrc
+  .config/kmenueditrc
+  .config/katevirc
+  .config/kdeglobals
+  .config/dolphinrc
+  .config/kded6rc
+  .config/ktimezonedrc
+  .config/kplymouththemeinstallerrc
+  .config/gtkrc
+  .config/ksmserverrc
+  .config/plasmarc
+  .config/kactivitymanagerdrc
+  .config/kcminputrc
+  .config/plasma-org.kde.plasma.desktop-appletsrc
+  .config/katerc
+  .config/kiorc
+  .config/kded5rc
+  .config/kwinoutputconfig.json
+  .config/konsolesshconfig
+  .config/kactivitymanagerd-statsrc
+  .config/kglobalshortcutsrc
+  .config/konsolerc
+  .config/kwinrc
+  .config/klaunchrc
+  .config/kate-externaltoolspluginrc
+  .local/share/aurorae{,/**}
+  .local/share/color-schemes{,/**}
+  .local/share/dolphin{,/**}
+  .local/share/kactivitymanagerd{,/**}
+  .local/share/kate{,/**}
+  .local/share/kded6{,/**}
+  .local/share/keyrings{,/**}
+  .local/share/klipper{,/**}
+  .local/share/knewstuff3{,/**}
+  .local/share/konsole{,/**}
+  .local/share/kpeoplevcard{,/**}
+  .local/share/kplymouththemeinstaller{,/**}
+  .local/share/kwalletd{,/**}
+  .local/share/kxmlgui5{,/**}
+  .local/share/plasma{,/**}
+  .local/share/plasma-systemmonitor{,/**}
+  .local/share/sddm{,/**}
+  .local/share/wallpapers{,/**}
 {{- end }}
 
 # HTPC specific dotfiles (files to ignore on taylorpc)

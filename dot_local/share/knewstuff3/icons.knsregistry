@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE khotnewstuff3>
+<hotnewstuffregistry>
+ <stuff category="132">
+  <name>Tela-icon-theme</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>vinceliuice</author>
+  <homepage>https://store.kde.org/p/1279924</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>93</rating>
+  <downloads>1923908</downloads>
+  <installedfile>/home/taylor/.local/share/icons/Tela-grey-light/*</installedfile>
+  <installedfile>/home/taylor/.local/share/icons/Tela-grey/*</installedfile>
+  <installedfile>/home/taylor/.local/share/icons/Tela-grey-dark/*</installedfile>
+  <id>1279924</id>
+  <releasedate>2025-10-25</releasedate>
+  <summary>&lt;p>&lt;b> Tela Icon Theme &lt;/b>&lt;br />A flat colorful Design icon theme&lt;br />You can use this theme on all popular desktops&lt;br />------------------------------&lt;br />&lt;b> Full circular version &lt;/b>&lt;br />Tela-circle: &lt;br />&lt;a href="https://www.gnome-look.org/p/1359276/">&lt;/a>&lt;a href="https://www.gnome-look.org/p/1359276/">https://www.gnome-look.org/p/1359276/&lt;/a>&lt;br />------------------------------&lt;br />&lt;b> Based on &lt;/b>&lt;br />1. numix-icon-theme-circle: &lt;br />&lt;a href="https://github.com/numixproject/numix-icon-theme-circle">&lt;/a>&lt;a href="https://github.com/numixproject/numix-icon-theme-circle">https://github.com/numixproject/numix-icon-theme-circle&lt;/a>&lt;br />2. papirus-icon-theme: &lt;br />&lt;a href="https://github.com/PapirusDevelopmentTeam/papirus-icon-theme">&lt;/a>&lt;a href="https://github.com/PapirusDevelopmentTeam/papirus-icon-theme">https://github.com/PapirusDevelopmentTeam/papirus-icon-theme&lt;/a>&lt;br />3. paper-icon-theme: &lt;br />&lt;a href="https://github.com/snwh/paper-icon-theme">&lt;/a>&lt;a href="https://github.com/snwh/paper-icon-theme">https://github.com/snwh/paper-icon-theme&lt;/a>&lt;br />------------------------------&lt;br />&lt;br />&lt;b> Supported desktops &lt;/b>&lt;br />&lt;br />&lt;b>1.&lt;/b> Gnome&lt;br />&lt;b>2.&lt;/b> Kde Plasma&lt;br />&lt;b>3.&lt;/b> Budgie&lt;br />&lt;b>4.&lt;/b> Cinnamon&lt;br />&lt;b>5.&lt;/b> Elementary Pantheon&lt;br />&lt;b>6.&lt;/b> Xfce4&lt;br />&lt;b>7.&lt;/b> Mate&lt;br />&lt;b>...&lt;/b>&lt;br />&lt;br />------------------------------&lt;br />&lt;b>Github&lt;/b>: &lt;a href="https://github.com/vinceliuice/Tela-icon-theme">&lt;/a>&lt;a href="https://github.com/vinceliuice/Tela-icon-theme">https://github.com/vinceliuice/Tela-icon-theme&lt;/a>&lt;br />&lt;br />------------------------------&lt;br />&lt;b>Donation&lt;/b>: &lt;a href="https://www.paypal.me/vinceliuice">&lt;/a>&lt;a href="https://www.paypal.me/vinceliuice">https://www.paypal.me/vinceliuice&lt;/a>&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1279924/84511eab3c160a3a10e87db30ee4ae8a70c1.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1279924/84511eab3c160a3a10e87db30ee4ae8a70c1.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc2MTQxNDU2OSwibyI6IjEiLCJzIjoiOWVmZGRiMDY1NzJlZTI5ZjQzMjRhNjI0OTg3ZDIwYmE0NzZmMDBkNDYwYmRjYzdlYWM3ZWM4YmYyOGUxZDc0ZTFmNzhkZDhiNDVlNDM3NWVjMDQxNTRlOGZkY2RiZTFiNTA1YWI3MDI2MTI2ZWZiNDg1NTU3M2U5NGEwY2NjOTUiLCJ0IjoxNzY0NDkyNjM5LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.lgDVILJ4iF7bShigHqTIJ_L07aZjzb6uH-pr2yKO9_0/Tela-grey.tar.xz</payload>
+  <tags>original-product,gplv3,icon-theme,linux,unix</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="132">
+  <name>Tela circle icon theme</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>vinceliuice</author>
+  <homepage>https://store.kde.org/p/1359276</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>93</rating>
+  <downloads>941166</downloads>
+  <installedfile>/home/taylor/.local/share/icons/Tela-circle-nord/*</installedfile>
+  <installedfile>/home/taylor/.local/share/icons/Tela-circle-nord-dark/*</installedfile>
+  <installedfile>/home/taylor/.local/share/icons/Tela-circle-nord-light/*</installedfile>
+  <id>1359276</id>
+  <releasedate>2025-11-03</releasedate>
+  <summary>&lt;p>&lt;b> Tela circle Icon Theme &lt;/b>&lt;br />Circle version icon theme of Tela: &lt;a href="https://www.pling.com/p/1279924">&lt;/a>&lt;a href="https://www.pling.com/p/1279924">https://www.pling.com/p/1279924&lt;/a>&lt;br />You can use this theme on all popular desktops&lt;br />------------------------------&lt;br />&lt;br />&lt;b> Supported desktops &lt;/b>&lt;br />&lt;br />&lt;b>1.&lt;/b> Gnome&lt;br />&lt;b>2.&lt;/b> Kde Plasma&lt;br />&lt;b>3.&lt;/b> Budgie&lt;br />&lt;b>4.&lt;/b> Cinnamon&lt;br />&lt;b>5.&lt;/b> Elementary Pantheon&lt;br />&lt;b>6.&lt;/b> Xfce4&lt;br />&lt;b>7.&lt;/b> Mate&lt;br />&lt;b>...&lt;/b>&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1359276/5520e8b1cdab2b3acbf43ea76c0ebd62ab3c.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1359276/5520e8b1cdab2b3acbf43ea76c0ebd62ab3c.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc2MjE0ODA2NywibyI6IjEiLCJzIjoiNjM0ZDBiZmY4ZGRjOTU3NTk0OWIxNjY1ZWIyYjdjOGVhZWZlYzk0OTIwYWQwN2FlZTdlMGNlYTI2YzM1ZWY5NTE0ZDE0NmRkZjNlMTYyZjE5NTM5ZDgxYzMwZDhlZDk0N2E5OWUxNGU5YWIxNDYzYTQ5ODY3ZTIwYmExMzBlZTciLCJ0IjoxNzY0NTMzNjE2LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.8GvMs7Vp1_0iHxNO9c8B47Ym_uOCr0_yEAf1yIT2paI/Tela-circle-nord.tar.xz</payload>
+  <tags>unix,gplv3,icon-theme,linux</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="132">
+  <name>Papirus</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>x-varlesh-x</author>
+  <homepage>https://store.kde.org/p/1166289</homepage>
+  <licence></licence>
+  <version>20250501</version>
+  <rating>93</rating>
+  <downloads>2438711</downloads>
+  <installedfile>/home/taylor/.local/share/icons/Papirus-Light/*</installedfile>
+  <installedfile>/home/taylor/.local/share/icons/Papirus-Dark/*</installedfile>
+  <installedfile>/home/taylor/.local/share/icons/Papirus/*</installedfile>
+  <id>1166289</id>
+  <releasedate>2025-05-02</releasedate>
+  <summary>&lt;p>Papirus - it's free and open source SVG-based icon theme for Linux with material and flat style.&lt;br />All elements have clear distinction and outlines. Also main feature - it's jucy colors tone.&lt;br />&lt;br />Papirus support hardcode-tray script:&lt;br />https://github.com/bil-elmoussaoui/Hardcode-Tray/&lt;br />&lt;br />Folder Color support:&lt;br />http://foldercolor.tuxfamily.org&lt;br />&lt;br />Dolphin Folder Color support:&lt;br />https://github.com/audoban/dolphin-folder-color&lt;br />&lt;br />Papirus Folders script:&lt;br />https://github.com/PapirusDevelopmentTeam/papirus-folders&lt;br />&lt;br />And KDE color scheme:&lt;br />https://techbase.kde.org/Development/Tutorials/Plasma5/ThemeDetails#Colors&lt;br />&lt;br />ANDROID Version available here:&lt;br />https://www.pling.com/p/1662847/&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/43/80/78/1166289/ad0f14c12a71f289fa3632bf2835f6bb9d251967c1665cb661f60931346ab663c838.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/43/80/78/1166289/ad0f14c12a71f289fa3632bf2835f6bb9d251967c1665cb661f60931346ab663c838.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc0NjE2NjQxMCwibyI6IjEiLCJzIjoiMDdjZjg4NjA1NmMzZjgwMWE2M2ExYTY4OTE5ZGZlNDdkMDZjNmEwMzFjOWUwMTE0OGJiOTE2NWRmMGJhZDY1ZGMyMGY0NTA0MWMzNzczYWVmZDM4YWFmNGFjODlmNTE3ZTUwMzY1MTBiMzJkMzMwNTMyMWU4YjVmNDYzMDhhMTEiLCJ0IjoxNzY0NTMzNTQyLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.9-8k2D3nZhkVPgdga4kq2VtI5Q4vgbCYqJse2GgjXCM/papirus-icon-theme-nordic-folders.tar.xz</payload>
+  <tags>icon-theme,icons,gplv3,papirus,original-product,linux,material,unix</tags>
+  <status>installed</status>
+ </stuff>
+</hotnewstuffregistry>

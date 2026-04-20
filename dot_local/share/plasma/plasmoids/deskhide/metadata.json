@@ -1,0 +1,31 @@
+{
+	"KPackageStructure": "Plasma/Applet",
+	"KPlugin": {
+		"Authors": [
+			{
+				"Email": "claudemods101@gmail.com",
+				"Name": "aaron dsouza"
+			}
+		],
+		"BugReportUrl": "https://github.com/Zren/plasma-applet-win7showdesktop/issues",
+		"Category": "Windows and Tasks",
+		"Description": "Show the Plasma desktop",
+		"Description[ar]": "أظهر سطح مكتب بلازما",
+		"Description[es]": "Mostrar el escritorio de Plasma",
+		"Description[fr]": "Afficher le bureau Plasma",
+		"Description[nl]": "Toont het Plasma-bureaublad",
+		"Description[pt_BR]": "Mostra a área de trabalho do Plasma",
+		"FormFactors": [
+			"desktop"
+		],
+		"Icon": "user-desktop",
+		"Id": "deskhide",
+		"License": "GPL-2.0+",
+		"Name": "deskhide",
+		"Website": "https://github.com/Zren/plasma-applet-win7showdesktop"
+	},
+	"X-Plasma-API-Minimum-Version": "6.0",
+	"X-Plasma-Provides": [
+		"org.kde.plasma.windowmanagement"
+	]
+}
