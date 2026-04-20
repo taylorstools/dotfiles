@@ -1,0 +1,4 @@
+[TimeZones]
+LocalZone=America/Phoenix
+ZoneinfoDir=/etc/zoneinfo
+Zonetab=/etc/zoneinfo/zone.tab

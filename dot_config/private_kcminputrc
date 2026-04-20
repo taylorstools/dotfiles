@@ -1,0 +1,15 @@
+[Libinput][0][0][antimicrox Mouse Emulation]
+NaturalScroll=true
+
+[Libinput][1267][12652][ELAN0735:00 04F3:316C Mouse]
+NaturalScroll=true
+
+[Libinput][1267][12652][ELAN0735:00 04F3:316C Touchpad]
+NaturalScroll=true
+
+[Libinput][1739][53186][SYNA311C:00 06CB:CFC2 Touchpad]
+NaturalScroll=true
+
+[Mouse]
+cursorSize=48
+cursorTheme=Posy_Cursor_Mono
