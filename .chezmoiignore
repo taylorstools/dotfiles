@@ -6,7 +6,7 @@ Wallpapers{,/**}
 
 # taylorpc specific dotfiles (files to ignore on bedroompc & livingroompc)
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
-  #.config/autostart
+  .config/kde.org
 {{- end }}
 
 # HTPC specific dotfiles (files to ignore on taylorpc)
