@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE khotnewstuff3>
+<hotnewstuffregistry>
+ <stuff category="107">
+  <name>Posy's improved cursor</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>simtrami</author>
+  <homepage>https://store.kde.org/p/1795042</homepage>
+  <licence></licence>
+  <version>1.6</version>
+  <rating>84</rating>
+  <downloads>47705</downloads>
+  <installedfile>/home/taylor/.icons/Posy_Cursor_Mono/*</installedfile>
+  <id>1795042</id>
+  <releasedate>2022-09-14</releasedate>
+  <summary>&lt;p>This is a Linux port of Michiel de Boer's amazing cursor design. He presented it in a brilliant video in 2018: "Posy - Mouse Cursor History (and why I made my own)" (https://www.youtube.com/watch?v=YThelfB2fvg)&lt;br />The original work can be found on his website, michieldb.nl, as well as installers for Windows: http://www.michieldb.nl/other/cursors/&lt;br />&lt;br />As the cursor designs were originally made for Windows, they are hard to find for Linux.&lt;br />Also, keep in mind Linux cursors do not work the same as Windows', therefore you might find some scenarios where the displayed cursor do not seem appropriate. I am aware of this, though, not being the original designer, I cannot do much. I tried fixing most cases by reusing already existing cursors.&lt;br />Feel free to leave a comment here and eventually make a PR if you found a weird scenario like this.&lt;br />&lt;br />This cursor includes the following sets:&lt;br />- Posy's Cursor (upscalable to 125% and 175%)&lt;br />- Posy's Cursor Black (upscalable to 125% and 175%)&lt;br />- Posy's Cursor Mono&lt;br />- Posy's Cursor Mono Black&lt;br />- Posy's Cursor Strokeless&lt;br />&lt;br />Some of them use cursors form the Extras set: the black (classic size) and mono black ones use the black hand and the inverted move cursor.&lt;br />The cursor sets are available in many sizes: 32, 48, 64, 96 and 128 pixels.&lt;br />&lt;br />1.6 UPDATE:&lt;br />Added the 125% and 175% white and black sets.&lt;br />&lt;br />1.5 UPDATE:&lt;br />Removed spaces and single quotes in the files to prevent breaking and misbehavior.&lt;br />Many thanks to @SoftExpert and @aironsouza on GitHub for warning me about this!&lt;br />&lt;br />1.4 UPDATE:&lt;br />Fix wrong cursor being displayed on foreground wait (the pointer with the hourglass was shown instead of the big hourglass).&lt;br />Thanks to @imreverse for letting me know!&lt;br />Also added a few new cursor aliases which should help to reduce the event of an old cursor being displayed.&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/66/12/89/1795042/posy-s-improved-cursor.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/66/12/89/1795042/posy-s-improved-cursor.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTY2MzE0OTM1OSwibyI6IjEiLCJzIjoiYzY1M2FhMDllNmEyYjRiZThjNGVhZDllNjIzZDk5MTM4MDk1Y2JjN2Q0YWVhZmYyMjgyYWM2YTViMzkxYjI2NTBlMzhkZTM4ZjFiNTFhOTY3ZGNjM2U5YzRjNTU4OTMzZDUzZDM1ZTRhNjAxNzlhMDUxZGY5YTU1NDhjMDZjMjEiLCJ0IjoxNzY0NDkxNjkyLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.3_e3GixcFNJ_YcCKYlDd6F6UG6BB7nXuE-9rhBiiHUE/posy-s-cursor-mono.tar.xz</payload>
+  <tags>linux,unix,efi,cursor,boer</tags>
+  <status>installed</status>
+ </stuff>
+</hotnewstuffregistry>

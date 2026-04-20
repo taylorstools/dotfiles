@@ -1,0 +1,32 @@
+README.md
+nixos{,/**}
+refind{,/**}
+Wallpapers{,/**}
+
+// taylorpc specific dotfiles
+{{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
+  //.config/autostart
+{{- end }}
+
+// HTPC specific dotfiles
+{{- if ne .chezmoi.hostname "taylorpc" }}
+  .config/autostart/libinput-gestures.desktop
+  .config/DankMaterialShell{,/**}
+  .config/environment.d{,/**}
+  .config/hypr{,/**}
+  .config/matugen{,/**}
+  .config/niri{,/**}
+  .config/nwg-look{,/**}
+  .config/dconf
+  .config/VSCodium{,/**}
+  .config/Thunar{,/**}
+  .config/wlogout{,/**}
+  .config/wlr-which-key{,/**}
+  .config/xdg-desktop-portal{,/**}
+  .config/xfce4{,/**}
+  .config/xsettingsd{,/**}
+  .config/libinput-gestures.conf
+  .icons/default/index.theme
+  .local/share/applications/Snipping Tool.desktop
+  .local/state/DankMaterialShell{,/**}
+{{- end }}

@@ -1,0 +1,1 @@
+chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force

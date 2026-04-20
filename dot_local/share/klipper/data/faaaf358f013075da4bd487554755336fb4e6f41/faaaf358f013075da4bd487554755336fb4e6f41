@@ -1,0 +1,40 @@
+[taylor@nixos:~]$ nix search nixpkgs smbclient
+* legacyPackages.x86_64-linux.haskellPackages.sys-auth-smbclient (2.0.0.0)
+  Auth with smbclient command
+
+* legacyPackages.x86_64-linux.haskellPackages.yesod-auth-smbclient (2.0.0.0)
+  Authentication plugin for Yesod using smbclient
+evaluation warning: 'dockerfile-language-server-nodejs' has been renamed to 'dockerfile-language-server'
+
+* legacyPackages.x86_64-linux.php82Extensions.smbclient (1.1.2)
+  PHP wrapper for libsmbclient
+
+* legacyPackages.x86_64-linux.php83Extensions.smbclient (1.1.2)
+  PHP wrapper for libsmbclient
+
+* legacyPackages.x86_64-linux.php84Extensions.smbclient (1.1.2)
+  PHP wrapper for libsmbclient
+
+* legacyPackages.x86_64-linux.phpExtensions.smbclient (1.1.2)
+  PHP wrapper for libsmbclient
+evaluation warning: beets-stable was aliased to beets, since upstream releases are frequent nowadays
+evaluation warning: beets-unstable was aliased to beets, since upstream releases are frequent nowadays
+evaluation warning: 'f3d' now build with egl support by default, so `f3d_egl` is deprecated, consider using 'f3d' instead.
+
+* legacyPackages.x86_64-linux.python312Packages.pysmbc (1.0.25.1)
+  Libsmbclient binding for Python
+evaluation warning: beets-stable was aliased to beets, since upstream releases are frequent nowadays
+evaluation warning: beets-unstable was aliased to beets, since upstream releases are frequent nowadays
+evaluation warning: 'f3d' now build with egl support by default, so `f3d_egl` is deprecated, consider using 'f3d' instead.
+
+* legacyPackages.x86_64-linux.python313Packages.pysmbc (1.0.25.1)
+  Libsmbclient binding for Python
+evaluation warning: 'hsa-amd-aqlprofile-bin' has been replaced by 'aqlprofile'.
+
+* legacyPackages.x86_64-linux.smbclient-ng (2.1.7)
+  Tool to interact with SMB shares
+evaluation warning: 'system' has been renamed to/replaced by 'stdenv.hostPlatform.system'
+evaluation warning: 'ethersync' has been renamed to 'teamtype'
+evaluation warning: Please replace 'pure-lua' with 'moonlight-nvim' as this name was an error
+evaluation warning: windows.mingw_w64_pthreads is deprecated, windows.pthreads should be preferred
+

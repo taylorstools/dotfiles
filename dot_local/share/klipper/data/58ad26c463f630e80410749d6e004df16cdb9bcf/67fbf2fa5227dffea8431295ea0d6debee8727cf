@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<span style="font-family:monospace"><span style="font-weight:bold;color:#54ff54;background-color:#ffffff;">[taylor@nixos:~]$</span><span style="color:#000000;background-color:#ffffff;"> nix search nixpkgs firefox</span><span style="color:#000000;background-color:#ffffff;">
+</span><br><span style="font-weight:bold;color:#ff5454;background-color:#ffffff;">error:</span><span style="color:#000000;background-color:#ffffff;"> experimental Nix feature '</span><span style="font-weight:bold;color:#ff54ff;background-color:#ffffff;">nix-command</span><span style="color:#000000;background-color:#ffffff;">' is disabled; add '--extra-experimental-features </span><span style="font-weight:bold;color:#ff54ff;background-color:#ffffff;">nix-command</span><span style="color:#000000;background-color:#ffffff;">' to enable it</span><span style="color:#000000;background-color:#ffffff;">
+</span><br>
+<br><span style="font-weight:bold;color:#54ff54;background-color:#ffffff;">[taylor@nixos:~]$</span><span style="color:#000000;background-color:#ffffff;"> </span><br><span style="color:#000000;background-color:#ffffff;">
+</span><br></span></body>
+</html>

@@ -1,0 +1,4 @@
+[taylor@nixos:~]$ nix search nixpkgs firefox
+error: experimental Nix feature 'nix-command' is disabled; add '--extra-experimental-features nix-command' to enable it
+
+[taylor@nixos:~]$ 

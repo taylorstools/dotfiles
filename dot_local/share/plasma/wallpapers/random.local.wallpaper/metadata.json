@@ -1,0 +1,19 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "<adolfo@librepixels.com>",
+                "Name": "Zayronxio"
+            }
+        ],
+        "Category": "",
+        "Description": "random local wallpaper",
+        "Icon": "preferences-desktop-color",
+        "Id": "random.local.wallpaper",
+        "License": "GPLv3+",
+        "Name": "random local wallpaper",
+        "Website": ""
+    },
+    "X-KDE-ParentApp": "org.kde.plasmashell"
+}

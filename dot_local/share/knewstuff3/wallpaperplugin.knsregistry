@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE khotnewstuff3>
+<hotnewstuffregistry>
+ <stuff category="715">
+  <name>Random Local Wallpaper</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>zayronXIO</author>
+  <homepage>https://store.kde.org/p/2278711</homepage>
+  <licence></licence>
+  <version>1.0.1</version>
+  <rating>50</rating>
+  <downloads>3160</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/wallpapers/random.local.wallpaper/</installedfile>
+  <id>2278711</id>
+  <releasedate>2025-07-13</releasedate>
+  <summary>&lt;p>Random local wallpaper.&lt;br />Select a local folder with your wallpaper collection, and you can choose how often you want the wallpaper to be updated.&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/24/01/13/2278711/localrand.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/24/01/13/2278711/localrand.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc0NDc0NDM3MiwibyI6IjEiLCJzIjoiODk3ZjM4ZTg3MDM1YjFhMzk4NTRkNWZhNDE1MDMyNDMzYWIxNzFiZWJhMWE4MDFhNjY4ZTJiZTI3ZGY4OGM5NTI2ZDgxZTZkNmIxZjhiNDdiYmRhZjFhOTA4MjNkZWU4Mjg4YzBmZGZhODY1ZjUzZDEyZGUzNDVjNTA2NGY2M2IiLCJ0IjoxNzY1MDk1MDUwLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.LuAfz_o1AFJvNXPUNo2we9r17dZHAF0PeUeZTSxTt3s/random.local.wallpaper.tar.xz</payload>
+  <tags>kde,extension,wallpaper-plugin,unix,linux,macos,agplv3,4k,original-product,plasma##majorversion=6,plasma</tags>
+  <status>installed</status>
+ </stuff>
+</hotnewstuffregistry>

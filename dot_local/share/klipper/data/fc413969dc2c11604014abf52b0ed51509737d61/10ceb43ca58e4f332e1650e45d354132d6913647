@@ -1,0 +1,1 @@
+<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre>flatpak<span class="w"> </span>remote-add<span class="w"> </span>--if-not-exists<span class="w"> </span>flathub<span class="w"> </span>https://dl.flathub.org/repo/flathub.flatpakrepo</pre>

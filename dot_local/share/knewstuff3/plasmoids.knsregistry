@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE khotnewstuff3>
+<hotnewstuffregistry>
+ <stuff category="706">
+  <name>kara</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>dhruv8sh</author>
+  <homepage>https://store.kde.org/p/2200890</homepage>
+  <licence></licence>
+  <version>v0.7.3</version>
+  <rating>64</rating>
+  <downloads>8325</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/plasmoids/org.dhruv8sh.kara/</installedfile>
+  <id>2200890</id>
+  <releasedate>2024-10-21</releasedate>
+  <summary>&lt;p>A super-configurable desktop indicator/pager for KDE Plasma 6.&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/62/52/79/2200890/screenshot-20240707-045916.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/62/52/79/2200890/screenshot-20240707-045916.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcyOTQ3NDcxOCwibyI6IjEiLCJzIjoiOTllYWNjMzc0ZDBiOGNmN2U5NmM4NTFjMGRmZmViMDEwNjliMjM2ODU4MmM1ZGZlMjkzMzliMGE2YzhhOGRkZjliYmZmZTdiNTMyNzUwMzQ1ZDhiYTc5ZDNmZTNlYjgyYjVhMWU5MDRiZWYxODQ1ODdmMmI1NWIzNjlmODE4ZTEiLCJ0IjoxNzY0NTczODAxLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.kSXycfm9gjPz-bJA186rVcPzN5CX3EgoG2rRXwrMPRY/v0.7.3.tar.gz</payload>
+  <tags>original-product,pager,plasma##majorversion=6,plasma,kdeplasma,linux,workspace,widget,kde,gplv3,extension,desktops,unix,switcher</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="706">
+  <name>Compact Shutdown</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>chickenlegs</author>
+  <homepage>https://store.kde.org/p/2303282</homepage>
+  <licence></licence>
+  <version>1.2</version>
+  <rating>50</rating>
+  <downloads>477</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/plasmoids/org.kde.plasma.compact-shutdown/</installedfile>
+  <id>2303282</id>
+  <releasedate>2025-07-28</releasedate>
+  <summary>&lt;p>Compact shutdown applet for Plasma Desktop providing the following actions:&lt;br />- Logout&lt;br />- Lock Screen&lt;br />- Suspend&lt;br />- Hibernate&lt;br />- Reboot&lt;br />- Shutdown&lt;br />&lt;br />Some distributions will require the creation of a symbolic link to qdbus for this applet to function.&lt;br />e.g. sudo ln -s /usr/lib64/qt5/bin/qdbus /usr/bin/qdbus&lt;br />&lt;br />In some cases qdbus-qt5 may need to installed.&lt;br />e.g. sudo apt install qdbus-qt5&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/82/76/36/2303282/screenshot-20250720-174805.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/82/76/36/2303282/screenshot-20250720-174805.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc1MzY4NDg1OSwibyI6IjEiLCJzIjoiMTVjYjZkNjUwMWQ3MTlhMWM0ODdiOWEyODI2ODc2YzM5MGZjMzhlODAyYmZhNDdiYmYyN2QyMzk0M2YwNmU2NDYyNDM3ZTFjOTk3NzZiMGM3MzcyYTYwNzU0NzZjZTg4OThjMzdkMTJiNTkwNGY3YWUxNmFiNGQ3NDlhNjg3NDciLCJ0IjoxNzY0OTk5MTE5LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.0dvFkCVeolUwsD9YEPUltVmuWT4C5G07xUVhDhDZyrU/org.kde.plasma.compact-shutdown.zip</payload>
+  <tags>extension,efi,kde,gplv3,hibernate,widget,shutdown,unix,linux,lockscreen,logout,reboot,plasma,plasma##majorversion=6</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="709">
+  <name>Simple Customizable Power Menu for KDE</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>dervart</author>
+  <homepage>https://store.kde.org/p/2137217</homepage>
+  <licence></licence>
+  <version>2.0</version>
+  <rating>64</rating>
+  <downloads>3847</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/plasmoids/org.kde.plasma.scpmk/</installedfile>
+  <id>2137217</id>
+  <releasedate>2024-03-13</releasedate>
+  <summary>&lt;p>This is the version for Plasma 6.&lt;br />Because I don&amp;rsquo;t really like my implementation of the version for plasma 5 and its limitation of 10 lines, so I decided to completely redo it. But, because I'm far from normal programming, I took the amazing USwitch widget as a basis https://store.kde.org/p/2135898 and remade it to suit my needs.&lt;br />Special thanks to the author of the original USwitch widget!&lt;br />* adding installed applications to the menu&lt;br />* enable/disable session/power button&lt;br />There is a minor bug. When adding a widget and setting it up, the dimensions are saved without problems. However, after a reboot, if you delete the menu item, the widget's dimensions will remain the same. You will have to delete it again and place it on the panel.&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/75/04/26/2137217/13-03-2024-16-05-04.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/75/04/26/2137217/13-03-2024-16-05-04.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcxMDMyMTUyMCwibyI6IjEiLCJzIjoiMTQyYmY4Njc1MWQ2NTc4NjBlMzE4MjkwZjJiNzA4MjAxNmE2NGRkOGZhNzM2ODc5ODVhYTU3MDYxZmVhZmJlZWU0NGE0YzM1NWU4NzNmNmViYjg0ZDI2MjkwM2ZjMGYzODFlMTg3MTE5ZWQ3YmYwZTBjMGY4NTY5ZGYzNDk2NzAiLCJ0IjoxNzY0OTk5NDYyLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.yCMtE4kCJdSJX4FK8zM7Q8hebYP5NGhvbLiToB1o_QM/org.kde.plasma.scpmk.plasmoid</payload>
+  <tags>kde,gplv2-later,extension,efi,widget,linux,plasma,plasma##majorversion=6,unix</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="706">
+  <name>taskbar buttons</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>claudemods</author>
+  <homepage>https://store.kde.org/p/2193855</homepage>
+  <licence></licence>
+  <version>v1.0</version>
+  <rating>57</rating>
+  <downloads>256</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/plasmoids/com.github.configurable_button/</installedfile>
+  <id>2193855</id>
+  <releasedate>2025-03-20</releasedate>
+  <summary>&lt;p>forked from https://www.pling.com/p/2139541/&lt;br />i removed the spinning gear on the icons its was becoming annoying&lt;br />i will see what else i can do with this&lt;br />but in the mean time enjoy &lt;br />&lt;br />ive just reuploaded the file due to it being broken &lt;br />all tested and it works now&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/76/40/75/2193855/configurablebuttonlogo.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/76/40/75/2193855/configurablebuttonlogo.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcyNDQxMTI5NSwibyI6IjEiLCJzIjoiYmRmOGJlZGY0NmM3NTNlZTY5YzhlZTkyYTllZjNjOTYzZjlhODQ5MmNmY2JlNGEyODU1ODFlZTNjYzE1OGZmOGI0ODUxYjgwNDc2NTgwZjZjYmEwZWY2OWU3NjgxY2JlNzU3MmRhYTFiNDcwY2IzMzhkZDU2YjZhYzkzNTE0YzciLCJ0IjoxNzY1NDM2NzE0LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.Vha-2YHu8-GAIZEYP9FUOfVjKf0gQxVnEUHYG8TLj_s/taskbar-buttons.plasmoid</payload>
+  <tags>plasma##majorversion=6,plasma,widget,linux,efi,extension,kde,gplv3,unix</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="706">
+  <name>deskhide</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>claudemods</author>
+  <homepage>https://store.kde.org/p/2322583</homepage>
+  <licence></licence>
+  <version>v1.0</version>
+  <rating>50</rating>
+  <downloads>1</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/plasmoids/deskhide/</installedfile>
+  <id>2322583</id>
+  <releasedate>2025-09-27</releasedate>
+  <summary>&lt;p>forked from &lt;a href="https://www.pling.com/p/2151247">https://www.pling.com/p/2151247&lt;/a>&lt;br />Win7 Show Desktop [Plasma 6]&lt;br />&lt;br />[deskhide v1.0 27-09-2025]&lt;br />&lt;br />i updated this to work with plasma 6.6 dev since it was broken with this version of kde desktop coming and needed it since i make distributions with this widget&lt;br />&lt;br />install method for plasma 6 install from kde widget store on desktop or download from browser extract and place in /home/$USER/.local/share/plasma/plasmoids/&lt;br /> right click taskbar click add or manage widgets and type deskhide place widget on taskbar &lt;br />or simply right click current hide widget and select show alternatives and select deskhide &lt;br />right again on deskhide and select config deskhide then select minimize all windows and click apply for it to work flawlessly&lt;br />&lt;br />thank you for downloading hope you enjoy&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/76/40/75/2322583/logo.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/76/40/75/2322583/logo.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc1OTAxMTU1MiwibyI6IjEiLCJzIjoiZWU2MjM5ZTkyNjljNTNkMmQ0NjRiODc4ZmU3ZmY2NjE0NjMyNjE0ZGZmMjlhNzQxMDdjMmMwNTc0ZDY0YWZjN2Q1ODc1NjY5YzY3MDY1MTI0MjgxM2IxMjZjNWVlMGU1OTJkYjY0MTk5MGNjZGIyNzNjMGMzZTE4MjQ4NmQzODIiLCJ0IjoxNzY0NDk2OTAyLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.GCi6ATE0r6Jz7K5aNsdOjcMbhDs06wjyS3vEd-U0gkY/deskhide.plasmoid</payload>
+  <tags>gplv3,efi</tags>
+  <status>installed</status>
+ </stuff>
+</hotnewstuffregistry>

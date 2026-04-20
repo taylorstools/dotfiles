@@ -1,0 +1,9 @@
+~ > ls -a /home/taylor/KDEConfig.sd/xdg-config/
+ .             Kvantum                     󰡯 katevirc            󰡯 kiorc                      󰡯 ksmserverrc                              󰡯 plasmarc
+ ..           󰡯 dolphinrc                   󰡯 kcminputrc          󰡯 klaunchrc                  󰡯 ksplashrc                                󰡯 plasmashellrc
+ kate          gtkrc                       󰡯 kconf_updaterc      󰡯 kmenueditrc                󰡯 ktimezonedrc
+ kde.org      󰡯 kactivitymanagerd-statsrc   󰡯 kded5rc             󰡯 konsolerc                  󰡯 kwalletrc
+ kdeconnect   󰡯 kactivitymanagerdrc         󰡯 kded6rc             󰡯 konsolesshconfig            kwinoutputconfig.json
+ kdedefaults  󰡯 kate-externaltoolspluginrc   kdeglobals          󰡯 kplymouththemeinstallerrc  󰡯 kwinrc
+ kitty        󰡯 katerc                      󰡯 kglobalshortcutsrc  󰡯 kscreenlockerrc             plasma-org.kde.plasma.desktop-appletsrc
+~ >

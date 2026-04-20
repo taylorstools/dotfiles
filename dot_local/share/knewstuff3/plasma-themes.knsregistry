@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE khotnewstuff3>
+<hotnewstuffregistry>
+ <stuff category="104">
+  <name>Sweet KDE</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>eliverlara</author>
+  <homepage>https://store.kde.org/p/1294174</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>89</rating>
+  <downloads>247272</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/desktoptheme/Sweet/</installedfile>
+  <id>1294174</id>
+  <releasedate>2025-12-25</releasedate>
+  <summary>&lt;p>A dark and modern theme for Plasma  based on the awesome &lt;a href="https://store.kde.org/p/998869/">Helium&lt;/a> theme.&lt;br />&lt;br />&lt;/p>&lt;h2>&lt;b>&amp;iexcl;IMPORTANT!&lt;/b>&lt;/h2>&lt;br />&lt;b> Hi, if you are really enjoying these themes from me and also from other authors please consider  &lt;a href="https://www.pling.com/support-predefined?section_id=5&amp;amp;amount_predefined=1"> becoming a supporter for the  KDE Themes and Extensions section &lt;/a> , I'm sure that me and others creators would be very grateful with your sponsorship since that help us to  keep mantaining and creating new themes for the community &lt;img src="https://www.pling.com/media/emoticons/happy.png" alt="" />  &lt;/b>&lt;br />&lt;br />&lt;a href="https://www.pling.com/support-predefined?section_id=5&amp;amp;amount_predefined=1">&lt;b> Become a supporter here &lt;/b>&lt;/a>&lt;br />&lt;br />Suggested settings: &lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1294013/">Sweet Kvantum theme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1286856/">Sweet Aurorae theme &lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1294011/">Sweet color scheme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1297008/">Sweet Konsole color scheme &lt;/a>&lt;br />&lt;br />&lt;a href="https://www.pling.com/p/1305251/">Candy icons&lt;/a>&lt;br />&lt;br />&lt;b>- Note -&lt;/b>&lt;br />&lt;br />Firefox: if you are a firefox user, you can give a chance to the &lt;a href="https://addons.mozilla.org/es/firefox/addon/sweet-dark/">sweet-dark&lt;/a> extension for a better looking or try my complete &lt;a href="https://github.com/EliverLara/firefox-sweet-theme">&lt;b>Firefox-Sweet-Theme&lt;/b> &lt;/a>.</summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/36/61/48/1294174/screenshot-20211218-162026.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/36/61/48/1294174/screenshot-20211218-162026.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc0NTYwODk5OSwibyI6IjEiLCJzIjoiNmM2ZDdkMjBhODYyNTI2ZGNkMDkxNGFkMjY3NTkzMzEzY2ExOTQ0OWQ3NjE2YjE3NTA3YmEwYzIyODc5NzBlYjliYTI2MjRmZTQwMjA1MDk3NDBhMmMzYzU5MjNlYzE0YTU4MGQ2YmM1MmFlZDI5NTE2OGIzMDliZjQ4MzE3NGYiLCJ0IjoxNzY2ODE0Mzk0LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.VAEapZk0JDcPrWoXO8DYrRGtp35wYeXu7fVc0Z8MISQ/Sweet.tar.xz</payload>
+  <tags>unix,theme,cc-by-sa,linux,kde,plasma</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="104">
+  <name>Apple MacOS [WhiteSur-dark] plasma</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>vinceliuice</author>
+  <homepage>https://store.kde.org/p/1400409</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>82</rating>
+  <downloads>1</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/desktoptheme/WhiteSur-dark/</installedfile>
+  <id>1400409</id>
+  <releasedate>2025-11-05</releasedate>
+  <summary>&lt;p>MacOS theme for kde plasma&lt;br />-----------------------&lt;br />&lt;b>Kvantum theme:&lt;/b> &lt;a href="https://www.pling.com/p/1398841/">&lt;/a>&lt;a href="https://www.pling.com/p/1398841/">https://www.pling.com/p/1398841/&lt;/a>&lt;br />-----------------------&lt;br />&lt;b>Icon theme:&lt;/b> &lt;a href="https://www.pling.com/p/1405756/">&lt;/a>&lt;a href="https://www.pling.com/p/1405756/">https://www.pling.com/p/1405756/&lt;/a>&lt;br />-----------------------&lt;br />&lt;b>Cursors theme:&lt;/b> &lt;a href="https://www.pling.com/p/1355701/">&lt;/a>&lt;a href="https://www.pling.com/p/1355701/">https://www.pling.com/p/1355701/&lt;/a>&lt;br />-----------------------&lt;br />&lt;b>Wallpaper:&lt;/b> &lt;a href="https://www.pling.com/p/1398833/">&lt;/a>&lt;a href="https://www.pling.com/p/1398833/">https://www.pling.com/p/1398833/&lt;/a>&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1400409/3e7b3166dbee0a004ed4a44a7e17218fbb19.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1400409/3e7b3166dbee0a004ed4a44a7e17218fbb19.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc2MjM1MjIxOSwibyI6IjEiLCJzIjoiMWJhYzU3YzM4OTc2OWE1NDY2MmM0YWJiMDc4MmFjMTg2NmI0NzQyY2E3ZDE5OTUyY2U4ZDgxNDhiN2M2OTFlYjI4NWVjOGVjN2EwMTU2YTFlZTk3YmRiY2Y3OWI0OWNmZTA4NjY4YTdhYmY3MzE5M2RhMjlkYmFkNmE1MDZmYWQiLCJ0IjoxNzY0NTc2NTI5LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.GnDWShpmwpPRnjun50hoGYul6htv4e0FnAPCP968yx0/WhiteSur-dark.tar.gz</payload>
+  <tags>plasma,original-product,unix,theme,kde,gplv3,linux</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="104">
+  <name>Sweet Mars KDE</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>eliverlara</author>
+  <homepage>https://store.kde.org/p/1393498</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>71</rating>
+  <downloads>195235</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/desktoptheme/Sweet-mars/</installedfile>
+  <id>1393498</id>
+  <releasedate>2025-12-23</releasedate>
+  <summary>&lt;p>A dark and modern theme for Plasma.&lt;br />&lt;br />&lt;/p>&lt;h2>&lt;b>&amp;iexcl;IMPORTANT!&lt;/b>&lt;/h2>&lt;br />&lt;b> Hi, if you are really enjoying these themes from me and also from other authors please consider  &lt;a href="https://www.pling.com/support-predefined?section_id=5&amp;amp;amount_predefined=1"> becoming a supporter for the  KDE Themes and Extensions section &lt;/a> , I'm sure that me and others creators would be very grateful with your sponsorship since that help us to  keep mantaining and creating new themes for the community &lt;img src="https://www.pling.com/media/emoticons/happy.png" alt="" />  &lt;/b>&lt;br />&lt;br />&lt;a href="https://www.pling.com/support-predefined?section_id=5&amp;amp;amount_predefined=1">&lt;b> Become a supporter here &lt;/b>&lt;/a>&lt;br />&lt;br />Suggested settings: &lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1294013/">Sweet-Mars Kvantum theme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1393497/">Sweet-Mars Aurorae theme &lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1393486/">Sweet-Mars color scheme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1297008/">Sweet-Mars Konsole color scheme &lt;/a>&lt;br />&lt;br />&lt;a href="https://www.pling.com/p/1305251/">Candy icons&lt;/a>&lt;br />&lt;br />&lt;b>- Note -&lt;/b>&lt;br />&lt;br />Firefox: if you are a firefox user, you can give a chance to  my complete &lt;a href="https://github.com/EliverLara/firefox-sweet-theme">&lt;b>Firefox-Sweet-Theme&lt;/b> &lt;/a>.</summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/36/61/48/1393498/64308f5f8222946f0cc9d786c63d987cf281.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/36/61/48/1393498/64308f5f8222946f0cc9d786c63d987cf281.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTczNjkwNzIwOCwibyI6IjEiLCJzIjoiNTdmMzBiMzI2NmM0NGIwNGE4MGY4MDg2MGZjNjRmMzBiY2E1M2FjNjhkMDZmMWY4Y2YxNTg4NTcxYjFjOTgyODdiZDliN2ViMTZhZDJkMzUwN2M4Y2FkYTk3YmEzYjRiNzc5ZmQ5ZjFiOGNkMWNjNTc1ZTBmMDg1ODlkNTkxMDAiLCJ0IjoxNzY2ODE0Mzk0LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.SHaytkPrqWJMzsESDSCIhsSZUlrZIjWE4Pa9mM54e1g/Sweet-mars.tar.xz</payload>
+  <tags>unix,theme,plasma,gplv3,linux,kde</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="104">
+  <name>Ant-Dark KDE</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>eliverlara</author>
+  <homepage>https://store.kde.org/p/1464321</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>50</rating>
+  <downloads>84810</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/desktoptheme/Ant-Dark/</installedfile>
+  <id>1464321</id>
+  <releasedate>2025-12-26</releasedate>
+  <summary>&lt;p>A dark theme with awesome colors for plasma desktop&lt;br />&lt;br />For better looking please use this theme with  &lt;a href="https://github.com/tsujan/Kvantum/tree/master/Kvantum">Kvantum&lt;/a> engine, you can find the official installation instructions &lt;a href="https://github.com/tsujan/Kvantum/blob/master/Kvantum/INSTALL.md">here&lt;/a>.&lt;br />&lt;br />&lt;b>Suggested setings:&lt;/b> &lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1464317">Ant-Dark Kvantum theme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1464279">Ant-Dark Konsole theme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1464309/">Ant-Dark Aurorae theme &lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1464285/">Ant-Dark colorscheme&lt;/a>&lt;br />&lt;br />&lt;a href="https://store.kde.org/p/1464300/">Ant-Dark sddm&lt;/a>&lt;br />&lt;br />&lt;b>Important&lt;/b>&lt;br />&lt;br />&lt;b> Wallpaper in screenshot &lt;a href="https://www.pexels.com/photo/foamy-wave-of-ocean-washing-rocky-stone-5525886/">here&lt;/a>&lt;/b>&lt;br />&lt;br />&lt;b>Icons showed &lt;a href="https://drive.google.com/file/d/1-lyzP0rAqc3ycprxyOYF0YvJQ0M0vCfv/view?usp=sharing">here&lt;/a> &lt;/b>&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/36/61/48/1464321/90131a63e833e22dfa7a6cda4f577de7cc6f274b2460568f4b3457a364d8cba3ba081.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/36/61/48/1464321/90131a63e833e22dfa7a6cda4f577de7cc6f274b2460568f4b3457a364d8cba3ba081.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTczNjgxMTE2MywibyI6IjEiLCJzIjoiOWQyYWY4NzFiYWY1MDQ5NGYzYzIyMDQ2NmY0ODYwYWQ0MWVkOTRjZTBmNjRmZWUyNWJjNjliOTY1ZjNmMTEwZmE2ZWYwODA0MmY0NDAxOGJhOTMzYmQ3NGIxZmFhZWRiM2ExMzk3NTE4NzYzNTQzZDM4ZGI4NzcxOWExNWM4NmQiLCJ0IjoxNzY2ODE0Mzk0LCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9._2Jg6akoPa_hu_c62R40chPLWLsz97jejY2xlZaIV2w/Ant-Dark.tar.xz</payload>
+  <tags>gplv3,linux,kde,plasma,unix,theme</tags>
+  <status>installed</status>
+ </stuff>
+ <stuff category="104">
+  <name>Layan plasma theme</name>
+  <providerid>api.kde-look.org</providerid>
+  <author>vinceliuice</author>
+  <homepage>https://store.kde.org/p/1325241</homepage>
+  <licence></licence>
+  <version></version>
+  <rating>80</rating>
+  <downloads>0</downloads>
+  <installedfile>/home/taylor/.local/share/plasma/desktoptheme/Layan/</installedfile>
+  <id>1325241</id>
+  <releasedate>2025-11-27</releasedate>
+  <summary>&lt;p>Layan modern and elegant design theme for kde desktop&lt;br />---------------------&lt;br />&lt;b>gtk theme&lt;/b>: Layan&lt;br />&lt;a href="https://www.pling.com/p/1309214/">&lt;/a>&lt;a href="https://www.pling.com/p/1309214/">https://www.pling.com/p/1309214/&lt;/a>&lt;br />---------------------&lt;br />&lt;b>Icon theme&lt;/b>: Tela icon theme&lt;br />&lt;a href="https://www.pling.com/p/1279924/">&lt;/a>&lt;a href="https://www.pling.com/p/1279924/">https://www.pling.com/p/1279924/&lt;/a>&lt;br />---------------------&lt;br />&lt;b>Wallpaper&lt;/b>: Layan&lt;br />&lt;a href="https://www.pling.com/p/1309218/">&lt;/a>&lt;a href="https://www.pling.com/p/1309218/">https://www.pling.com/p/1309218/&lt;/a>&lt;/p></summary>
+  <changelog></changelog>
+  <preview>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1325241/0103cc7287e0a059282b827939062da324ea.png</preview>
+  <previewBig>https://images.pling.com/cache/770x540-4/img/00/00/32/24/44/1325241/0103cc7287e0a059282b827939062da324ea.png</previewBig>
+  <payload>https://files06.pling.com/api/files/download/j/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTc2NDI1MjM2OSwibyI6IjEiLCJzIjoiNmY3YThlYzQyN2FhN2VlYTVlYWMyMThjYmM2YmU0NDZiYWI3NjVhNDJhNGYwMTliZDI5ZDkzNzU5YmRjYTc2YzZmZjdhYjQ4ZWZjYzk0NTMxNDBmZTdiMDdkNWE0M2QxMGViNWNiNDIzNDk3NjRkZjFjNTY0ZTIzNmU4N2M2MmIiLCJ0IjoxNzY0NTc2NjExLCJzdGZwIjpudWxsLCJzdGlwIjoiMTczLjE5LjE0NC45NSJ9.KWVIKCSqsW_T7weAPPEDZzJas7i58J23128SZqXcLaw/Layan.tar.gz</payload>
+  <tags>original-product,plasma,kde,gplv3,linux,unix,theme</tags>
+  <status>installed</status>
+ </stuff>
+</hotnewstuffregistry>
