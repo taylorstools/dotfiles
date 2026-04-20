@@ -1,17 +1,33 @@
+# Files to ignore on all hosts
 README.md
-nixos/
-nixos/**
-refind/
-refind/**
-Wallpapers/
-Wallpapers/**
+nixos{,/**}
+refind{,/**}
+Wallpapers{,/**}
 
-// taylorpc specific dotfiles
+# taylorpc specific dotfiles (files to ignore on bedroompc & livingroompc)
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
-  //.config/autostart
+  #.config/autostart
 {{- end }}
 
-// HTPC specific dotfiles
+# HTPC specific dotfiles (files to ignore on taylorpc)
 {{- if ne .chezmoi.hostname "taylorpc" }}
-  .config/DankMaterialShell
+  .config/autostart/libinput-gestures.desktop
+  .config/DankMaterialShell{,/**}
+  .config/environment.d{,/**}
+  .config/hypr{,/**}
+  .config/matugen{,/**}
+  .config/niri{,/**}
+  .config/nwg-look{,/**}
+  .config/dconf{,/**}
+  .config/VSCodium{,/**}
+  .config/Thunar{,/**}
+  .config/wlogout{,/**}
+  .config/wlr-which-key{,/**}
+  .config/xdg-desktop-portal{,/**}
+  .config/xfce4{,/**}
+  .config/xsettingsd{,/**}
+  .config/libinput-gestures.conf
+  .icons/default/index.theme
+  .local/share/applications/Snipping Tool.desktop
+  .local/state/DankMaterialShell{,/**}
 {{- end }}
