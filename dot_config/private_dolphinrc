@@ -1,0 +1,18 @@
+[ExtractDialog]
+1536x864 screen: Height=540
+1536x864 screen: Width=1024
+DirHistory[$e]=$HOME/builds/
+
+[General]
+Version=202
+ViewPropsTimestamp=2025,11,29,2,20,52.546
+
+[IconsMode]
+PreviewSize=80
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[MainWindow]
+MenuBar=Disabled
