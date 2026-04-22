@@ -1,8 +1,10 @@
+{{ if eq .chezmoi.hostname "taylorpc" -}}
 # Dank color generation
 include dank-tabs.conf
 include dank-theme.conf
 
 # Override DMS background color
+{{ end -}}
 background #000000
 
 # Font Configuration
@@ -14,8 +16,13 @@ bold_italic_font auto
 
 # Window Configuration
 window_padding_width 12
+{{ if eq .chezmoi.hostname "taylorpc" -}}
 hide_window_decorations yes
 background_opacity 0.85
+{{ else -}}
+hide_window_decorations no
+background_opacity 0.9
+{{ end -}}
 dynamic_background_opacity 1
 
 # Behavior
