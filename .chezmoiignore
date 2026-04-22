@@ -3,6 +3,7 @@ README.md
 nixos{,/**}
 refind{,/**}
 Wallpapers{,/**}
+.config/dconf{,/**}
 
 # taylorpc specific dotfiles (files to ignore on bedroompc & livingroompc)
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
