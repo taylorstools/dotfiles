@@ -1,3 +1,4 @@
+{{ if eq .chezmoi.hostname "taylorpc" -}}
 [org/gnome/desktop/interface]
 accent-color='slate'
 color-scheme='prefer-dark'
@@ -20,3 +21,20 @@ show-hidden=true
 editor-font='JetBrainsMono Nerd Font 12'
 scheme='xed'
 use-default-font=false
+{{ else -}}
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+cursor-blink=true
+cursor-blink-time=1000
+cursor-size=48
+cursor-theme='Posy_Cursor_Mono'
+document-font-name='Inter Medium Medium 10'
+enable-animations=true
+font-name='Inter Medium Medium 10'
+gtk-theme='Orchis-Dark'
+icon-theme='Tela-grey-dark'
+monospace-font-name='JetBrains Mono  10'
+scaling-factor=uint32 1
+text-scaling-factor=1.0
+toolbar-style='text'
+{{ end -}}
