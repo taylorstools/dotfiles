@@ -5,8 +5,9 @@ refind{,/**}
 Wallpapers{,/**}
 .config/dconf{,/**}
 
-# taylorpc specific dotfiles (files to ignore on bedroompc & livingroompc)
+# Files to ignore on taylorpc
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
+  .config/menus{,/**}
   .config/kde.org{,/**}
   .config/kdedefaults{,/**}
   .config/Kvantum{,/**}
@@ -58,9 +59,27 @@ Wallpapers{,/**}
   .local/share/sddm{,/**}
   .local/share/wallpapers{,/**}
   .local/share/krunnerstaterc
+  .local/share/applications/Brighten Screen.desktop
+  .local/share/applications/Chrome.desktop
+  .local/share/applications/Dim Screen.desktop
+  .local/share/applications/Files.desktop
+  .local/share/applications/Firefox.desktop
+  .local/share/applications/HBO Max.desktop
+  .local/share/applications/hulu.desktop
+  .local/share/applications/Jellyfin.desktop
+  .local/share/applications/Kick.desktop
+  .local/share/applications/Netflix.desktop
+  .local/share/applications/Prime Video.desktop
+  .local/share/applications/qBittorrent.desktop
+  .local/share/applications/Restore Brightness.desktop
+  .local/share/applications/Steam.desktop
+  .local/share/applications/TaylorNAS.desktop
+  .local/share/applications/Terminal.desktop
+  .local/share/applications/Toggle Night Light.desktop
+  .local/share/applications/YouTube.desktop
 {{- end }}
 
-# HTPC specific dotfiles (files to ignore on taylorpc)
+# Files to ignore on htpcs
 {{- if ne .chezmoi.hostname "taylorpc" }}
   .config/autostart/libinput-gestures.desktop
   .config/DankMaterialShell{,/**}
@@ -81,4 +100,9 @@ Wallpapers{,/**}
   .icons/default/index.theme
   .local/share/applications/Snipping Tool.desktop
   .local/state/DankMaterialShell{,/**}
+  .local/share/applications/Lock.desktop
+  .local/share/applications/Logout.desktop
+  .local/share/applications/Reboot.desktop
+  .local/share/applications/Shutdown.desktop
+  .local/share/applications/Sleep.desktop
 {{- end }}

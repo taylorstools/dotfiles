@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=dolphin
+Icon=/home/taylor/.dotfiles/icons/files.svg
+Name=Files
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

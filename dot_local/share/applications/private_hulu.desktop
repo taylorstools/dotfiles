@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=xdg-open https://www.hulu.com
+Icon=/home/taylor/.dotfiles/icons/hulu.png
+Name=Hulu
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Exec=google-chrome-stable &
+Name=Google Chrome
+NoDisplay=true
+StartupNotify=false
+Type=Application
+X-KDE-GlobalAccel-CommandShortcut=true

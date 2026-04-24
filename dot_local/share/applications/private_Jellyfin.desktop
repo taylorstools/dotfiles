@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=jellyfin-desktop
+Icon=/home/taylor/.dotfiles/icons/jellyfin.png
+Name=Jellyfin
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
