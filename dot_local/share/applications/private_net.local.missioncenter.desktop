@@ -1,7 +1,0 @@
-[Desktop Entry]
-Exec=missioncenter &
-Name=Mission Center
-NoDisplay=true
-StartupNotify=false
-Type=Application
-X-KDE-GlobalAccel-CommandShortcut=true
