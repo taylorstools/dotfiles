@@ -1,0 +1,89 @@
+<!DOCTYPE Menu PUBLIC '-//freedesktop//DTD Menu 1.0//EN' 'http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd'>
+<Menu>
+ <Menu>
+  <Name>Development</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Education</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Games</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Graphics</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Help</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Internet</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Multimedia</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Office</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Science</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>System</Name>
+  <Deleted/>
+ </Menu>
+ <Menu>
+  <Name>Utilities</Name>
+  <Deleted/>
+ </Menu>
+ <Include>
+  <Filename>Chrome.desktop</Filename>
+  <Filename>Firefox.desktop</Filename>
+  <Filename>Steam.desktop</Filename>
+  <Filename>Netflix.desktop</Filename>
+  <Filename>hulu.desktop</Filename>
+  <Filename>HBO Max.desktop</Filename>
+  <Filename>YouTube.desktop</Filename>
+  <Filename>Jellyfin.desktop</Filename>
+  <Filename>Kick.desktop</Filename>
+  <Filename>Prime Video.desktop</Filename>
+  <Filename>qBittorrent.desktop</Filename>
+  <Filename>Files.desktop</Filename>
+  <Filename>Dim Screen.desktop</Filename>
+  <Filename>Brighten Screen.desktop</Filename>
+  <Filename>Restore Brightness.desktop</Filename>
+  <Filename>Toggle Night Light.desktop</Filename>
+  <Filename>Terminal.desktop</Filename>
+  <Filename>TaylorNAS.desktop</Filename>
+ </Include>
+ <Exclude/>
+ <Layout>
+  <Merge type="files"/>
+  <Filename>Chrome.desktop</Filename>
+  <Filename>Firefox.desktop</Filename>
+  <Filename>Steam.desktop</Filename>
+  <Filename>Netflix.desktop</Filename>
+  <Filename>hulu.desktop</Filename>
+  <Filename>HBO Max.desktop</Filename>
+  <Filename>YouTube.desktop</Filename>
+  <Filename>Jellyfin.desktop</Filename>
+  <Filename>Kick.desktop</Filename>
+  <Filename>Prime Video.desktop</Filename>
+  <Filename>qBittorrent.desktop</Filename>
+  <Filename>Files.desktop</Filename>
+  <Filename>Dim Screen.desktop</Filename>
+  <Filename>Brighten Screen.desktop</Filename>
+  <Filename>Restore Brightness.desktop</Filename>
+  <Filename>Toggle Night Light.desktop</Filename>
+  <Filename>Terminal.desktop</Filename>
+  <Filename>TaylorNAS.desktop</Filename>
+ </Layout>
+</Menu>
