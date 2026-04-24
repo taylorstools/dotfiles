@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=google-chrome --start-maximized
+Icon=/home/taylor/.dotfiles/icons/chrome.png
+Name=Chrome
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

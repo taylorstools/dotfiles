@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=$HOME/scripts/dim-overlay/dim-overlay-brighten.sh
+Icon=/home/taylor/.dotfiles/icons/brighten-screen.png
+Name=Brighten Screen
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

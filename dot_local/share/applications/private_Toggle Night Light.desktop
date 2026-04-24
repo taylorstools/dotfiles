@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=$HOME/scripts/plasma_toggle-night-mode.sh
+Icon=/home/taylor/.dotfiles/icons/night-light.png
+Name=Toggle Night Light
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
