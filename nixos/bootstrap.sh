@@ -81,7 +81,22 @@ nix --extra-experimental-features "nix-command flakes" \
 
 echo ""
 gum log --level info "Applying system configuration..."
+set +e
 sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
+rc=$?
+set -e
+
+case $rc in
+  0)
+    ;;
+  4)
+    gum log --level warn "Rebuild succeeded but some user services could not reload (expected during bootstrap from TTY)."
+    ;;
+  *)
+    gum log --level error "nixos-rebuild failed with exit status $rc"
+    exit $rc
+    ;;
+esac
 
 # ===== Set user directories =====
 
