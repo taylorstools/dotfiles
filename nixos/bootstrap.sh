@@ -81,7 +81,7 @@ nix --extra-experimental-features "nix-command flakes" \
 
 echo ""
 gum log --level info "Applying system configuration..."
-sudo nixos-rebuild boot --flake "$DOTFILES_DIR/nixos#$HOST"
+sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
 
 # ===== Set user directories =====
 
