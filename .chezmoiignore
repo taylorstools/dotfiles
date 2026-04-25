@@ -1,64 +1,44 @@
 # Files to ignore on all hosts
-README.md
 nixos{,/**}
+README.md
 refind{,/**}
 Wallpapers{,/**}
-.config/dconf{,/**}
 
 # Files to ignore on taylorpc
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
-  .config/menus{,/**}
-  .config/kde.org{,/**}
-  .config/kdedefaults{,/**}
-  .config/Kvantum{,/**}
-  .config/kconf_updaterc
-  .config/plasmashellrc
-  .config/kscreenlockerrc
-  .config/ksplashrc
-  .config/kwalletrc
-  .config/kmenueditrc
-  .config/katevirc
-  .config/kdeglobals
   .config/dolphinrc
-  .config/kded6rc
-  .config/ktimezonedrc
-  .config/kplymouththemeinstallerrc
   .config/gtkrc
-  .config/ksmserverrc
-  .config/plasmarc
-  .config/kactivitymanagerdrc
-  .config/kcminputrc
-  .config/plasma-org.kde.plasma.desktop-appletsrc
-  .config/katerc
-  .config/kiorc
-  .config/kded5rc
-  .config/kwinoutputconfig.json
-  .config/konsolesshconfig
   .config/kactivitymanagerd-statsrc
-  .config/kglobalshortcutsrc
-  .config/konsolerc
-  .config/kwinrc
-  .config/klaunchrc
+  .config/kactivitymanagerdrc
   .config/kate-externaltoolspluginrc
-  .local/share/aurorae{,/**}
-  .local/share/color-schemes{,/**}
-  .local/share/dolphin{,/**}
-  .local/share/kactivitymanagerd{,/**}
-  .local/share/kate{,/**}
-  .local/share/kded6{,/**}
-  .local/share/keyrings{,/**}
-  .local/share/klipper{,/**}
-  .local/share/knewstuff3{,/**}
-  .local/share/konsole{,/**}
-  .local/share/kpeoplevcard{,/**}
-  .local/share/kplymouththemeinstaller{,/**}
-  .local/share/kwalletd{,/**}
-  .local/share/kxmlgui5{,/**}
-  .local/share/plasma{,/**}
-  .local/share/plasma-systemmonitor{,/**}
-  .local/share/sddm{,/**}
-  .local/share/wallpapers{,/**}
-  .local/share/krunnerstaterc
+  .config/katerc
+  .config/katevirc
+  .config/kcminputrc
+  .config/kconf_updaterc
+  .config/kde.org{,/**}
+  .config/kded5rc
+  .config/kded6rc
+  .config/kdedefaults{,/**}
+  .config/kdeglobals
+  .config/kglobalshortcutsrc
+  .config/kiorc
+  .config/klaunchrc
+  .config/kmenueditrc
+  .config/konsolerc
+  .config/konsolesshconfig
+  .config/kplymouththemeinstallerrc
+  .config/kscreenlockerrc
+  .config/ksmserverrc
+  .config/ksplashrc
+  .config/ktimezonedrc
+  .config/Kvantum{,/**}
+  .config/kwalletrc
+  .config/kwinoutputconfig.json
+  .config/kwinrc
+  .config/menus{,/**}
+  .config/plasma-org.kde.plasma.desktop-appletsrc
+  .config/plasmarc
+  .config/plasmashellrc
   .local/share/applications/Brighten Screen.desktop
   .local/share/applications/Chrome.desktop
   .local/share/applications/Dim Screen.desktop
@@ -77,32 +57,54 @@ Wallpapers{,/**}
   .local/share/applications/Terminal.desktop
   .local/share/applications/Toggle Night Light.desktop
   .local/share/applications/YouTube.desktop
+  .local/share/aurorae{,/**}
+  .local/share/color-schemes{,/**}
+  .local/share/dolphin{,/**}
+  .local/share/kactivitymanagerd{,/**}
+  .local/share/kate{,/**}
+  .local/share/kded6{,/**}
+  .local/share/keyrings{,/**}
+  .local/share/klipper{,/**}
+  .local/share/knewstuff3{,/**}
+  .local/share/konsole{,/**}
+  .local/share/kpeoplevcard{,/**}
+  .local/share/kplymouththemeinstaller{,/**}
+  .local/share/krunnerstaterc
+  .local/share/kwalletd{,/**}
+  .local/share/kxmlgui5{,/**}
+  .local/share/plasma-systemmonitor{,/**}
+  .local/share/plasma{,/**}
+  .local/share/sddm{,/**}
+  .local/share/wallpapers{,/**}
 {{- end }}
 
 # Files to ignore on htpcs
 {{- if ne .chezmoi.hostname "taylorpc" }}
   .config/autostart/libinput-gestures.desktop
   .config/DankMaterialShell{,/**}
+  .config/dconf{,/**}
   .config/environment.d{,/**}
+  .config/gtk-3.0{,/**}
+  .config/gtk-4.0{,/**}
   .config/hypr{,/**}
+  .config/libinput-gestures.conf
   .config/matugen{,/**}
+  .config/mimeapps.list
   .config/niri{,/**}
   .config/nwg-look{,/**}
-  .config/dconf{,/**}
-  .config/VSCodium{,/**}
   .config/Thunar{,/**}
+  .config/VSCodium{,/**}
   .config/wlogout{,/**}
   .config/wlr-which-key{,/**}
   .config/xdg-desktop-portal{,/**}
   .config/xfce4{,/**}
   .config/xsettingsd{,/**}
-  .config/libinput-gestures.conf
   .icons/default/index.theme
-  .local/share/applications/Snipping Tool.desktop
-  .local/state/DankMaterialShell{,/**}
   .local/share/applications/Lock.desktop
   .local/share/applications/Logout.desktop
   .local/share/applications/Reboot.desktop
   .local/share/applications/Shutdown.desktop
   .local/share/applications/Sleep.desktop
+  .local/share/applications/Snipping Tool.desktop
+  .local/state/DankMaterialShell{,/**}
 {{- end }}
