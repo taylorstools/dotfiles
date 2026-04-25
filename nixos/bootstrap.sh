@@ -53,10 +53,6 @@ fi
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
 
-# ===== Set user directories =====
-
-"$HOME/scripts/update-user-dirs.sh"
-
 # ===== LUKS TPM autounlock =====
 
 "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
@@ -86,6 +82,10 @@ nix --extra-experimental-features "nix-command flakes" \
 echo ""
 gum log --level info "Applying system configuration..."
 sudo nixos-rebuild boot --flake "$DOTFILES_DIR/nixos#$HOST"
+
+# ===== Set user directories =====
+
+"$HOME/scripts/update-user-dirs.sh"
 
 # ===== rEFInd =====
 
