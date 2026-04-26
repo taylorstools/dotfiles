@@ -41,6 +41,7 @@ Wallpapers{,/**}
   .config/plasma-org.kde.plasma.desktop-appletsrc
   .config/plasmarc
   .config/plasmashellrc
+  .config/powerdevilrc
   .local/share/applications/Brighten Screen.desktop
   .local/share/applications/Chrome.desktop
   .local/share/applications/Dim Screen.desktop
