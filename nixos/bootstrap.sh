@@ -115,6 +115,6 @@ gum log --level info "BOOTSTRAP SCRIPT COMPLETE."
 
 if gum confirm "Reboot now?"; then
   [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
-  [ -d "/etc/nixos" ] && sudo mv /etc/nixos /etc/nixos.old
+  [ -d "/etc/nixos" ] && sudo rm -rf "/etc/nixos"
   sudo reboot
 fi
