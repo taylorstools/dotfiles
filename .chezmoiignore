@@ -6,6 +6,7 @@ Wallpapers{,/**}
 
 # Files to ignore on taylorpc
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
+  .config/antimicrox{,/**}
   .config/autostart{,/**}
   .config/dolphinrc
   .config/gtkrc
