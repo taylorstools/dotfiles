@@ -80,8 +80,8 @@ binds {
     Mod+Minus   { spawn "sh" "-c" "$HOME/scripts/niri_change-screen-scale.sh --decrease"; }
     Mod+Equal   { spawn "sh" "-c" "$HOME/scripts/niri_change-screen-scale.sh --increase"; }
 
-    // ChatGPT
-    Mod+Shift+F23   { spawn "xdg-open" "https://chatgpt.com"; } // Copilot key
+    // Claude
+    Mod+Shift+F23   { spawn "xdg-open" "https://claude.ai"; } // Copilot key
 
     // Laptop specific keybinds
     xf86MonBrightnessDown   { spawn "sh" "-c" "$HOME/scripts/dms_change-screen-brightness.sh -decrease"; }
