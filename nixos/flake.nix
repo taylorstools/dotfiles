@@ -45,11 +45,8 @@
         type = "app";
         program = "${pkgs.writeShellApplication {
           name = "bootstrap";
-          runtimeInputs = [ pkgs.nix pkgs.gum pkgs.git pkgs.chezmoi pkgs.dconf pkgs.dbus ];
-          text = ''
-            export XDG_DATA_DIRS="${pkgs.dconf}/share:''${XDG_DATA_DIRS:-}"
-            ${builtins.readFile ./bootstrap.sh}
-          '';
+          runtimeInputs = [ pkgs.nix pkgs.gum pkgs.git pkgs.chezmoi ];
+          text = builtins.readFile ./bootstrap.sh;
         }}/bin/bootstrap";
       };
 
