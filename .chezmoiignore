@@ -6,6 +6,7 @@ Wallpapers{,/**}
 
 # Files to ignore on taylorpc
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
+  .config/autostart{,/**}
   .config/dolphinrc
   .config/gtkrc
   .config/kactivitymanagerd-statsrc
@@ -80,7 +81,6 @@ Wallpapers{,/**}
 
 # Files to ignore on htpcs
 {{- if ne .chezmoi.hostname "taylorpc" }}
-  .config/autostart/libinput-gestures.desktop
   .config/DankMaterialShell{,/**}
   .config/dconf{,/**}
   .config/environment.d{,/**}
