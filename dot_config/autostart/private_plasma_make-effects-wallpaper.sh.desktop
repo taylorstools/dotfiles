@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=/home/taylor/scripts/plasma_make-effects-wallpaper.sh
+Icon=application-x-shellscript
+Name=plasma_make-effects-wallpaper.sh
+Type=Application
+X-KDE-AutostartScript=true

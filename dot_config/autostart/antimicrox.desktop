@@ -1,0 +1,12 @@
+[Desktop Entry]
+Actions=run-in-tray;
+Categories=Game;Qt;Utility;
+Comment=Use a gamepad to control a variety of programs
+Exec=antimicrox --hidden --tray --profile /home/taylor/.config/antimicrox/xbox.amgp
+Icon=io.github.antimicrox.antimicrox
+Keywords=game;controller;keyboard;joystick;mouse;
+MimeType=application/x-amgp;
+Name=AntiMicroX
+StartupNotify=true
+Terminal=false
+Type=Application
