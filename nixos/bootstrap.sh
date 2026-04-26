@@ -48,15 +48,6 @@ if [[ "$HOST" == "taylorpc" ]]; then
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
-# ===== Apply dotfiles =====
-
-gum log --level info "Applying dotfiles with chezmoi..."
-chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
-
-# ===== LUKS TPM autounlock =====
-
-"$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
-
 # ===== Copy hardware configuration =====
 
 if [ -f "/etc/nixos/hardware-configuration.nix" ]; then
@@ -97,6 +88,15 @@ case $rc in
     exit $rc
     ;;
 esac
+
+# ===== Apply dotfiles =====
+
+gum log --level info "Applying dotfiles with chezmoi..."
+chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
+
+# ===== LUKS TPM autounlock =====
+
+"$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST"
 
 # ===== Set user directories =====
 
