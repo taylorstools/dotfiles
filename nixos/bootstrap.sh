@@ -91,6 +91,7 @@ esac
 
 # ===== Apply dotfiles =====
 
+echo ""
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply $REPO --force
 
