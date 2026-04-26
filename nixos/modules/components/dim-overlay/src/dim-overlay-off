@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# dim-overlay-off — turn off the overlay if running. No-op if not.
+set -eu
+
+PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
+LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
+
+PIDS=""
+if [[ -f "$PID_FILE" ]]; then
+    P=$(cat "$PID_FILE" 2>/dev/null || true)
+    if [[ -n "$P" ]] && kill -0 "$P" 2>/dev/null; then
+        PIDS="$P"
+    else
+        rm -f "$PID_FILE"
+    fi
+fi
+[[ -z "$PIDS" ]] && PIDS=$(pgrep -f "dim-overlay\.py" || true)
+[[ -z "$PIDS" ]] && { rm -f "$LEVEL_FILE"; exit 0; }
+
+# Graceful TERM, escalate to KILL if needed
+kill -TERM $PIDS 2>/dev/null || true
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+    sleep 0.1
+    STILL=""
+    for p in $PIDS; do
+        kill -0 "$p" 2>/dev/null && STILL="$STILL $p"
+    done
+    [[ -z "$STILL" ]] && { rm -f "$PID_FILE" "$LEVEL_FILE"; exit 0; }
+    PIDS="$STILL"
+done
+
+kill -KILL $PIDS 2>/dev/null || true
+rm -f "$PID_FILE" "$LEVEL_FILE"
