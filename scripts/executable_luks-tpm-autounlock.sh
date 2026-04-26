@@ -173,6 +173,6 @@ gum log --level info "Edited configuration.nix for $HOSTNAME to $action luks-tpm
 action=$($ENABLE && echo "ENABLED" || echo "DISABLED")
 echo ""
 gum log --level info "LUKS TPM auto-unlock $action."
-[[ "$NOREBUILD" == true ]] && {
+if [[ "$NOREBUILD" == true ]]; then
   gum log --level info "Configuration rebuild required before changes go into effect."
-}
+fi
