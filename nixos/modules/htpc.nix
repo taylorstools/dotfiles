@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./components/fix-plasma-env-vars.nix
+    #./components/fix-plasma-env-vars.nix
     ./components/kde-plasma.nix
     ./components/sddm-autologin.nix
     ./components/xbox-controller.nix
