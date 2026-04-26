@@ -96,6 +96,7 @@
     posy-cursors
     python3
     qbittorrent
+    vlc
     vscodium
     wget
     xdg-user-dirs
