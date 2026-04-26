@@ -51,6 +51,7 @@ Wallpapers{,/**}
   .local/share/applications/hulu.desktop
   .local/share/applications/Jellyfin.desktop
   .local/share/applications/Kick.desktop
+  .local/share/applications/net.local.kitty.desktop
   .local/share/applications/Netflix.desktop
   .local/share/applications/Prime Video.desktop
   .local/share/applications/qBittorrent.desktop
