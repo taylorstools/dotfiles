@@ -62,6 +62,7 @@ Wallpapers{,/**}
   .local/share/applications/YouTube.desktop
   .local/share/aurorae{,/**}
   .local/share/color-schemes{,/**}
+  .local/share/dim-overlay{,/**}
   .local/share/dolphin{,/**}
   .local/share/kactivitymanagerd{,/**}
   .local/share/kate{,/**}
