@@ -12,7 +12,7 @@
   programs = {
     steam.enable = true;
     dim-overlay.enable = true;
-  }
+  };
 
   environment.systemPackages = with pkgs; [
     jellyfin-media-player
