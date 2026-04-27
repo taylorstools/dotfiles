@@ -80,6 +80,7 @@ Wallpapers{,/**}
   .local/share/plasma{,/**}
   .local/share/sddm{,/**}
   .local/share/wallpapers{,/**}
+  .local/state/dolphinstaterc
 {{- end }}
 
 # Files to ignore on htpcs
