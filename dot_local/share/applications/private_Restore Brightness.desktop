@@ -1,6 +1,6 @@
 [Desktop Entry]
 Comment=
-Exec=$HOME/scripts/dim-overlay/kill-dim-overlay.sh
+Exec=dim-overlay-off
 Icon=/home/taylor/.dotfiles/icons/restore-brightness.png
 Name=Restore Brightness
 NoDisplay=false
