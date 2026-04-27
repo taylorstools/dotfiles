@@ -22,7 +22,6 @@ Wallpapers{,/**}
   .config/kded6rc
   .config/kdedefaults{,/**}
   .config/kdeglobals
-  .config/kglobalshortcutsrc
   .config/kiorc
   .config/klaunchrc
   .config/kmenueditrc
