@@ -1,6 +1,6 @@
 [Desktop Entry]
 Comment=
-Exec=$HOME/scripts/dim-overlay/dim-overlay.sh
+Exec=dim-overlay-on
 Icon=/home/taylor/.dotfiles/icons/dim-screen.png
 Name=Dim Screen
 NoDisplay=false
