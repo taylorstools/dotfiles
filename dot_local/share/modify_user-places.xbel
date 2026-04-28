@@ -10,8 +10,8 @@ TRACKED = [
     {"href": f"file://{HOME}/.dotfiles",            "title": ".dotfiles", "icon": "inode-directory"},
     {"href": f"file://{HOME}/.dotfiles/dot_config", "title": ".config",   "icon": "inode-directory"},
     {"href": f"file://{HOME}/.dotfiles/nixos",      "title": "nixos",     "icon": "inode-directory"},
-    {"href": "smb://tower.local/TaylorNAS",          "title": "TaylorNAS", "icon": "network-workgroup"},
-    {"href": "smb://tower.local/TaylorNAS/jellyfin", "title": "jellyfin",  "icon": "network-workgroup"},
+    {"href": "smb://192.168.0.63/TaylorNAS",          "title": "TaylorNAS", "icon": "network-workgroup"},
+    {"href": "smb://192.168.0.63/TaylorNAS/jellyfin", "title": "jellyfin",  "icon": "network-workgroup"},
 ]
 
 FDO = "http://freedesktop.org"
