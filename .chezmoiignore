@@ -79,6 +79,7 @@ Wallpapers{,/**}
   .local/share/plasma-systemmonitor{,/**}
   .local/share/plasma{,/**}
   .local/share/sddm{,/**}
+  .local/share/user-places.xbel
   .local/share/wallpapers{,/**}
   .local/state/dolphinstaterc
 {{- end }}

@@ -7,4 +7,8 @@
     ./components/niri.nix
     ./components/thunar.nix
   ];
+  
+  environment.systemPackages = with pkgs; [
+    vscodium
+  ];
 }
