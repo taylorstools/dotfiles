@@ -82,6 +82,7 @@ Wallpapers{,/**}
   .local/share/user-places.xbel
   .local/share/wallpapers{,/**}
   .local/state/dolphinstaterc
+  .local/state/wireplumber/default-nodes
 {{- end }}
 
 # Files to ignore on htpcs

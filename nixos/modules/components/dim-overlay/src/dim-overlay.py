@@ -54,7 +54,7 @@ class DimOverlay(Gtk.ApplicationWindow):
 
         LayerShell.init_for_window(self)
         LayerShell.set_namespace(self, APP_ID)
-        LayerShell.set_layer(self, LayerShell.Layer.TOP)
+        LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
         if monitor is not None:
             LayerShell.set_monitor(self, monitor)
         for edge in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
