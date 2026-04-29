@@ -4,7 +4,7 @@
   networking.hostName = "taylorpc";
 
   imports = [
-    #./luks-tpm-autounlock.nix
+    ./luks-tpm-autounlock.nix
     ../../modules/laptop.nix
   ];
 }
