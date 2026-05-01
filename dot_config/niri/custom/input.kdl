@@ -6,6 +6,6 @@ input {
     touchpad {
         tap
         natural-scroll
-        accel-speed 0
+        accel-profile "adaptive"
     }
 }
