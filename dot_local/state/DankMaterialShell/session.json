@@ -25,8 +25,8 @@
   "wallpaperCyclingInterval": 900,
   "wallpaperCyclingTime": "06:00",
   "monitorCyclingSettings": {},
-  "nightModeEnabled": false,
-  "nightModeTemperature": 2500,
+  "nightModeEnabled": true,
+  "nightModeTemperature": 3000,
   "nightModeHighTemperature": 6500,
   "nightModeAutoEnabled": false,
   "nightModeAutoMode": "time",
@@ -59,6 +59,7 @@
   "hiddenTrayIds": [],
   "trayItemOrder": [],
   "recentColors": [
+    "#000000",
     "#cddc39"
   ],
   "showThirdPartyPlugins": true,
