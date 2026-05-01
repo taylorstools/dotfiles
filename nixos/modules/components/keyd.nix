@@ -13,7 +13,7 @@
         };
 
         extraConfig = ''
-          overload_tap_timeout = 150
+          overload_tap_timeout = 100
         '';
       };
     };
