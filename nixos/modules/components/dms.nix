@@ -1,14 +1,16 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
-{    
-  programs.dms-shell = {
+{
+  programs.dank-material-shell = {
     enable = true;
+
+    quickshell.package = inputs.quickshell.packages.${pkgs.system}.default;
 
     systemd = {
       enable = true;
       restartIfChanged = true;
     };
-    
+
     enableDynamicTheming = true;
     enableClipboardPaste = true;
   };
