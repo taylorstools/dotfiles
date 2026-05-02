@@ -8,6 +8,10 @@
     ./components/thunar.nix
   ];
   
+  programs = {
+    obs-studio.enable = true;
+  };
+
   environment.systemPackages = with pkgs; [
     vscodium
   ];
