@@ -14,6 +14,32 @@ window-rule {
 }
 
 window-rule {
+    popups {
+        geometry-corner-radius 15
+        opacity 0.8
+        background-effect {
+            blur true
+        }
+    }
+}
+
+window-rule {
+    match app-id="xed"
+    opacity 0.9
+    background-effect {
+        blur true
+    }
+}
+
+window-rule {
+    match app-id="thunar"
+    opacity 0.9
+    background-effect {
+        blur true
+    }
+}
+
+window-rule {
     match app-id="com.gabm.satty"
     open-floating true
     max-width 1200
