@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # dim-overlay-undim — at-or-below default → off; above default → brighter one step.
-# Restores Night Light when opacity drops below the dim threshold.
+# Toggles Night Light back on if we previously toggled it off.
 set -eu
 
 PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
 LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
-NL_COOKIE_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-cookie"
+NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 SELF_DIR="$(dirname "$0")"
 
@@ -28,15 +28,17 @@ DEF=$(read_const  "OPACITY_DEF");  [[ -z "$DEF"  ]] && DEF="0.40"
 STEP=$(read_const "OPACITY_STEP"); [[ -z "$STEP" ]] && STEP="0.05"
 MIN=$(read_const  "OPACITY_MIN");  [[ -z "$MIN"  ]] && MIN="0.05"
 
-nightlight_uninhibit() {
-    [[ ! -f "$NL_COOKIE_FILE" ]] && return 0
-    local cookie
-    cookie=$(cat "$NL_COOKIE_FILE")
-    qdbus org.kde.KWin /org/kde/KWin/NightLight \
-          org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || \
-    qdbus6 org.kde.KWin /org/kde/KWin/NightLight \
-           org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || true
-    rm -f "$NL_COOKIE_FILE"
+nightlight_toggle() {
+    dbus-send --session --type=method_call \
+        --dest=org.kde.kglobalaccel /component/kwin \
+        org.kde.kglobalaccel.Component.invokeShortcut \
+        string:"Toggle Night Color" 2>/dev/null || true
+}
+
+nightlight_restore() {
+    [[ ! -f "$NL_FLAG_FILE" ]] && return 0   # we didn't toggle it
+    nightlight_toggle
+    rm -f "$NL_FLAG_FILE"
 }
 
 below_threshold() {
@@ -49,7 +51,7 @@ else
     CUR="$DEF"
 fi
 
-# At-or-below default → off (dim-overlay-off handles cookie cleanup)
+# At-or-below default → off (delegated; dim-overlay-off handles flag cleanup)
 if awk -v c="$CUR" -v d="$DEF" 'BEGIN { exit !(c <= d + 0.001) }'; then
     exec "$SELF_DIR/dim-overlay-off"
 fi
@@ -60,7 +62,6 @@ NEW=$(awk -v c="$CUR" -v s="$STEP" -v n="$MIN" 'BEGIN {
 }')
 echo "$NEW" > "$LEVEL_FILE"
 
-# If we just dropped below the threshold, restore Night Light.
 if below_threshold "$NEW"; then
-    nightlight_uninhibit
+    nightlight_restore
 fi

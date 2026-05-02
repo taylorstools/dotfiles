@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 # dim-overlay-off — turn off the overlay if running. No-op if not.
-# Always restores Night Light (in case it was suspended).
+# Restores Night Light if we previously toggled it off.
 set -eu
 
 PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
 LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
-NL_COOKIE_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-cookie"
+NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 
-nightlight_uninhibit() {
-    [[ ! -f "$NL_COOKIE_FILE" ]] && return 0
-    local cookie
-    cookie=$(cat "$NL_COOKIE_FILE")
-    qdbus org.kde.KWin /org/kde/KWin/NightLight \
-          org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || \
-    qdbus6 org.kde.KWin /org/kde/KWin/NightLight \
-           org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || true
-    rm -f "$NL_COOKIE_FILE"
+nightlight_toggle() {
+    dbus-send --session --type=method_call \
+        --dest=org.kde.kglobalaccel /component/kwin \
+        org.kde.kglobalaccel.Component.invokeShortcut \
+        string:"Toggle Night Color" 2>/dev/null || true
+}
+
+nightlight_restore() {
+    [[ ! -f "$NL_FLAG_FILE" ]] && return 0
+    nightlight_toggle
+    rm -f "$NL_FLAG_FILE"
 }
 
 PIDS=""
@@ -31,11 +33,10 @@ fi
 
 if [[ -z "$PIDS" ]]; then
     rm -f "$LEVEL_FILE"
-    nightlight_uninhibit
+    nightlight_restore
     exit 0
 fi
 
-# Graceful TERM, escalate to KILL
 kill -TERM $PIDS 2>/dev/null || true
 for _ in 1 2 3 4 5 6 7 8 9 10; do
     sleep 0.1
@@ -45,7 +46,7 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
     done
     if [[ -z "$STILL" ]]; then
         rm -f "$PID_FILE" "$LEVEL_FILE"
-        nightlight_uninhibit
+        nightlight_restore
         exit 0
     fi
     PIDS="$STILL"
@@ -53,4 +54,4 @@ done
 
 kill -KILL $PIDS 2>/dev/null || true
 rm -f "$PID_FILE" "$LEVEL_FILE"
-nightlight_uninhibit
+nightlight_restore
