@@ -1,7 +1,7 @@
 {
   "isLightMode": false,
   "doNotDisturb": false,
-  "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-mountain-1k.png",
+  "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-lights-1k.png",
   "perMonitorWallpaper": false,
   "monitorWallpapers": {},
   "perModeWallpaper": false,
@@ -25,7 +25,7 @@
   "wallpaperCyclingInterval": 900,
   "wallpaperCyclingTime": "06:00",
   "monitorCyclingSettings": {},
-  "nightModeEnabled": true,
+  "nightModeEnabled": false,
   "nightModeTemperature": 3000,
   "nightModeHighTemperature": 6500,
   "nightModeAutoEnabled": false,
