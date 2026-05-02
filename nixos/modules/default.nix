@@ -41,6 +41,9 @@
   # Power management
   services.upower.enable = true;
 
+  # NVIDIA driver
+  myHardware.nvidia.mode = "disabled";
+
   # Disable X11
   services.xserver.enable = false;
 
