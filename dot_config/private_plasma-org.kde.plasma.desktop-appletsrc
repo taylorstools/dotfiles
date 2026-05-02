@@ -52,7 +52,7 @@ ToolBoxButtonY=62
 Color=0,0,0
 
 [Containments][152][Wallpaper][org.kde.image][General]
-Image=file:///home/taylor/.dotfiles/Wallpapers/enlarge_1139763.jpg
+Image=file:///home/taylor/.dotfiles/Wallpapers/enlarge_1077194.png
 SlidePaths=/home/vince/.local/share/wallpapers,/usr/share/wallpapers
 
 [Containments][152][Wallpaper][org.kde.slideshow][General]
@@ -152,7 +152,7 @@ backgroundOpacity=100
 backgroundType=image
 cellSize=48
 customBackgroundImagePath[$e]=$HOME/.config/.EffectsWallpaper.png
-customButtonImage=start-here-kde-plasma
+customButtonImage=/home/taylor/.config/Launcher.png
 dockF=false
 favoriteSystemActions=shutdown,reboot
 favoritesPortedToKAstats=true
