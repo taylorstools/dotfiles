@@ -43,9 +43,7 @@ in
         "nouveau" "nvidia" "nvidia_drm" "nvidia_modeset" "nvidia_uvm"
       ];
       boot.kernelParams = [ "nouveau.modeset=0" ];
-      services.xserver.videoDrivers =
-        lib.mkForce (lib.filter (d: d != "nvidia" && d != "nouveau")
-          (config.services.xserver.videoDrivers or [ "modesetting" ]));
+      services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     })
   ];
 }
