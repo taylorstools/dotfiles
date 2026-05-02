@@ -5,6 +5,7 @@
     ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
     ./components/git.nix
+    ./components/nvidia.nix
     ./components/printing.nix
     ./components/ssh.nix
     ./components/users.nix
