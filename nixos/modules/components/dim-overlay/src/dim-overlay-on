@@ -10,8 +10,8 @@ NL_COOKIE_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-cookie"
 PY_FILE="@PY_FILE@"
 
 # Inhibit threshold: at or above this opacity, suspend Night Light.
-# 0.90 = once the overlay is 90% opaque or darker.
-NL_THRESHOLD="0.90"
+# 0.90 = once the overlay is 95% opaque or darker.
+NL_THRESHOLD="0.80"
 
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
