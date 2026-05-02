@@ -38,7 +38,7 @@ Wallpapers{,/**}
   .config/kwinrc
   .config/Launcher.png
   .config/menus{,/**}
-  #.config/plasma-org.kde.plasma.desktop-appletsrc
+  .config/plasma-org.kde.plasma.desktop-appletsrc
   .config/plasmarc
   .config/plasmashellrc
   .config/powerdevilrc
