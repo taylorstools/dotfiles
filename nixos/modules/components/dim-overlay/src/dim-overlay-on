@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 # dim-overlay-on — if overlay is off, turn it on; if on, make it darker.
+# Suspends KDE Night Light when opacity goes deeply dark (so pixels can
+# actually reach true black and the panel backlight dims accordingly).
 set -eu
 
 PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
 LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
+NL_COOKIE_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-cookie"
 PY_FILE="@PY_FILE@"
+
+# Inhibit threshold: at or above this opacity, suspend Night Light.
+# 0.90 = once the overlay is 90% opaque or darker.
+NL_THRESHOLD="0.90"
 
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
@@ -13,6 +20,35 @@ DEF=$(read_const  "OPACITY_DEF");  [[ -z "$DEF"  ]] && DEF="0.40"
 STEP=$(read_const "OPACITY_STEP"); [[ -z "$STEP" ]] && STEP="0.05"
 MAX=$(read_const  "OPACITY_MAX");  [[ -z "$MAX"  ]] && MAX="0.95"
 
+# ── Night Light inhibit/uninhibit helpers ───────────────────────────────────
+nightlight_inhibit() {
+    [[ -f "$NL_COOKIE_FILE" ]] && return 0   # already inhibited
+    local cookie
+    cookie=$(qdbus org.kde.KWin /org/kde/KWin/NightLight \
+                   org.kde.KWin.NightLight.inhibit 2>/dev/null || \
+             qdbus6 org.kde.KWin /org/kde/KWin/NightLight \
+                    org.kde.KWin.NightLight.inhibit 2>/dev/null || true)
+    if [[ -n "$cookie" ]]; then
+        echo "$cookie" > "$NL_COOKIE_FILE"
+    fi
+}
+
+nightlight_uninhibit() {
+    [[ ! -f "$NL_COOKIE_FILE" ]] && return 0
+    local cookie
+    cookie=$(cat "$NL_COOKIE_FILE")
+    qdbus org.kde.KWin /org/kde/KWin/NightLight \
+          org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || \
+    qdbus6 org.kde.KWin /org/kde/KWin/NightLight \
+           org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || true
+    rm -f "$NL_COOKIE_FILE"
+}
+
+at_or_above_threshold() {
+    awk -v c="$1" -v t="$NL_THRESHOLD" 'BEGIN { exit !(c >= t - 0.001) }'
+}
+
+# ── Find running overlay ────────────────────────────────────────────────────
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
     P=$(cat "$PID_FILE" 2>/dev/null || true)
@@ -23,13 +59,25 @@ fi
 [[ -z "$PIDS" ]] && PIDS=$(pgrep -f "dim-overlay\.py" || true)
 
 if [[ -n "$PIDS" ]]; then
+    # Already running — darken
     kill -USR1 $PIDS
     CUR=$( [[ -f "$LEVEL_FILE" ]] && cat "$LEVEL_FILE" || echo "$DEF" )
     NEW=$(awk -v c="$CUR" -v s="$STEP" -v m="$MAX" 'BEGIN {
         v = c + s; if (v > m) v = m; printf "%.2f", v
     }')
     echo "$NEW" > "$LEVEL_FILE"
+
+    # If we just crossed the threshold, suspend Night Light.
+    if at_or_above_threshold "$NEW"; then
+        nightlight_inhibit
+    fi
 else
+    # Not running — start it
     setsid nohup "@DIM_OVERLAY@" >/dev/null 2>&1 </dev/null &
     echo "$DEF" > "$LEVEL_FILE"
+
+    # Default level might already cross the threshold (e.g. DEF=0.95)
+    if at_or_above_threshold "$DEF"; then
+        nightlight_inhibit
+    fi
 fi

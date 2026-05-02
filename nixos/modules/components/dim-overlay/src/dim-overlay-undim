@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # dim-overlay-undim — at-or-below default → off; above default → brighter one step.
+# Restores Night Light when opacity drops below the dim threshold.
 set -eu
 
 PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
 LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
+NL_COOKIE_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-cookie"
 PY_FILE="@PY_FILE@"
 SELF_DIR="$(dirname "$0")"
+
+NL_THRESHOLD="0.90"
 
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
@@ -24,20 +28,39 @@ DEF=$(read_const  "OPACITY_DEF");  [[ -z "$DEF"  ]] && DEF="0.40"
 STEP=$(read_const "OPACITY_STEP"); [[ -z "$STEP" ]] && STEP="0.05"
 MIN=$(read_const  "OPACITY_MIN");  [[ -z "$MIN"  ]] && MIN="0.05"
 
+nightlight_uninhibit() {
+    [[ ! -f "$NL_COOKIE_FILE" ]] && return 0
+    local cookie
+    cookie=$(cat "$NL_COOKIE_FILE")
+    qdbus org.kde.KWin /org/kde/KWin/NightLight \
+          org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || \
+    qdbus6 org.kde.KWin /org/kde/KWin/NightLight \
+           org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || true
+    rm -f "$NL_COOKIE_FILE"
+}
+
+below_threshold() {
+    awk -v c="$1" -v t="$NL_THRESHOLD" 'BEGIN { exit !(c < t - 0.001) }'
+}
+
 if [[ -f "$LEVEL_FILE" ]]; then
     CUR=$(cat "$LEVEL_FILE")
 else
     CUR="$DEF"
 fi
 
-# At-or-below default → off
+# At-or-below default → off (dim-overlay-off handles cookie cleanup)
 if awk -v c="$CUR" -v d="$DEF" 'BEGIN { exit !(c <= d + 0.001) }'; then
     exec "$SELF_DIR/dim-overlay-off"
 fi
 
-# Otherwise brighten one step
 kill -USR2 $PIDS
 NEW=$(awk -v c="$CUR" -v s="$STEP" -v n="$MIN" 'BEGIN {
     v = c - s; if (v < n) v = n; printf "%.2f", v
 }')
 echo "$NEW" > "$LEVEL_FILE"
+
+# If we just dropped below the threshold, restore Night Light.
+if below_threshold "$NEW"; then
+    nightlight_uninhibit
+fi

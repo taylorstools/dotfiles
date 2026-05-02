@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
 # dim-overlay-off — turn off the overlay if running. No-op if not.
+# Always restores Night Light (in case it was suspended).
 set -eu
 
 PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
 LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
+NL_COOKIE_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-cookie"
+
+nightlight_uninhibit() {
+    [[ ! -f "$NL_COOKIE_FILE" ]] && return 0
+    local cookie
+    cookie=$(cat "$NL_COOKIE_FILE")
+    qdbus org.kde.KWin /org/kde/KWin/NightLight \
+          org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || \
+    qdbus6 org.kde.KWin /org/kde/KWin/NightLight \
+           org.kde.KWin.NightLight.uninhibit "$cookie" 2>/dev/null || true
+    rm -f "$NL_COOKIE_FILE"
+}
 
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
@@ -15,9 +28,14 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 [[ -z "$PIDS" ]] && PIDS=$(pgrep -f "dim-overlay\.py" || true)
-[[ -z "$PIDS" ]] && { rm -f "$LEVEL_FILE"; exit 0; }
 
-# Graceful TERM, escalate to KILL if needed
+if [[ -z "$PIDS" ]]; then
+    rm -f "$LEVEL_FILE"
+    nightlight_uninhibit
+    exit 0
+fi
+
+# Graceful TERM, escalate to KILL
 kill -TERM $PIDS 2>/dev/null || true
 for _ in 1 2 3 4 5 6 7 8 9 10; do
     sleep 0.1
@@ -25,9 +43,14 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
     for p in $PIDS; do
         kill -0 "$p" 2>/dev/null && STILL="$STILL $p"
     done
-    [[ -z "$STILL" ]] && { rm -f "$PID_FILE" "$LEVEL_FILE"; exit 0; }
+    if [[ -z "$STILL" ]]; then
+        rm -f "$PID_FILE" "$LEVEL_FILE"
+        nightlight_uninhibit
+        exit 0
+    fi
     PIDS="$STILL"
 done
 
 kill -KILL $PIDS 2>/dev/null || true
 rm -f "$PID_FILE" "$LEVEL_FILE"
+nightlight_uninhibit
