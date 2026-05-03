@@ -20,7 +20,7 @@ let
 
   xone-idle-shutoff = pkgs.writers.writePython3Bin "xone-idle-shutoff" {
     libraries = [ pkgs.python3Packages.evdev ];
-    flakeIgnore = [ "E501" ];  # don't fail the build on long lines
+    flakeIgnore = [ "E501" ];  # don't faill the build on long lines
   } ''
     """Power off xone-managed Xbox controllers after a period of inactivity."""
 
@@ -35,9 +35,58 @@ let
     XONE_POWEROFF_GLOB = "/sys/bus/usb/drivers/xone-dongle/*/poweroff"
     STATE_FILE = "${stateFile}"
 
+    # ABS axis groups for activity filtering.
+    # Sticks rest at 0 with range roughly -32768..32767. Drift is small.
+    # Triggers rest at 0 with range 0..1023.
+    # The dpad emits discrete -1/0/+1 values, so any nonzero is a real press.
+    STICK_AXES = {
+        evdev.ecodes.ABS_X, evdev.ecodes.ABS_Y,
+        evdev.ecodes.ABS_RX, evdev.ecodes.ABS_RY,
+    }
+    TRIGGER_AXES = {evdev.ecodes.ABS_Z, evdev.ecodes.ABS_RZ}
+    DPAD_AXES = {evdev.ecodes.ABS_HAT0X, evdev.ecodes.ABS_HAT0Y}
+
+    # Thresholds. Anything below these on a stick/trigger axis is treated
+    # as drift/noise and ignored for activity detection.
+    STICK_THRESHOLD = 6000     # ~18% of full range, well above typical drift
+    TRIGGER_THRESHOLD = 80     # ~8% of trigger range
+
 
     def log(msg):
         print(msg, flush=True)
+
+
+    def is_activity(ev, debug=False):
+        """Decide whether an evdev event counts as 'user activity'."""
+        if ev.type == evdev.ecodes.EV_KEY:
+            # Buttons - always intentional
+            if debug:
+                log(f"activity: KEY code={ev.code} value={ev.value}")
+            return True
+        if ev.type == evdev.ecodes.EV_ABS:
+            if ev.code in STICK_AXES:
+                if abs(ev.value) > STICK_THRESHOLD:
+                    if debug:
+                        log(f"activity: STICK code={ev.code} value={ev.value}")
+                    return True
+                return False
+            if ev.code in TRIGGER_AXES:
+                if ev.value > TRIGGER_THRESHOLD:
+                    if debug:
+                        log(f"activity: TRIGGER code={ev.code} value={ev.value}")
+                    return True
+                return False
+            if ev.code in DPAD_AXES:
+                if ev.value != 0:
+                    if debug:
+                        log(f"activity: DPAD code={ev.code} value={ev.value}")
+                    return True
+                return False
+            # Unknown ABS axis - ignore (better to miss real input than to
+            # be reset by chatter we don't understand).
+            return False
+        # EV_SYN, EV_MSC, EV_FF (force feedback echoes), etc. - never activity.
+        return False
 
 
     def write_state(last_activity_wall, watching):
@@ -95,6 +144,8 @@ let
         ap = argparse.ArgumentParser()
         ap.add_argument("--timeout", type=int, default=900)
         ap.add_argument("--scan-interval", type=int, default=5)
+        ap.add_argument("--debug", action="store_true",
+                        help="log every event that resets the idle timer")
         args = ap.parse_args()
 
         log(f"xone-idle-shutoff started (timeout={args.timeout}s)")
@@ -140,8 +191,7 @@ let
                 for fd in ready:
                     try:
                         for ev in fd_map[fd].read():
-                            # Ignore SYN events; they accompany every real event
-                            if ev.type != evdev.ecodes.EV_SYN:
+                            if is_activity(ev, debug=args.debug):
                                 activity = True
                     except OSError:
                         disconnected = True
