@@ -1,8 +1,22 @@
+# xone-idle-shutoff.nix
+#
+# Drop this file next to your configuration.nix and add it to imports:
+#
+#   imports = [ ./xone-idle-shutoff.nix ];
+#
+# Then `sudo nixos-rebuild switch`.
+#   Logs:   journalctl -u xone-idle-shutoff -f
+#   Status: xone-idle-status
+
 { config, lib, pkgs, ... }:
 
 let
   # Idle seconds before the controller is powered off.
-  idleTimeout = 600;
+  # Xbox default on Windows is 15 minutes (900s).
+  idleTimeout = 900;
+
+  stateDir = "/run/xone-idle-shutoff";
+  stateFile = "${stateDir}/last-activity";
 
   xone-idle-shutoff = pkgs.writers.writePython3Bin "xone-idle-shutoff" {
     libraries = [ pkgs.python3Packages.evdev ];
@@ -11,16 +25,32 @@ let
 
     import argparse
     import glob
+    import os
     import select
     import time
 
     import evdev
 
     XONE_POWEROFF_GLOB = "/sys/bus/usb/drivers/xone-dongle/*/poweroff"
+    STATE_FILE = "${stateFile}"
 
 
     def log(msg):
         print(msg, flush=True)
+
+
+    def write_state(last_activity_wall, watching):
+        """Atomically write current state for `xone-idle-status` to read."""
+        try:
+            tmp = STATE_FILE + ".tmp"
+            with open(tmp, "w") as f:
+                # line 1: wall-clock unix timestamp of last activity (or "none")
+                # line 2: 1 if a controller is currently being watched, else 0
+                f.write(f"{last_activity_wall if last_activity_wall else 'none'}\n")
+                f.write(f"{1 if watching else 0}\n")
+            os.replace(tmp, STATE_FILE)
+        except OSError as e:
+            log(f"Failed to write state: {e}")
 
 
     def find_controllers():
@@ -68,20 +98,28 @@ let
 
         log(f"xone-idle-shutoff started (timeout={args.timeout}s)")
         devices = []
-        last_activity = None
+        # We track activity with monotonic time internally (immune to clock
+        # jumps) but also stamp the state file with wall time so that the
+        # `xone-idle-status` helper can just diff against `date +%s`.
+        last_activity_mono = None
+        last_activity_wall = None
+        write_state(None, watching=False)
 
         while True:
             # (Re)discover controllers if we don't have any
             if not devices:
                 devices = find_controllers()
                 if not devices:
+                    write_state(None, watching=False)
                     time.sleep(args.scan_interval)
                     continue
                 log(f"Watching: {[d.name for d in devices]}")
-                last_activity = time.monotonic()
+                last_activity_mono = time.monotonic()
+                last_activity_wall = int(time.time())
+                write_state(last_activity_wall, watching=True)
 
             fd_map = {d.fd: d for d in devices}
-            elapsed = time.monotonic() - last_activity
+            elapsed = time.monotonic() - last_activity_mono
             wait = max(1.0, args.timeout - elapsed)
 
             try:
@@ -90,7 +128,9 @@ let
                 # fd became invalid, controller almost certainly disconnected
                 close_all(devices)
                 devices = []
-                last_activity = None
+                last_activity_mono = None
+                last_activity_wall = None
+                write_state(None, watching=False)
                 continue
 
             if ready:
@@ -109,23 +149,58 @@ let
                     log("Controller disconnected, rescanning")
                     close_all(devices)
                     devices = []
-                    last_activity = None
+                    last_activity_mono = None
+                    last_activity_wall = None
+                    write_state(None, watching=False)
                 elif activity:
-                    last_activity = time.monotonic()
+                    last_activity_mono = time.monotonic()
+                    last_activity_wall = int(time.time())
+                    write_state(last_activity_wall, watching=True)
             else:
                 # select timed out -> we're past the idle threshold
                 log(f"Idle for {args.timeout}s, powering off")
                 power_off_all()
                 close_all(devices)
                 devices = []
-                last_activity = None
+                last_activity_mono = None
+                last_activity_wall = None
+                write_state(None, watching=False)
                 time.sleep(2)  # let the dongle settle before rescanning
 
 
     if __name__ == "__main__":
         main()
   '';
+
+  xone-idle-status = pkgs.writeShellScriptBin "xone-idle-status" ''
+    set -u
+    state_file="${stateFile}"
+    timeout=${toString idleTimeout}
+
+    if [ ! -r "$state_file" ]; then
+      echo "xone-idle-shutoff service not running (no state file)"
+      exit 1
+    fi
+
+    ts=$(sed -n '1p' "$state_file")
+    watching=$(sed -n '2p' "$state_file")
+
+    if [ "$watching" != "1" ] || [ "$ts" = "none" ] || [ -z "$ts" ]; then
+      echo "No controller currently connected"
+      exit 0
+    fi
+
+    now=$(date +%s)
+    idle=$(( now - ts ))
+    remaining=$(( timeout - idle ))
+    if [ "$remaining" -lt 0 ]; then remaining=0; fi
+
+    printf 'Idle:      %ds\n'  "$idle"
+    printf 'Remaining: %ds (timeout %ds)\n' "$remaining" "$timeout"
+  '';
 in {
+  environment.systemPackages = [ xone-idle-status ];
+
   systemd.services.xone-idle-shutoff = {
     description = "Auto power-off Xbox controllers after inactivity (xone)";
     wantedBy = [ "multi-user.target" ];
@@ -135,6 +210,9 @@ in {
       ExecStart = "${xone-idle-shutoff}/bin/xone-idle-shutoff --timeout ${toString idleTimeout}";
       Restart = "on-failure";
       RestartSec = 5;
+      # Creates /run/xone-idle-shutoff with mode 0755 so any user can read it.
+      RuntimeDirectory = "xone-idle-shutoff";
+      RuntimeDirectoryMode = "0755";
     };
   };
 }
