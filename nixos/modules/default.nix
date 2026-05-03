@@ -44,7 +44,7 @@
   services.upower.enable = true;
 
   # NVIDIA driver
-  myHardware.nvidia.mode = "proprietary";
+  myHardware.nvidia.mode = "disabled";
 
   # Disable X11
   services.xserver.enable = false;
