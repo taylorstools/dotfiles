@@ -13,7 +13,7 @@
 let
   # Idle seconds before the controller is powered off.
   # Xbox default on Windows is 15 minutes (900s).
-  idleTimeout = 900;
+  idleTimeout = 600;
 
   stateDir = "/run/xone-idle-shutoff";
   stateFile = "${stateDir}/last-activity";
