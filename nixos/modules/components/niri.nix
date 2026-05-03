@@ -22,6 +22,7 @@
     nwg-look
     python3
     satty
+    showtime
     slurp
     wlogout
     wlr-which-key
