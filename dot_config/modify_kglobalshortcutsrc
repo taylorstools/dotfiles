@@ -4,11 +4,29 @@
 # Pass through whatever is already there
 cat
 
-# Append our entry only if it isn't already present
-if ! grep -q '^\[services\]\[net\.local\.dim-overlay-off\.desktop\]$' "$1" 2>/dev/null; then
+# Restore Brightness: Meta+U
+if ! grep -q '^\[services\]\[Restore Brightness\.desktop\]$' "$1" 2>/dev/null; then
     cat <<'EOF'
 
-[services][net.local.dim-overlay-off.desktop]
+[services][Restore Brightness.desktop]
 _launch=Meta+U
+EOF
+fi
+
+# Dim Screen: Meta+Shift+Up
+if ! grep -q '^\[services\]\[Dim Screen\.desktop\]$' "$1" 2>/dev/null; then
+    cat <<'EOF'
+
+[services][Dim Screen.desktop]
+_launch=Meta+Shift+Up
+EOF
+fi
+
+# Brighten Screen: Meta+Shift+Down
+if ! grep -q '^\[services\]\[Brighten Screen\.desktop\]$' "$1" 2>/dev/null; then
+    cat <<'EOF'
+
+[services][Brighten Screen.desktop]
+_launch=Meta+Shift+Down
 EOF
 fi
