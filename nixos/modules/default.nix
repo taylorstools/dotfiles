@@ -8,6 +8,7 @@
     ./components/nvidia.nix
     ./components/printing.nix
     ./components/ssh.nix
+    ./components/update-alias.nix
     ./components/users.nix
   ];
 
