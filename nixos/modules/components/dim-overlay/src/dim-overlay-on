@@ -10,7 +10,7 @@ NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 
 # Threshold at which we suspend Night Light so the panel can reach true black.
-NL_THRESHOLD="0.95"
+NL_THRESHOLD="0.98"
 
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
