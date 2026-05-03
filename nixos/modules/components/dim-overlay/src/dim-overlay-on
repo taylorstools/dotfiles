@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # dim-overlay-on — if overlay is off, turn it on; if on, make it darker.
-# Toggles KDE Night Light off when opacity reaches the threshold; remembers
-# it did so via a flag file so toggle-back is symmetric.
+# Uses a smaller step above the fine-step threshold.
+# Toggles KDE Night Light off when opacity reaches the night-light threshold.
 set -eu
 
 PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.pid"
@@ -9,14 +9,17 @@ LEVEL_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.level"
 NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 
-NL_THRESHOLD="0.80"
+# Threshold at which we suspend Night Light so the panel can reach true black.
+NL_THRESHOLD="0.95"
 
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
 }
-DEF=$(read_const  "OPACITY_DEF");  [[ -z "$DEF"  ]] && DEF="0.40"
-STEP=$(read_const "OPACITY_STEP"); [[ -z "$STEP" ]] && STEP="0.05"
-MAX=$(read_const  "OPACITY_MAX");  [[ -z "$MAX"  ]] && MAX="0.95"
+DEF=$(read_const   "OPACITY_DEF");            [[ -z "$DEF"   ]] && DEF="0.40"
+STEP=$(read_const  "OPACITY_STEP");           [[ -z "$STEP"  ]] && STEP="0.05"
+FINE=$(read_const  "OPACITY_FINE_STEP");      [[ -z "$FINE"  ]] && FINE="0.02"
+THRES=$(read_const "OPACITY_FINE_THRESHOLD"); [[ -z "$THRES" ]] && THRES="0.90"
+MAX=$(read_const   "OPACITY_MAX");            [[ -z "$MAX"   ]] && MAX="0.95"
 
 nightlight_is_running() {
     local r
@@ -33,17 +36,15 @@ nightlight_toggle() {
         string:"Toggle Night Color" 2>/dev/null || true
 }
 
-# Toggle Night Light off only if (a) we haven't already done so this session
-# and (b) it's currently running.
 nightlight_off_if_needed() {
-    [[ -f "$NL_FLAG_FILE" ]] && return 0   # already toggled by us
+    [[ -f "$NL_FLAG_FILE" ]] && return 0
     if nightlight_is_running; then
         nightlight_toggle
         : > "$NL_FLAG_FILE"
     fi
 }
 
-at_or_above_threshold() {
+at_or_above_nl_threshold() {
     awk -v c="$1" -v t="$NL_THRESHOLD" 'BEGIN { exit !(c >= t - 0.001) }'
 }
 
@@ -59,21 +60,23 @@ fi
 if [[ -n "$PIDS" ]]; then
     kill -USR1 $PIDS
     CUR=$( [[ -f "$LEVEL_FILE" ]] && cat "$LEVEL_FILE" || echo "$DEF" )
-    NEW=$(awk -v c="$CUR" -v s="$STEP" -v m="$MAX" 'BEGIN {
-        v = c + s; if (v > m) v = m; printf "%.2f", v
+    NEW=$(awk -v c="$CUR" -v s="$STEP" -v fs="$FINE" -v ft="$THRES" -v m="$MAX" 'BEGIN {
+        step = (c >= ft - 0.001) ? fs : s
+        v = c + step
+        if (v > m) v = m
+        printf "%.2f", v
     }')
     echo "$NEW" > "$LEVEL_FILE"
 
-    if at_or_above_threshold "$NEW"; then
+    if at_or_above_nl_threshold "$NEW"; then
         nightlight_off_if_needed
     fi
 else
-    # Fresh start — clear any stale flag from a previous session
     rm -f "$NL_FLAG_FILE"
     setsid nohup "@DIM_OVERLAY@" >/dev/null 2>&1 </dev/null &
     echo "$DEF" > "$LEVEL_FILE"
 
-    if at_or_above_threshold "$DEF"; then
+    if at_or_above_nl_threshold "$DEF"; then
         nightlight_off_if_needed
     fi
 fi
