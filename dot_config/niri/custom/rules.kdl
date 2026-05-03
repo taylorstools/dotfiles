@@ -16,7 +16,7 @@ window-rule {
 window-rule {
     popups {
         geometry-corner-radius 15
-        opacity 0.8
+        opacity 0.9
         background-effect {
             blur true
         }
