@@ -1,6 +1,10 @@
 { config, pkgs, ... }:
 
 {
+  imports = [
+    ./xone-idle-shutoff.nix
+  ];
+
   hardware.xone.enable = true;
 
   services.udev.extraRules = ''
