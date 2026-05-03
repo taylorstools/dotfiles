@@ -22,6 +22,7 @@ Wallpapers{,/**}
   .config/kded6rc
   .config/kdedefaults{,/**}
   .config/kdeglobals
+  .config/kglobalshortcutsrc
   .config/kiorc
   .config/klaunchrc
   .config/kmenueditrc
@@ -51,6 +52,7 @@ Wallpapers{,/**}
   .local/share/applications/hulu.desktop
   .local/share/applications/Jellyfin.desktop
   .local/share/applications/Kick.desktop
+  .local/share/applications/net.local.dim-overlay-off.desktop
   .local/share/applications/net.local.kitty.desktop
   .local/share/applications/Netflix.desktop
   .local/share/applications/Prime Video.desktop
