@@ -20,6 +20,7 @@ let
 
   xone-idle-shutoff = pkgs.writers.writePython3Bin "xone-idle-shutoff" {
     libraries = [ pkgs.python3Packages.evdev ];
+    flakeIgnore = [ "E501" ];  # don't fail the build on long lines
   } ''
     """Power off xone-managed Xbox controllers after a period of inactivity."""
 
