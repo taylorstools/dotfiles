@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# chezmoi:template
+
+# Pass through whatever is already there
+cat
+
+# Append our entry only if it isn't already present
+if ! grep -q '^\[services\]\[net\.local\.dim-overlay-off\.desktop\]$' "$1" 2>/dev/null; then
+    cat <<'EOF'
+
+[services][net.local.dim-overlay-off.desktop]
+_launch=Meta+U
+EOF
+fi
