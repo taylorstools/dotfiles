@@ -20,12 +20,16 @@ BorderActivate=9
 [NightColor]
 Active=true
 Mode=Constant
-NightTemperature=2200
+NightTemperature=1800
 
 [Plugins]
 blurEnabled=true
 forceblurEnabled=true
 screendimmerEnabled=false
+
+[Tiling][50acac06-da6f-458e-848d-5353f319cecb][0eeacaf8-e58d-4ef0-9ccf-067a7ba8bfce]
+padding=4
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Tiling][50acac06-da6f-458e-848d-5353f319cecb][2835b84b-4852-4efe-9cba-15883d713256]
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
@@ -35,6 +39,10 @@ padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Tiling][50acac06-da6f-458e-848d-5353f319cecb][ff4d63fd-62a4-4b19-a1a3-129dd0283225]
+padding=4
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][b7422608-3054-4099-b5f8-58a552819a65][0eeacaf8-e58d-4ef0-9ccf-067a7ba8bfce]
 padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
@@ -50,7 +58,7 @@ padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Xwayland]
-Scale=1.25
+Scale=2.5
 
 [org.kde.kdecoration2]
 library=org.kde.kwin.aurorae.v2
