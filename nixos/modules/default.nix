@@ -101,7 +101,6 @@
     posy-cursors
     python3
     qbittorrent
-    update-alias
     vlc
     wget
     xdg-user-dirs
