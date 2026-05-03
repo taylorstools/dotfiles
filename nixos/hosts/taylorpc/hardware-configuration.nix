@@ -5,23 +5,24 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [ (modulesPath + "/hardware/cpu/intel-npu.nix")
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "uas" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/mapper/luks-d7d9a112-93af-4c4c-a9be-9818d4481bd1";
+    { device = "/dev/mapper/luks-bfd9ccd9-e9cc-4678-b51a-58801e2c681d";
       fsType = "ext4";
     };
 
-  boot.initrd.luks.devices."luks-d7d9a112-93af-4c4c-a9be-9818d4481bd1".device = "/dev/disk/by-uuid/d7d9a112-93af-4c4c-a9be-9818d4481bd1";
+  boot.initrd.luks.devices."luks-bfd9ccd9-e9cc-4678-b51a-58801e2c681d".device = "/dev/disk/by-uuid/bfd9ccd9-e9cc-4678-b51a-58801e2c681d";
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/0020-A6DF";
+    { device = "/dev/disk/by-uuid/3318-72DA";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };

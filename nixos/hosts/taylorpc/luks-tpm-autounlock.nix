@@ -1,10 +1,10 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 {
   boot.initrd.systemd.enable = true;
 
-  boot.initrd.luks.devices."luks-d7d9a112-93af-4c4c-a9be-9818d4481bd1" = {
-    device = "/dev/disk/by-uuid/d7d9a112-93af-4c4c-a9be-9818d4481bd1";
+  boot.initrd.luks.devices."luks-bfd9ccd9-e9cc-4678-b51a-58801e2c681d" = {
+    device = "/dev/disk/by-uuid/bfd9ccd9-e9cc-4678-b51a-58801e2c681d";
     crypttabExtraOpts = [ "tpm2-device=auto" ];
   };
 }
