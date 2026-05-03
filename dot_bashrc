@@ -15,7 +15,7 @@ alias ll='exa -alF --icons --color=always --group-directories-first'
 
 # Update NixOS flake and rebuild system
 if [ -f /etc/os-release ] && grep -q '^ID=nixos' /etc/os-release; then
-  alias update='git -C $HOME/.dotfiles pull --rebase --autostash && git -C $HOME/.dotfiles add --intent-to-add nixos/hosts/$(hostname)/hardware-configuration.nix 2>/dev/null; nix flake update --flake $HOME/.dotfiles/nixos && sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#$(hostname)'
+  alias update='git -C $HOME/.dotfiles pull --rebase --autostash && git -C $HOME/.dotfiles add --intent-to-add -f nixos/hosts/$(hostname)/hardware-configuration.nix 2>/dev/null; nix flake update --flake $HOME/.dotfiles/nixos && sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#$(hostname)'
 fi
 
 # git push script
