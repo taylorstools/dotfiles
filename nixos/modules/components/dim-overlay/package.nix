@@ -13,19 +13,17 @@
 , atk
 , at-spi2-core
 
-# User-tunable opacity constants — patched into dim-overlay.py at build time.
-, opacityStep    ? 0.10
-, opacityMin     ? 0.01
-, opacityMax     ? 0.99
-, opacityDefault ? 0.50
+, opacityStep              ? 0.05
+, opacityFineStep          ? 0.02
+, opacityFineStepThreshold ? 0.90
+, opacityMin               ? 0.50
+, opacityMax               ? 0.99
+, opacityDefault           ? 0.50
 }:
 
 let
   pyEnv = python3.withPackages (ps: with ps; [ pygobject3 pycairo ]);
 
-  # Packages whose typelibs and shared libraries we need at runtime.
-  # We scan every output of every package because nixpkgs sometimes splits
-  # typelibs across `out` / `dev` / `devdoc`.
   giPackages = [
     gtk4 gtk4-layer-shell gobject-introspection glib
     graphene pango gdk-pixbuf harfbuzz cairo atk at-spi2-core
@@ -41,7 +39,7 @@ let
 in
 stdenvNoCC.mkDerivation {
   pname   = "dim-overlay";
-  version = "1.0.0";
+  version = "1.1.0";
 
   src = ./src;
 
@@ -53,15 +51,15 @@ stdenvNoCC.mkDerivation {
 
     mkdir -p $out/bin $out/share/dim-overlay
 
-    # Copy + patch the Python source with the configured opacity constants.
     install -m 644 dim-overlay.py $out/share/dim-overlay/dim-overlay.py
     substituteInPlace $out/share/dim-overlay/dim-overlay.py \
-      --replace "OPACITY_STEP = 0.05" "OPACITY_STEP = ${toString opacityStep}" \
-      --replace "OPACITY_MIN  = 0.05" "OPACITY_MIN  = ${toString opacityMin}" \
-      --replace "OPACITY_MAX  = 0.95" "OPACITY_MAX  = ${toString opacityMax}" \
-      --replace "OPACITY_DEF  = 0.40" "OPACITY_DEF  = ${toString opacityDefault}"
+      --replace "OPACITY_STEP           = 0.05" "OPACITY_STEP           = ${toString opacityStep}" \
+      --replace "OPACITY_FINE_STEP      = 0.02" "OPACITY_FINE_STEP      = ${toString opacityFineStep}" \
+      --replace "OPACITY_FINE_THRESHOLD = 0.90" "OPACITY_FINE_THRESHOLD = ${toString opacityFineStepThreshold}" \
+      --replace "OPACITY_MIN            = 0.05" "OPACITY_MIN            = ${toString opacityMin}" \
+      --replace "OPACITY_MAX            = 0.95" "OPACITY_MAX            = ${toString opacityMax}" \
+      --replace "OPACITY_DEF            = 0.40" "OPACITY_DEF            = ${toString opacityDefault}"
 
-    # The actual python launcher with all GTK/typelib paths baked in.
     cat > $out/bin/dim-overlay <<EOF
     #!${stdenvNoCC.shell}
     export GI_TYPELIB_PATH="${giTypelibPath}\''${GI_TYPELIB_PATH:+:\$GI_TYPELIB_PATH}"
@@ -71,8 +69,6 @@ stdenvNoCC.mkDerivation {
     EOF
     chmod +x $out/bin/dim-overlay
 
-    # Control scripts.  Each has its absolute path to dim-overlay baked in
-    # via @DIM_OVERLAY@, and the python source path baked in via @PY_FILE@.
     for src in dim-overlay-on dim-overlay-undim dim-overlay-off; do
       install -m 755 "$src" "$out/bin/$src"
       substituteInPlace "$out/bin/$src" \

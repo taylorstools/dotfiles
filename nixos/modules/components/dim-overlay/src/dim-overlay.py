@@ -25,10 +25,12 @@ RUNTIME_DIR  = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
 PID_FILE     = RUNTIME_DIR / "dim-overlay.pid"
 
 # Patched at build time by package.nix:
-OPACITY_STEP = 0.05
-OPACITY_MIN  = 0.05
-OPACITY_MAX  = 0.95
-OPACITY_DEF  = 0.40
+OPACITY_STEP           = 0.05
+OPACITY_FINE_STEP      = 0.02
+OPACITY_FINE_THRESHOLD = 0.90
+OPACITY_MIN            = 0.05
+OPACITY_MAX            = 0.95
+OPACITY_DEF            = 0.40
 
 
 def write_pid_file() -> None:
@@ -43,6 +45,13 @@ def remove_pid_file() -> None:
         PID_FILE.unlink()
     except OSError:
         pass
+
+
+def step_for(opacity: float) -> float:
+    """Pick the correct increment based on the current opacity level."""
+    if opacity >= OPACITY_FINE_THRESHOLD - 0.001:
+        return OPACITY_FINE_STEP
+    return OPACITY_STEP
 
 
 # ── Overlay ──────────────────────────────────────────────────────────────────
@@ -60,6 +69,7 @@ class DimOverlay(Gtk.ApplicationWindow):
         for edge in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
                      LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
             LayerShell.set_anchor(self, edge, True)
+            LayerShell.set_margin(self, edge, 0)
         LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.NONE)
         LayerShell.set_exclusive_zone(self, -1)
 
@@ -91,8 +101,11 @@ class DimOverlay(Gtk.ApplicationWindow):
         self._opacity = self._clamp(opacity)
         self._area.queue_draw()
 
-    def darker(self):   self.set_dim(self._opacity + OPACITY_STEP)
-    def brighter(self): self.set_dim(self._opacity - OPACITY_STEP)
+    def darker(self):
+        self.set_dim(self._opacity + step_for(self._opacity))
+
+    def brighter(self):
+        self.set_dim(self._opacity - step_for(self._opacity))
 
 
 # ── Application ──────────────────────────────────────────────────────────────

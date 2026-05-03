@@ -11,7 +11,17 @@ in
       step = lib.mkOption {
         type = lib.types.float;
         default = 0.05;
-        description = "Increment per darken/brighten step (0.0–1.0).";
+        description = "Default increment per darken/brighten step.";
+      };
+      fineStep = lib.mkOption {
+        type = lib.types.float;
+        default = 0.02;
+        description = "Smaller step used when opacity is at or above fineStepThreshold.";
+      };
+      fineStepThreshold = lib.mkOption {
+        type = lib.types.float;
+        default = 0.90;
+        description = "At or above this opacity, use fineStep instead of step.";
       };
       min = lib.mkOption {
         type = lib.types.float;
@@ -34,10 +44,12 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [
       (pkgs.callPackage ./package.nix {
-        opacityStep    = cfg.opacity.step;
-        opacityMin     = cfg.opacity.min;
-        opacityMax     = cfg.opacity.max;
-        opacityDefault = cfg.opacity.default;
+        opacityStep              = cfg.opacity.step;
+        opacityFineStep          = cfg.opacity.fineStep;
+        opacityFineStepThreshold = cfg.opacity.fineStepThreshold;
+        opacityMin               = cfg.opacity.min;
+        opacityMax               = cfg.opacity.max;
+        opacityDefault           = cfg.opacity.default;
       })
     ];
   };
