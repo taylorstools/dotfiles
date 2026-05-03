@@ -10,12 +10,12 @@ in
     opacity = {
       step = lib.mkOption {
         type = lib.types.float;
-        default = 0.10;
+        default = 0.05;
         description = "Increment per darken/brighten step (0.0–1.0).";
       };
       min = lib.mkOption {
         type = lib.types.float;
-        default = 0.01;
+        default = 0.50;
         description = "Minimum overlay opacity (closest to normal brightness).";
       };
       max = lib.mkOption {
