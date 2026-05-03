@@ -2,8 +2,7 @@
 
 let
   # Idle seconds before the controller is powered off.
-  # Xbox default on Windows is 15 minutes (900s).
-  idleTimeout = 30;
+  idleTimeout = 600;
 
   xone-idle-shutoff = pkgs.writers.writePython3Bin "xone-idle-shutoff" {
     libraries = [ pkgs.python3Packages.evdev ];
