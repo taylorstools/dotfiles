@@ -57,6 +57,9 @@ if [ -f "/etc/nixos/hardware-configuration.nix" ]; then
     "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
 fi
 
+git -C $HOME/.dotfiles add --intent-to-add -f \
+    nixos/hosts/$(HOST)/hardware-configuration.nix
+
 # ===== Update flake =====
 
 gum style \
