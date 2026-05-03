@@ -10,7 +10,7 @@ in
     opacity = {
       step = lib.mkOption {
         type = lib.types.float;
-        default = 0.05;
+        default = 0.10;
         description = "Default increment per darken/brighten step.";
       };
       fineStep = lib.mkOption {
@@ -30,7 +30,7 @@ in
       };
       max = lib.mkOption {
         type = lib.types.float;
-        default = 0.99;
+        default = 1.00;
         description = "Maximum overlay opacity (closest to fully black).";
       };
       default = lib.mkOption {
