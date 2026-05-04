@@ -8,10 +8,7 @@
     ./components/thunar.nix
   ];
   
-  services.asusd = {
-    enable = true;
-    enableUserService = true;
-  };
+  services.asusd.enable = true;
 
   programs = {
     obs-studio.enable = true;
