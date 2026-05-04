@@ -24,7 +24,7 @@ fi
 
 # Compute dimmed brightness
 max=$(brightnessctl -c backlight m)
-target=$(( max / 20 ))
+target=$(( max / 12 ))
 (( target < 1 )) && target=1
 
 # Smoothly dim
