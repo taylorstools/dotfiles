@@ -8,12 +8,16 @@
     ./components/thunar.nix
   ];
   
+  services.asusd = {
+    enable = true;
+    enableUserService = true;
+  };
+
   programs = {
     obs-studio.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
-    asusctl
     vscodium
   ];
 }
