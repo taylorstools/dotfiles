@@ -1,6 +1,9 @@
 // hyprlock
 spawn-sh-at-startup "(pidof hyprlock || hyprlock -q) || niri msg action quit --skip-confirmation"
 
+// hyprlock first key press fix
+spawn-sh-at-startup "$HOME/scripts/send-keypress-at-startup.sh"
+
 // hypridle
 spawn-sh-at-startup "pidof hypridle || hypridle &"
 
