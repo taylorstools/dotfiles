@@ -56,9 +56,9 @@ stdenvNoCC.mkDerivation {
       --replace "OPACITY_STEP           = 0.05" "OPACITY_STEP           = ${toString opacityStep}" \
       --replace "OPACITY_FINE_STEP      = 0.02" "OPACITY_FINE_STEP      = ${toString opacityFineStep}" \
       --replace "OPACITY_FINE_THRESHOLD = 0.90" "OPACITY_FINE_THRESHOLD = ${toString opacityFineStepThreshold}" \
-      --replace "OPACITY_MIN            = 0.05" "OPACITY_MIN            = ${toString opacityMin}" \
-      --replace "OPACITY_MAX            = 0.95" "OPACITY_MAX            = ${toString opacityMax}" \
-      --replace "OPACITY_DEF            = 0.40" "OPACITY_DEF            = ${toString opacityDefault}"
+      --replace "OPACITY_MIN            = 0.50" "OPACITY_MIN            = ${toString opacityMin}" \
+      --replace "OPACITY_MAX            = 1.00" "OPACITY_MAX            = ${toString opacityMax}" \
+      --replace "OPACITY_DEF            = 0.50" "OPACITY_DEF            = ${toString opacityDefault}"
 
     cat > $out/bin/dim-overlay <<EOF
     #!${stdenvNoCC.shell}
