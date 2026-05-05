@@ -15,7 +15,5 @@ while ! pgrep -x hyprlock >/dev/null; do
     fi
 done
 
-elapsed_ms=$((i * 100))
-
 # Send Control key
 ydotool key 29:1 29:0
