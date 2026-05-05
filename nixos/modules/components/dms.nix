@@ -4,6 +4,8 @@
   programs.dank-material-shell = {
     enable = true;
 
+    package = inputs.dms.packages.${pkgs.system}.dank-material-shell;
+
     quickshell.package = inputs.quickshell.packages.${pkgs.system}.default;
 
     systemd = {
