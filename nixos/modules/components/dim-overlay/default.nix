@@ -10,7 +10,7 @@ in
     opacity = {
       step = lib.mkOption {
         type = lib.types.float;
-        default = 0.10;
+        default = 0.05;
         description = "Default increment per darken/brighten step.";
       };
       fineStep = lib.mkOption {

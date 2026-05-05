@@ -10,7 +10,7 @@ NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 
 # Threshold at which we suspend Night Light so the panel can reach true black.
-NL_THRESHOLD="0.98"
+NL_THRESHOLD="0.99"
 
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
@@ -63,6 +63,8 @@ if [[ -n "$PIDS" ]]; then
     NEW=$(awk -v c="$CUR" -v s="$STEP" -v fs="$FINE" -v ft="$THRES" -v m="$MAX" 'BEGIN {
         step = (c >= ft - 0.001) ? fs : s
         v = c + step
+        # Snap to threshold if we crossed it going up
+        if (c < ft - 0.001 && v > ft + 0.001) v = ft
         if (v > m) v = m
         printf "%.2f", v
     }')
