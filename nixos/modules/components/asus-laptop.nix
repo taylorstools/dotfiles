@@ -8,7 +8,13 @@
   services.asusd.enable = true;
 
   # Fix touchpad not working to wake from sleep
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="i2c", KERNEL=="i2c-ASCP1A00:00", ATTR{power/wakeup}="disabled"
-  '';
+  systemd.services.touchpad-wakeup = {
+    description = "Disable touchpad wakeup";
+    wantedBy = [ "multi-user.target" "post-resume.target" ];
+    after = [ "post-resume.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'echo disabled > /sys/bus/i2c/devices/i2c-ASCP1A00:00/power/wakeup'";
+    };
+  };
 }
