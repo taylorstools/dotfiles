@@ -12,6 +12,10 @@ overview {
     }
 }
 
+output "eDP-1" {
+    scale 1.875
+}
+
 recent-windows {
     binds {
         Alt+Tab         { next-window scope="output"; }
