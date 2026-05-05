@@ -17,7 +17,7 @@
 , opacityFineStep          ? 0.02
 , opacityFineStepThreshold ? 0.90
 , opacityMin               ? 0.50
-, opacityMax               ? 0.99
+, opacityMax               ? 1.00
 , opacityDefault           ? 0.50
 }:
 

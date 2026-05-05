@@ -28,9 +28,9 @@ PID_FILE     = RUNTIME_DIR / "dim-overlay.pid"
 OPACITY_STEP           = 0.05
 OPACITY_FINE_STEP      = 0.02
 OPACITY_FINE_THRESHOLD = 0.90
-OPACITY_MIN            = 0.05
-OPACITY_MAX            = 0.95
-OPACITY_DEF            = 0.40
+OPACITY_MIN            = 0.50
+OPACITY_MAX            = 1.00
+OPACITY_DEF            = 0.50
 
 
 def write_pid_file() -> None:
@@ -102,10 +102,18 @@ class DimOverlay(Gtk.ApplicationWindow):
         self._area.queue_draw()
 
     def darker(self):
-        self.set_dim(self._opacity + step_for(self._opacity))
+        new = self._opacity + step_for(self._opacity)
+        # If we crossed the fine threshold going up, snap to it
+        if self._opacity < OPACITY_FINE_THRESHOLD - 0.001 and new > OPACITY_FINE_THRESHOLD + 0.001:
+            new = OPACITY_FINE_THRESHOLD
+        self.set_dim(new)
 
     def brighter(self):
-        self.set_dim(self._opacity - step_for(self._opacity))
+        new = self._opacity - step_for(self._opacity)
+        # If we crossed the fine threshold going down, snap to it
+        if self._opacity > OPACITY_FINE_THRESHOLD + 0.001 and new < OPACITY_FINE_THRESHOLD - 0.001:
+            new = OPACITY_FINE_THRESHOLD
+        self.set_dim(new)
 
 
 # ── Application ──────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 SELF_DIR="$(dirname "$0")"
 
-NL_THRESHOLD="0.95"
+NL_THRESHOLD="0.99"
 
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
@@ -63,6 +63,8 @@ kill -USR2 $PIDS
 NEW=$(awk -v c="$CUR" -v s="$STEP" -v fs="$FINE" -v ft="$THRES" -v n="$MIN" 'BEGIN {
     step = (c >= ft - 0.001) ? fs : s
     v = c - step
+    # Snap to threshold if we crossed it going down
+    if (c > ft + 0.001 && v < ft - 0.001) v = ft
     if (v < n) v = n
     printf "%.2f", v
 }')
