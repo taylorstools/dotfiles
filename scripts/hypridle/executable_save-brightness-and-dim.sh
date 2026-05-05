@@ -25,9 +25,6 @@ if [[ ! -f "$STATE" ]]; then
     touch "$STATE"
 fi
 
-# Turn off keyboard backlight
-"$KBD_SCRIPT" -set 0
-
 # Compute dimmed brightness
 max=$(brightnessctl -c backlight m)
 target=$(( max / 12 ))
@@ -44,3 +41,6 @@ while :; do
     brightnessctl -c backlight -q set "$(( cur - step ))"
     sleep 0.03
 done
+
+# Turn off keyboard backlight
+"$KBD_SCRIPT" -set 0
