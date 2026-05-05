@@ -1,6 +1,10 @@
 { config, pkgs, lib, ... }:
 
 {
+  imports = [
+    ./ydotool.nix
+  ];
+
   services.greetd = {
     enable = true;
 
@@ -23,6 +27,5 @@
 
   environment.systemPackages = with pkgs; [
     hyprlock
-    wtype
   ];
 }

@@ -2,13 +2,14 @@
 
 let
   username = "taylor";
+  description = "Taylor";
   avatar = ./assets/taylor.png;
 in
 {
   users.users.${username} = {
     isNormalUser = true;
-    description = "Taylor";
-    extraGroups = [ "networkmanager" "wheel" "input" "ydotool" ];
+    description = description;
+    extraGroups = [ "networkmanager" "wheel" "input" ];
   };
 
   # Passwordless sudo
