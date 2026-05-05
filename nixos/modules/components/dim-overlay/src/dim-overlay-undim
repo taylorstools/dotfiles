@@ -10,7 +10,7 @@ NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 SELF_DIR="$(dirname "$0")"
 
-NL_THRESHOLD="0.99"
+NL_THRESHOLD="0.98"
 
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
