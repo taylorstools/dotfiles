@@ -14,13 +14,19 @@ cleanup() {
 trap cleanup EXIT
 
 STATE="/tmp/hypridle-dimmed"
+KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
+KBD_STATE="/tmp/dms-kbdbacklight"
 mkdir -p "$(dirname "$STATE")"
 
 # Snapshot brightness once
 if [[ ! -f "$STATE" ]]; then
     brightnessctl -c backlight -s
+    "$KBD_SCRIPT" -get > "$KBD_STATE"
     touch "$STATE"
 fi
+
+# Turn off keyboard backlight
+"$KBD_SCRIPT" -set 0
 
 # Compute dimmed brightness
 max=$(brightnessctl -c backlight m)
