@@ -11,6 +11,8 @@
 
   systemd.packages = [ pkgs.libinput-gestures ];
 
+  programs.ydotool.enable = true;
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     fd

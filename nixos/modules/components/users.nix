@@ -8,7 +8,7 @@ in
   users.users.${username} = {
     isNormalUser = true;
     description = "Taylor";
-    extraGroups = [ "networkmanager" "wheel" "input" ];
+    extraGroups = [ "networkmanager" "wheel" "input" "ydotool" ];
   };
 
   # Passwordless sudo
