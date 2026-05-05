@@ -14,7 +14,7 @@ STEP=100
 DEFAULT=2500
 
 # Current value
-CURRENT=$(dms ipc call night temperature "$DEFAULT" 2>/dev/null || echo "$DEFAULT")
+CURRENT=$(dms ipc call night getCurrentTemp 2>/dev/null || echo "$DEFAULT")
 
 yad \
   --title="Night Mode" \
@@ -38,7 +38,7 @@ while read -r temp; do
   LAST="$temp"
   kill "$JOB" 2>/dev/null
   (
-    dms ipc call night temperature "$LAST"
+    dms ipc call night setTargetTemp "$LAST"
   ) &
   JOB=$!
 done
