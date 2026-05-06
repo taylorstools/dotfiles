@@ -25,12 +25,14 @@ RUNTIME_DIR  = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
 PID_FILE     = RUNTIME_DIR / "dim-overlay.pid"
 
 # Patched at build time by package.nix:
-OPACITY_STEP           = 0.05
-OPACITY_FINE_STEP      = 0.02
-OPACITY_FINE_THRESHOLD = 0.90
-OPACITY_MIN            = 0.50
-OPACITY_MAX            = 1.00
-OPACITY_DEF            = 0.50
+OPACITY_STEP            = 0.05
+OPACITY_FINE_STEP       = 0.02
+OPACITY_FINE_THRESHOLD  = 0.90
+OPACITY_ULTRA_STEP      = 0.01
+OPACITY_ULTRA_THRESHOLD = 0.96
+OPACITY_MIN             = 0.05
+OPACITY_MAX             = 0.95
+OPACITY_DEF             = 0.40
 
 
 def write_pid_file() -> None:
@@ -49,6 +51,8 @@ def remove_pid_file() -> None:
 
 def step_for(opacity: float) -> float:
     """Pick the correct increment based on the current opacity level."""
+    if opacity >= OPACITY_ULTRA_THRESHOLD - 0.001:
+        return OPACITY_ULTRA_STEP
     if opacity >= OPACITY_FINE_THRESHOLD - 0.001:
         return OPACITY_FINE_STEP
     return OPACITY_STEP
@@ -103,15 +107,23 @@ class DimOverlay(Gtk.ApplicationWindow):
 
     def darker(self):
         new = self._opacity + step_for(self._opacity)
-        # If we crossed the fine threshold going up, snap to it
-        if self._opacity < OPACITY_FINE_THRESHOLD - 0.001 and new > OPACITY_FINE_THRESHOLD + 0.001:
+        # Snap to whichever threshold a step would cross going up
+        if (self._opacity < OPACITY_FINE_THRESHOLD - 0.001
+                and new > OPACITY_FINE_THRESHOLD + 0.001):
             new = OPACITY_FINE_THRESHOLD
+        elif (self._opacity < OPACITY_ULTRA_THRESHOLD - 0.001
+                and new > OPACITY_ULTRA_THRESHOLD + 0.001):
+            new = OPACITY_ULTRA_THRESHOLD
         self.set_dim(new)
 
     def brighter(self):
         new = self._opacity - step_for(self._opacity)
-        # If we crossed the fine threshold going down, snap to it
-        if self._opacity > OPACITY_FINE_THRESHOLD + 0.001 and new < OPACITY_FINE_THRESHOLD - 0.001:
+        # Snap to whichever threshold a step would cross going down
+        if (self._opacity > OPACITY_ULTRA_THRESHOLD + 0.001
+                and new < OPACITY_ULTRA_THRESHOLD - 0.001):
+            new = OPACITY_ULTRA_THRESHOLD
+        elif (self._opacity > OPACITY_FINE_THRESHOLD + 0.001
+                and new < OPACITY_FINE_THRESHOLD - 0.001):
             new = OPACITY_FINE_THRESHOLD
         self.set_dim(new)
 
