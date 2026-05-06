@@ -30,9 +30,9 @@ OPACITY_FINE_STEP       = 0.02
 OPACITY_FINE_THRESHOLD  = 0.90
 OPACITY_ULTRA_STEP      = 0.01
 OPACITY_ULTRA_THRESHOLD = 0.96
-OPACITY_MIN             = 0.05
-OPACITY_MAX             = 0.95
-OPACITY_DEF             = 0.40
+OPACITY_MIN             = 0.50
+OPACITY_MAX             = 1.00
+OPACITY_DEF             = 0.50
 
 
 def write_pid_file() -> None:
