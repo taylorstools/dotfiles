@@ -2,7 +2,6 @@
 
 {
   imports = [
-    /etc/nixos/hardware-configuration.nix
     ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
     ./components/git.nix
