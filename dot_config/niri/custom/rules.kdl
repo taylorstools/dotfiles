@@ -24,7 +24,9 @@ window-rule {
 }
 
 window-rule {
+    match app-id="thunar"
     match app-id="xed"
+    match app-id="yad"
     opacity 0.9
     background-effect {
         blur true
@@ -32,8 +34,8 @@ window-rule {
 }
 
 window-rule {
-    match app-id="thunar"
-    opacity 0.9
+    match app-id="codium"
+    opacity 0.95
     background-effect {
         blur true
     }
