@@ -24,10 +24,10 @@ window-rule {
 }
 
 window-rule {
+    match app-id="org.gnome.Calculator"
     match app-id="thunar"
     match app-id="xed"
     match app-id="yad"
-    match app-id="org.gnome.Calculator"
     opacity 0.9
     background-effect {
         blur true
@@ -36,6 +36,7 @@ window-rule {
 
 window-rule {
     match app-id="codium"
+    match app-id="obsidian"
     opacity 0.95
     background-effect {
         blur true
