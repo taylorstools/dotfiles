@@ -10,7 +10,7 @@ NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 SELF_DIR="$(dirname "$0")"
 
-NL_THRESHOLD="0.95"
+NL_THRESHOLD="0.99"
 
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
@@ -25,13 +25,13 @@ fi
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
 }
-DEF=$(read_const    "OPACITY_DEF");             [[ -z "$DEF"    ]] && DEF="0.40"
+DEF=$(read_const    "OPACITY_DEF");             [[ -z "$DEF"    ]] && DEF="0.50"
 STEP=$(read_const   "OPACITY_STEP");            [[ -z "$STEP"   ]] && STEP="0.05"
 FINE=$(read_const   "OPACITY_FINE_STEP");       [[ -z "$FINE"   ]] && FINE="0.02"
 THRES=$(read_const  "OPACITY_FINE_THRESHOLD");  [[ -z "$THRES"  ]] && THRES="0.90"
 ULTRA=$(read_const  "OPACITY_ULTRA_STEP");      [[ -z "$ULTRA"  ]] && ULTRA="0.01"
 UTHRES=$(read_const "OPACITY_ULTRA_THRESHOLD"); [[ -z "$UTHRES" ]] && UTHRES="0.96"
-MIN=$(read_const    "OPACITY_MIN");             [[ -z "$MIN"    ]] && MIN="0.05"
+MIN=$(read_const    "OPACITY_MIN");             [[ -z "$MIN"    ]] && MIN="0.50"
 
 nightlight_toggle() {
     dbus-send --session --type=method_call \
