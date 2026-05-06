@@ -1,6 +1,8 @@
 {
   "isLightMode": false,
   "doNotDisturb": false,
+  "doNotDisturbUntil": 0,
+  "terminalOverride": "",
   "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-mountain-1k.png",
   "perMonitorWallpaper": false,
   "monitorWallpapers": {},
@@ -26,7 +28,7 @@
   "wallpaperCyclingTime": "06:00",
   "monitorCyclingSettings": {},
   "nightModeEnabled": false,
-  "nightModeTemperature": 3000,
+  "nightModeTemperature": 2500,
   "nightModeHighTemperature": 6500,
   "nightModeAutoEnabled": false,
   "nightModeAutoMode": "time",
@@ -78,11 +80,20 @@
   "appOverrides": {},
   "searchAppActions": true,
   "vpnLastConnected": "",
+  "lastPlayerIdentity": "",
   "deviceMaxVolumes": {},
   "hiddenOutputDeviceNames": [],
   "hiddenInputDeviceNames": [],
+  "locale": "",
+  "timeLocale": "",
   "launcherLastMode": "all",
+  "launcherLastQuery": "",
+  "launcherQueryHistory": [
+    "vsc"
+  ],
   "appDrawerLastMode": "apps",
   "niriOverviewLastMode": "apps",
+  "settingsSidebarExpandedIds": ",",
+  "settingsSidebarCollapsedIds": ",workspaces_widgets,",
   "configVersion": 3
 }
