@@ -1,2 +1,1 @@
 nixos/hosts/*/hardware-configuration.nix
-nixos/hosts/bedroompc/hardware-configuration.nix
