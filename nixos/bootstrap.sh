@@ -52,7 +52,7 @@ fi
 
 if [ -f "/etc/nixos/hardware-configuration.nix" ]; then
   gum log --level info "Copying hardware-configuration.nix..."
-  sudo cp -f \
+  cp -f \
     "/etc/nixos/hardware-configuration.nix" \
     "$HOME/.dotfiles/nixos/hosts/$HOST/hardware-configuration.nix"
 fi
@@ -119,6 +119,6 @@ gum log --level info "BOOTSTRAP SCRIPT COMPLETE."
 
 if gum confirm "Reboot now?"; then
   [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
-  [ -d "/etc/nixos" ] && sudo rm -rf "/etc/nixos"
+  [ -f "/etc/nixos/configuration.nix" ] && sudo rm -f "/etc/nixos/configuration.nix"
   sudo reboot
 fi
