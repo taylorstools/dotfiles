@@ -51,16 +51,6 @@ window-rule {
 }
 
 window-rule {
-    match app-id="org.gnome.Calculator"
-    open-floating true
-}
-
-window-rule {
-    match app-id="yad"
-    open-floating true
-}
-
-window-rule {
     match app-id="io.missioncenter.MissionCenter"
     open-maximized false
     open-floating true
@@ -71,6 +61,8 @@ window-rule {
 }
 
 window-rule {
+    match app-id="org.gnome.Calculator"
+    match app-id="yad"
     match app-id=r#"^gnome-calculator$"#
     match app-id=r#"^galculator$"#
     match app-id=r#"^blueman-manager$"#
