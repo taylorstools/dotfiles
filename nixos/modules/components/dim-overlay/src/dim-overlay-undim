@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # dim-overlay-undim — at-or-below default → off; above default → brighter one step.
-# Uses a smaller step above the fine-step threshold.
+# Three-tier stepping with threshold snapping (mirror of dim-overlay-on).
 # Toggles Night Light back on if we previously toggled it off.
 set -eu
 
@@ -10,7 +10,7 @@ NL_FLAG_FILE="${XDG_RUNTIME_DIR:-/tmp}/dim-overlay.nightlight-toggled"
 PY_FILE="@PY_FILE@"
 SELF_DIR="$(dirname "$0")"
 
-NL_THRESHOLD="0.98"
+NL_THRESHOLD="0.95"
 
 PIDS=""
 if [[ -f "$PID_FILE" ]]; then
@@ -25,11 +25,13 @@ fi
 read_const() {
     awk -F'=' -v k="$1" '$1 ~ "^"k {gsub(/[ \t]/,"",$2); print $2; exit}' "$PY_FILE" 2>/dev/null
 }
-DEF=$(read_const   "OPACITY_DEF");            [[ -z "$DEF"   ]] && DEF="0.40"
-STEP=$(read_const  "OPACITY_STEP");           [[ -z "$STEP"  ]] && STEP="0.05"
-FINE=$(read_const  "OPACITY_FINE_STEP");      [[ -z "$FINE"  ]] && FINE="0.02"
-THRES=$(read_const "OPACITY_FINE_THRESHOLD"); [[ -z "$THRES" ]] && THRES="0.90"
-MIN=$(read_const   "OPACITY_MIN");            [[ -z "$MIN"   ]] && MIN="0.05"
+DEF=$(read_const    "OPACITY_DEF");             [[ -z "$DEF"    ]] && DEF="0.40"
+STEP=$(read_const   "OPACITY_STEP");            [[ -z "$STEP"   ]] && STEP="0.05"
+FINE=$(read_const   "OPACITY_FINE_STEP");       [[ -z "$FINE"   ]] && FINE="0.02"
+THRES=$(read_const  "OPACITY_FINE_THRESHOLD");  [[ -z "$THRES"  ]] && THRES="0.90"
+ULTRA=$(read_const  "OPACITY_ULTRA_STEP");      [[ -z "$ULTRA"  ]] && ULTRA="0.01"
+UTHRES=$(read_const "OPACITY_ULTRA_THRESHOLD"); [[ -z "$UTHRES" ]] && UTHRES="0.96"
+MIN=$(read_const    "OPACITY_MIN");             [[ -z "$MIN"    ]] && MIN="0.05"
 
 nightlight_toggle() {
     dbus-send --session --type=method_call \
@@ -60,11 +62,15 @@ if awk -v c="$CUR" -v d="$DEF" 'BEGIN { exit !(c <= d + 0.001) }'; then
 fi
 
 kill -USR2 $PIDS
-NEW=$(awk -v c="$CUR" -v s="$STEP" -v fs="$FINE" -v ft="$THRES" -v n="$MIN" 'BEGIN {
-    step = (c >= ft - 0.001) ? fs : s
+NEW=$(awk -v c="$CUR" -v s="$STEP" -v fs="$FINE" -v us="$ULTRA" \
+          -v ft="$THRES" -v ut="$UTHRES" -v n="$MIN" 'BEGIN {
+    if      (c >= ut - 0.001) step = us
+    else if (c >= ft - 0.001) step = fs
+    else                      step = s
     v = c - step
-    # Snap to threshold if we crossed it going down
-    if (c > ft + 0.001 && v < ft - 0.001) v = ft
+    # Snap to whichever threshold we crossed going down
+    if      (c > ut + 0.001 && v < ut - 0.001) v = ut
+    else if (c > ft + 0.001 && v < ft - 0.001) v = ft
     if (v < n) v = n
     printf "%.2f", v
 }')
