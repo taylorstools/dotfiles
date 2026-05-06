@@ -15,6 +15,7 @@
     brightnessctl
     fd
     fzf
+    gnome-calculator
     gparted
     grim
     hypridle
