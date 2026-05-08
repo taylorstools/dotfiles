@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 # dconf settings hash: {{ include "dot_config/chezmoi-extras/dconf.ini.tmpl" | sha256sum }}
 set -euo pipefail
-dbus-run-session -- dconf load / < "$HOME/.config/chezmoi-extras/dconf.ini"
+dbus-run-session -- dconf load / < "$HOME/.config/extras/dconf.ini"
