@@ -3,7 +3,7 @@
 let
   update-alias = pkgs.writeShellApplication {
     name = "update";
-    runtimeInputs = with pkgs; [ nix nixos-rebuild coreutils gum ];
+    runtimeInputs = with pkgs; [ git nix nixos-rebuild coreutils gum ];
     text = ''
       set -euo pipefail
 
@@ -14,6 +14,7 @@ let
       if [ -f "$HWCONFIG" ]; then
         gum log --level info "Copying $HWCONFIG to $DEST..."
         cp -f "$HWCONFIG" "$DEST"
+        git -C "$DOTFILES" add -f "nixos/hosts/$(hostname)/hardware-configuration.nix"
       else
         gum log --level error "$HWCONFIG does not exist!"
         exit 1
