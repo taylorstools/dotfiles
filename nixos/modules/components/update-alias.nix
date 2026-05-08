@@ -3,7 +3,7 @@
 let
   update-alias = pkgs.writeShellApplication {
     name = "update";
-    runtimeInputs = with pkgs; [ git nix nixos-rebuild coreutils nettools gum ];
+    runtimeInputs = with pkgs; [ nix nixos-rebuild coreutils gum ];
     text = ''
       set -euo pipefail
 
