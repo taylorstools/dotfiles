@@ -79,14 +79,14 @@ fi
 # ===== Run cgdisk =====
 
 echo
-gum style --foreground 39 --bold "Launching cgdisk on $DISK"
+gum style --foreground 39 --bold "Launching cfdisk on $DISK"
 gum log --level info "Create at minimum:"
 gum log --level info "  - an EFI System Partition (~1G, type 'EF00')"
 gum log --level info "  - a Linux partition for root (LUKS configured next, optional)"
 gum log --level info "Optional: a swap partition (type '8200')."
 gum log --level info "Use [ New ] for each, then [ Write ] -> 'yes', then [ Quit ]."
 sleep 3
-cgdisk "$DISK"
+cfdisk "$DISK"
 
 partprobe "$DISK" 2>/dev/null || true
 udevadm settle 2>/dev/null || true
