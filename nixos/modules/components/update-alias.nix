@@ -14,15 +14,16 @@ let
       gum log --level info "Pulling latest dotfiles..."
       git -C "$DOTFILES" pull --rebase --autostash
 
-      if [ -f "$HWCONFIG" ]; then
-        gum log --level info "Copying $HWCONFIG to $DEST..."
-        cp -f "$HWCONFIG" "$DEST"
-      else
+      if [ ! -f "$HWCONFIG" ]; then
         gum log --level error "$HWCONFIG does not exist!"
         exit 1
       fi
 
-      git -C "$DOTFILES" add -f "nixos/hosts/$(hostname)/hardware-configuration.nix"
+      if ! cmp -s "$HWCONFIG" "$DEST"; then
+        gum log --level info "Copying $HWCONFIG to $DEST..."
+        cp -f "$HWCONFIG" "$DEST"
+        git -C "$DOTFILES" add -f "nixos/hosts/$(hostname)/hardware-configuration.nix"
+      fi
 
       gum log --level info "Updating flake..."
       nix flake update --flake "$DOTFILES/nixos"
