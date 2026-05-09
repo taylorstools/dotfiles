@@ -1,10 +1,10 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myHardware.nvidia;
+  cfg = config.myOptions.nvidia;
 in
 {
-  options.myHardware.nvidia.mode = lib.mkOption {
+  options.myOptions.nvidia.mode = lib.mkOption {
     type = lib.types.enum [ "proprietary" "open" "nouveau" "disabled" ];
     default = "disabled";
     description = "Which Nvidia driver setup to use.";
