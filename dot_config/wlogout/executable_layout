@@ -30,7 +30,7 @@
 }
 {
     "label" : "windows",
-    "action" : "$HOME/scripts/boot-to-windows.sh",
+    "action" : "$HOME/scripts/refind_boot-to-windows.sh",
     "text" : "Windows",
     "keybind" : "w"
 }
