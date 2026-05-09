@@ -56,7 +56,7 @@
         type = "app";
         program = "${pkgs.writeShellApplication {
           name = "bootstrap";
-          runtimeInputs = [ pkgs.nix pkgs.gum pkgs.git pkgs.chezmoi ];
+          runtimeInputs = [ pkgs.chezmoi pkgs.git pkgs.gum pkgs.nix ];
           text = builtins.readFile ./bootstrap.sh;
         }}/bin/bootstrap";
       };
@@ -66,7 +66,7 @@
         type = "app";
         program = "${pkgs.writeShellApplication {
           name = "unstable-switch";
-          runtimeInputs = [ pkgs.nix pkgs.gum ];
+          runtimeInputs = [ pkgs.gum pkgs.nix ];
           text = builtins.readFile ./unstable-switch.sh;
         }}/bin/unstable-switch";
       };
@@ -77,7 +77,7 @@
         type = "app";
         program = "${pkgs.writeShellApplication {
           name = "bootfix";
-          runtimeInputs = [ pkgs.nix pkgs.gum ];
+          runtimeInputs = [ pkgs.gum pkgs.nix ];
           text = builtins.readFile ./bootfix.sh;
         }}/bin/bootfix";
       };
