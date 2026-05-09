@@ -17,14 +17,6 @@ fi
 niri msg action power-on-monitors
 
 STATE="/tmp/hypridle-dimmed"
-KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
-KBD_STATE="/tmp/dms-kbdbacklight"
-
-# Restore keyboard backlight
-if [[ -f "$KBD_STATE" ]]; then
-    "$KBD_SCRIPT" -set "$(cat "$KBD_STATE")" || true
-    rm -f "$KBD_STATE"
-fi
 
 # If dimmed, restore screen brightness
 if [[ -f "$STATE" ]]; then
