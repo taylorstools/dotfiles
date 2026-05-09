@@ -61,6 +61,31 @@
         }}/bin/bootstrap";
       };
 
+      # End-to-end install + post-install from the NixOS minimal ISO.
+      # Run with:
+      #   sudo nix run github:taylorstools/dotfiles?dir=nixos#bootstrap-minimal \
+      #     --extra-experimental-features "nix-command flakes"
+      bootstrap-minimal = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "bootstrap-minimal";
+          runtimeInputs = [
+            pkgs.gum
+            pkgs.git
+            pkgs.nix
+            pkgs.curl
+            pkgs.util-linux        # lsblk, mount, umount, mkswap, swapon/off, blkid
+            pkgs.parted            # partprobe
+            pkgs.gptfdisk          # cgdisk, sgdisk
+            pkgs.cryptsetup        # LUKS
+            pkgs.dosfstools        # mkfs.fat
+            pkgs.e2fsprogs         # mkfs.ext4
+            pkgs.nixos-install-tools  # nixos-install, nixos-generate-config, nixos-enter
+          ];
+          text = builtins.readFile ./bootstrap-minimal.sh;
+        }}/bin/bootstrap-minimal";
+      };
+
       # Script to switch to unstable branch within live ISO after install
       unstable-switch = {
         type = "app";
