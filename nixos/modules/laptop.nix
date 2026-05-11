@@ -13,6 +13,11 @@
     obs-studio.enable = true;
   };
 
+  myOptions = {
+    dms.source = "git";
+    quickshell.source = "git";
+  };
+
   environment.systemPackages = with pkgs; [
     obsidian
     vscodium

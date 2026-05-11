@@ -1,26 +1,54 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
+let
+  cfg = config.myOptions;
+  system = pkgs.stdenv.hostPlatform.system;
+
+  dmsPkg =
+    if cfg.dms.source == "git"
+    then inputs.dms.packages.${system}.dms-shell
+    else pkgs.dms-shell;
+
+  quickshellPkg =
+    if cfg.quickshell.source == "git"
+    then inputs.quickshell.packages.${system}.default
+    else pkgs.quickshell;
+in
 {
-  programs.dank-material-shell = {
-    enable = true;
-
-    package = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.dms-shell;
-
-    quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default;
-
-    systemd = {
-      enable = true;
-      restartIfChanged = true;
+  options.myOptions = {
+    dms.source = lib.mkOption {
+      type = lib.types.enum [ "stable" "git" ];
+      default = "stable";
+      description = "Where to source the DankMaterialShell package from.";
     };
 
-    enableDynamicTheming = true;
-    enableClipboardPaste = true;
+    quickshell.source = lib.mkOption {
+      type = lib.types.enum [ "stable" "git" ];
+      default = "stable";
+      description = "Where to source the quickshell package from.";
+    };
   };
 
-  environment.systemPackages = with pkgs; [
-    accountsservice
-    adw-gtk3
-    hypridle
-    swaybg
-  ];
+  config = {
+    programs.dank-material-shell = {
+      enable = true;
+      package = dmsPkg;
+      quickshell.package = quickshellPkg;
+
+      systemd = {
+        enable = true;
+        restartIfChanged = true;
+      };
+
+      enableDynamicTheming = true;
+      enableClipboardPaste = true;
+    };
+
+    environment.systemPackages = with pkgs; [
+      accountsservice
+      adw-gtk3
+      hypridle
+      swaybg
+    ];
+  };
 }
