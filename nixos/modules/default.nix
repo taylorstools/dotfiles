@@ -40,14 +40,8 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Power management
-  services.upower.enable = true;
-
   # NVIDIA driver
   myOptions.nvidia.mode = "disabled";
-
-  # Disable X11
-  services.xserver.enable = false;
 
   # PipeWire
   services.pulseaudio.enable = false;
@@ -77,8 +71,10 @@
 
   services = {
     flatpak.enable = true;
-    samba.enable = true;
     gvfs.enable = true;
+    samba.enable = true;
+    upower.enable = true;
+    xserver.enable = false;
   };
 
   programs = {
