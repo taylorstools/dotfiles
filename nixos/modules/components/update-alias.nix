@@ -10,6 +10,13 @@ let
       DOTFILES="''${DOTFILES:-$HOME/.dotfiles}"
       HWCONFIG="/etc/nixos/hardware-configuration.nix"
       DEST="$DOTFILES/nixos/hosts/$(hostname)/hardware-configuration.nix"
+      LOCKFILE="$DOTFILES/nixos/flake.lock"
+
+      if [ -f "$LOCKFILE" ]; then
+        gum log --level info "Removing flake.lock file..."
+        rm -f "$LOCKFILE"
+        git -C "$DOTFILES" rm nixos/flake.lock --ignore-unmatch
+      fi
 
       gum log --level info "Pulling latest dotfiles..."
       git -C "$DOTFILES" pull --rebase --autostash
