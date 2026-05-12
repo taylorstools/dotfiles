@@ -97,6 +97,7 @@
     posy-cursors
     python3
     qbittorrent
+    unzip
     vlc
     wget
     xdg-user-dirs
