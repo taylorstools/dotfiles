@@ -97,7 +97,6 @@
     posy-cursors
     python3
     qbittorrent
-    sbctl
     unzip
     vlc
     wget
