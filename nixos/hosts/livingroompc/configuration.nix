@@ -1,7 +1,7 @@
 { config, ... }:
 
 {
-  networking.hostName = "bedroompc";
+  networking.hostName = "livingroompc";
 
   imports = [
     ./luks-tpm-autounlock.nix
