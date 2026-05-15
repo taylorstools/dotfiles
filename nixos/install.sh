@@ -107,8 +107,16 @@ gum confirm "Wipe $DISK and install?" \
   || { gum log --level error "Aborted."; exit 1; }
 
 # ===== Partition + install in one shot =====
-gum log --level info "Running disko-install..."
 cd "$STAGE"
+
+# Make this a git-tracked flake so Nix is happy to lock it.
+git init -q
+git add -A
+
+gum log --level info "Locking installer flake inputs..."
+nix --extra-experimental-features "nix-command flakes" flake lock
+
+gum log --level info "Running disko-install..."
 nix --extra-experimental-features "nix-command flakes" \
   run "github:nix-community/disko#disko-install" -- \
   --flake ".#installer" \
