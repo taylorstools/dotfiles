@@ -4,18 +4,23 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     dms = {
       url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    quickshell = {
-      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    lanzaboote = {
-      url = "github:nix-community/lanzaboote/v1.0.0";
+    quickshell = {
+      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -85,6 +90,24 @@
           runtimeInputs = [ pkgs.gum pkgs.nix ];
           text = builtins.readFile ./bootfix.sh;
         }}/bin/bootfix";
+      };
+
+      install = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "install";
+          runtimeInputs = [ pkgs.git pkgs.gum ];
+          text = builtins.readFile ./install.sh;
+        }}/bin/install";
+      };
+
+      postinstall = {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "postinstall";
+          runtimeInputs = [ pkgs.chezmoi pkgs.git pkgs.gum pkgs.nix ];
+          text = builtins.readFile ./postinstall.sh;
+        }}/bin/postinstall";
       };
     };
   };
