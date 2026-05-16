@@ -22,6 +22,7 @@
             content = {
               type = "luks";
               name = "cryptroot";          # becomes /dev/mapper/cryptroot
+              passwordFile = "/tmp/install/luks.key";
               extraFormatArgs = [
                 "--type luks2"
                 "--cipher aes-xts-plain64"
