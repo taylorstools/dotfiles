@@ -7,9 +7,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-REPO="https://github.com/taylorstools/dotfiles"
 WORK="/tmp/install"
-DOTFILES="$WORK/dotfiles"
 
 gum style \
   --border double --border-foreground 39 \
