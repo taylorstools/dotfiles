@@ -123,24 +123,42 @@ dd if=/dev/zero of="$DISK" bs=1M seek="$seek_mb" count=100 status=progress
 # Inform kernel of partition changes
 partprobe "$DISK"
 
+if blkid "$DISK"* 2>/dev/null | grep -q .; then
+    gum log --level error "Wipe failed — signatures still present:"
+    blkid "$DISK"*
+    exit 1
+  fi
+
 gum log --level info "Disk wipe complete."
 
-# ===== Partition + install in one shot =====
+# ===== Partition + format + mount =====
 cd "$STAGE"
 
-# Make this a git-tracked flake so Nix is happy to lock it.
+# Make this a git-tracked flake so Nix is happy to lock it
 git init -q
 git add -A
 
 gum log --level info "Locking installer flake inputs..."
 nix --extra-experimental-features "nix-command flakes" flake lock
 
-gum log --level info "Running disko-install..."
+gum log --level info "Running disko (destroy + format + mount)..."
 nix --extra-experimental-features "nix-command flakes" \
-  run "github:nix-community/disko#disko-install" -- \
+  run "github:nix-community/disko/latest" -- \
+  --mode disko \
+  --flake ".#installer"
+
+# Sanity check: mounts must exist before we hand off to nixos-install
+gum log --level info "Verifying mounts under /mnt..."
+mountpoint -q /mnt      || { gum log --level error "/mnt is not mounted";      exit 1; }
+mountpoint -q /mnt/boot || { gum log --level error "/mnt/boot is not mounted"; exit 1; }
+gum log --level info "/mnt and /mnt/boot are mounted — good."
+
+# ===== Install =====
+gum log --level info "Running nixos-install..."
+nixos-install \
   --flake ".#installer" \
-  --write-efi-boot-entries \
-  --disk main "$DISK"
+  --no-root-password \
+  --root /mnt
 
 # ===== Stash configs into the new system =====
 install -d -m 0755 /mnt/etc/nixos-installer
