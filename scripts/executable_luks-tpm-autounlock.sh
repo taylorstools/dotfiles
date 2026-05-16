@@ -46,8 +46,7 @@ gum style \
   --padding "1 4" --margin "1 0" \
   --bold "LUKS TPM Auto-Unlock"
 
-# ===== Prompt if --enable/--disable not provided =====
-
+# Prompt if --enable/--disable not provided
 if [[ -z "$ENABLE" ]]; then
   gum confirm "Enable LUKS auto-unlock with TPM?" && ENABLE=true || ENABLE=false
 else
@@ -55,8 +54,7 @@ else
   gum log --level info "$action LUKS auto-unlock with TPM..."
 fi
 
-# ===== Enroll TPM into LUKS device =====
-
+# Enroll TPM into LUKS device
 if [[ "$ENABLE" == true ]]; then
   DEVICE=$(
     nix-shell -p tpm2-tools gum --run '
@@ -90,21 +88,7 @@ if [[ "$ENABLE" == true ]]; then
 
   gum log --level info "TPM enrolled to $DEVICE."
 
-  # ===== Generate luks-tpm-autounlock.nix =====
-
-  echo ""
-  export DEVICE=$DEVICE
-
-  UUID=$(
-    nix-shell -p cryptsetup --run '
-      set -e
-      UUID=$(sudo cryptsetup luksUUID "$DEVICE")
-      echo "$UUID"
-    '
-  )
-
-  [ -z "$UUID" ] && { gum log --level error "Failed to determine UUID for $DEVICE."; exit 1; }
-
+  # Generate luks-tpm-autounlock.nix
   NIX_FILE="$HOME/.dotfiles/nixos/hosts/$HOSTNAME/luks-tpm-autounlock.nix"
 
   [ -f "$NIX_FILE" ] && rm -f "$NIX_FILE"
@@ -114,19 +98,14 @@ if [[ "$ENABLE" == true ]]; then
 
 	{
 	  boot.initrd.systemd.enable = true;
-
-	  boot.initrd.luks.devices."luks-$UUID" = {
-	    device = "/dev/disk/by-uuid/$UUID";
-	    crypttabExtraOpts = [ "tpm2-device=auto" ];
-	  };
+	  boot.initrd.luks.devices.cryptroot.crypttabExtraOpts = [ "tpm2-device=auto" ];
 	}
 	EOF
 
   gum log --level info "Generated luks-tpm-autounlock.nix for $HOSTNAME."
 fi
 
-# ===== Edit configuration.nix import =====
-
+# Edit configuration.nix import
 echo ""
 CONFIG="$HOME/.dotfiles/nixos/hosts/$HOSTNAME/configuration.nix"
 TARGET="./luks-tpm-autounlock.nix"
@@ -162,8 +141,7 @@ mv "$tmp" "$CONFIG"
 action=$($ENABLE && echo "include" || echo "exclude")
 gum log --level info "Edited configuration.nix for $HOSTNAME to $action luks-tpm-autounlock.nix."
 
-# ===== Rebuild system =====
-
+# Rebuild system
 [[ "$NOREBUILD" == true ]] || {
   echo ""
   gum log --level info "Rebuilding system configuration..."

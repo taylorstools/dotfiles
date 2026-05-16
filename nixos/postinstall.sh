@@ -29,6 +29,7 @@ if [ -f "$INSTALLER_DIR/configuration.nix" ] \
 fi
 
 # Clone or update dotfiles
+echo
 gum log --level info "Cloning dotfiles..."
 if [ ! -d "$DOTFILES_DIR" ]; then
   git clone "$REPO" "$DOTFILES_DIR"
@@ -130,7 +131,7 @@ sudo nixos-rebuild boot --flake "$DOTFILES_DIR/nixos#$HOST"
 
 # Done
 echo
-gum log --level info "POSTINSTALL COMPLETE."
+gum log --level info "POST-INSTALL SCRIPT COMPLETE."
 
 if gum confirm "Reboot now?"; then
   [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
