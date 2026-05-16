@@ -24,8 +24,8 @@ fi
 
 # ===== Change default password if still set =====
 if [ -f "$INSTALLER_DIR/configuration.nix" ] \
-   && grep -q 'initialPassword = "changeme"' "$INSTALLER_DIR/configuration.nix"; then
-  gum log --level warn "Default 'changeme' password may still be active."
+   && grep -q 'initialPassword = "password"' "$INSTALLER_DIR/configuration.nix"; then
+  gum log --level warn "Default 'password' password may still be active."
   gum confirm "Set a real password now?" && passwd
 fi
 
@@ -94,6 +94,26 @@ if [ -f "$INSTALLER_DIR/disko.nix" ] && [ ! -f "$HOST_DIR/disko.nix" ]; then
   gum log --level warn "Make sure hosts/$HOST/configuration.nix imports disko's module and ./disko.nix"
 fi
 
+# ===== Apply dotfiles =====
+echo
+gum log --level info "Applying dotfiles with chezmoi..."
+chezmoi init --source "$DOTFILES_DIR" --apply "$REPO" --force
+
+# ===== LUKS TPM autounlock =====
+if [ -x "$HOME/scripts/luks-tpm-autounlock.sh" ]; then
+  "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
+fi
+
+# ===== User directories =====
+if [ -x "$HOME/scripts/update-user-dirs.sh" ]; then
+  "$HOME/scripts/update-user-dirs.sh"
+fi
+
+# ===== rEFInd =====
+if [[ "$REFIND_ANSWER" == "y" ]] && [ -x "$HOME/scripts/rEFInd/nix_install-refind.sh" ]; then
+  "$HOME/scripts/rEFInd/nix_install-refind.sh"
+fi
+
 # ===== Update flake =====
 gum style \
   --border double --border-foreground 39 \
@@ -107,36 +127,7 @@ nix --extra-experimental-features "nix-command flakes" \
 # ===== Apply system configuration =====
 echo
 gum log --level info "Applying system configuration..."
-set +e
-sudo nixos-rebuild switch --flake "$DOTFILES_DIR/nixos#$HOST"
-rc=$?
-set -e
-
-case $rc in
-  0)  ;;
-  4)  gum log --level warn "Rebuild succeeded but some user services could not reload (expected from TTY)." ;;
-  *)  gum log --level error "nixos-rebuild failed with exit status $rc"; exit $rc ;;
-esac
-
-# ===== Apply dotfiles =====
-echo
-gum log --level info "Applying dotfiles with chezmoi..."
-chezmoi init --source "$DOTFILES_DIR" --apply "$REPO" --force
-
-# ===== LUKS TPM autounlock =====
-if [ -x "$HOME/scripts/luks-tpm-autounlock.sh" ]; then
-  "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST"
-fi
-
-# ===== User directories =====
-if [ -x "$HOME/scripts/update-user-dirs.sh" ]; then
-  "$HOME/scripts/update-user-dirs.sh"
-fi
-
-# ===== rEFInd =====
-if [[ "$REFIND_ANSWER" == "y" ]] && [ -x "$HOME/scripts/rEFInd/nix_install-refind.sh" ]; then
-  "$HOME/scripts/rEFInd/nix_install-refind.sh"
-fi
+sudo nixos-rebuild boot --flake "$DOTFILES_DIR/nixos#$HOST"
 
 # ===== Done =====
 echo
