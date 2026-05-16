@@ -80,10 +80,10 @@ gum log --level info "Generated networking.hostId = $HOSTID"
 # ===== Brand the live ISO with the chosen hostId =====
 # So the ZFS pool gets created with the same hostId we bake into the config.
 gum log --level info "Setting /etc/hostid on live ISO to $HOSTID..."
+rm -f /etc/hostid
 if command -v zgenhostid >/dev/null; then
   zgenhostid -f "$HOSTID"
 else
-  # 4 bytes little-endian
   printf '%b' "\x${HOSTID:6:2}\x${HOSTID:4:2}\x${HOSTID:2:2}\x${HOSTID:0:2}" \
     > /etc/hostid
 fi
