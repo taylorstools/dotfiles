@@ -117,7 +117,12 @@
             zfs
             kmod
           ];
-          text = builtins.readFile ./install.sh;
+          text = ''
+            export DISKO_TEMPLATE="${./install/disko.nix}"
+            export CONFIG_TEMPLATE="${./install/configuration.nix}"
+            export FLAKE_TEMPLATE="${./install/flake.nix}"
+            ${builtins.readFile ./install.sh}
+          '';
         }}/bin/install";
       };
 
