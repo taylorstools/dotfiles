@@ -5,7 +5,7 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  # --- Boot --------------------------------------------------------------
+  # Boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
@@ -14,13 +14,13 @@
   boot.initrd.availableKernelModules =
     [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
 
-  # --- Hardware ----------------------------------------------------------
+  # Hardware
   hardware.enableRedistributableFirmware = true;
   nixpkgs.hostPlatform = "x86_64-linux";
 
-  # --- Networking --------------------------------------------------------
+  # Networking
   networking.hostName = "@HOSTNAME@";
-  networking.hostId   = "@HOSTID@";     # required by ZFS
+  networking.hostId   = "@HOSTID@";         # required by ZFS
   networking.networkmanager.enable = true;
 
   services.openssh = {
@@ -29,22 +29,22 @@
     settings.PermitRootLogin = "no";
   };
 
-  # --- Time / locale -----------------------------------------------------
+  # Time / locale
   time.timeZone = "America/Phoenix";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # --- User --------------------------------------------------------------
+  # User
   users.mutableUsers = true;
   users.users.taylor = {
     isNormalUser = true;
     extraGroups  = [ "wheel" "networkmanager" ];
-    initialPassword = "changeme";       # change immediately
+    initialPassword = "password";
   };
 
-  # --- Tooling for postinstall (bootstrap.sh) ----------------------------
-  environment.systemPackages = with pkgs; [ git gum chezmoi vim ];
+  # Tooling for postinstall (bootstrap.sh)
+  environment.systemPackages = with pkgs; [ git gum chezmoi xdg-user-dirs ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  security.sudo.wheelNeedsPassword = false;   # full config tightens this
+  security.sudo.wheelNeedsPassword = false;
 
   services.zfs.autoScrub.enable = true;
 
