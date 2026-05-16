@@ -3,7 +3,7 @@ set -euo pipefail
 clear
 
 if [ "$(id -u)" -eq 0 ]; then
-  gum log --level error "Don't run as root; sudo is invoked as needed."
+  gum log --level error "Don't run as root, sudo is invoked as needed."
   exit 1
 fi
 
@@ -14,22 +14,21 @@ INSTALLER_DIR="/etc/nixos-installer"
 gum style \
   --border double --border-foreground 39 \
   --padding "1 4" --margin "1 0" \
-  --bold "NixOS Postinstall Script"
+  --bold "NixOS Post-Install Script"
 
-# ===== Sanity =====
 if [ ! -d "$INSTALLER_DIR" ]; then
-  gum log --level warn "No $INSTALLER_DIR — was this booted from install.sh?"
+  gum log --level warn "No $INSTALLER_DIR, was this booted from install.sh?"
   gum confirm "Continue anyway?" || exit 1
 fi
 
-# ===== Change default password if still set =====
+# Prompt to change default password
 if [ -f "$INSTALLER_DIR/configuration.nix" ] \
    && grep -q 'initialPassword = "password"' "$INSTALLER_DIR/configuration.nix"; then
   gum log --level warn "Default 'password' password may still be active."
   gum confirm "Set a real password now?" && passwd
 fi
 
-# ===== Clone or update dotfiles =====
+# Clone or update dotfiles
 gum log --level info "Cloning dotfiles..."
 if [ ! -d "$DOTFILES_DIR" ]; then
   git clone "$REPO" "$DOTFILES_DIR"
@@ -38,7 +37,7 @@ else
   git -C "$DOTFILES_DIR" pull --ff-only
 fi
 
-# ===== Select host =====
+# Select host for NixOS configuration
 hosts=()
 for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
   [ -d "$dir" ] || continue
@@ -51,14 +50,14 @@ HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose host:")
 [ -z "$HOST" ] && { gum log --level error "No host selected."; exit 1; }
 HOST_DIR="$DOTFILES_DIR/nixos/hosts/$HOST"
 
-# ===== rEFInd prompt (taylorpc only) =====
+# rEFInd prompt (taylorpc only)
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
   echo
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
-# ===== Generate hardware-configuration.nix (no filesystems; disko owns those) =====
+# Generate hardware-configuration.nix
 gum log --level info "Generating hardware-configuration.nix..."
 TMP_HW=$(mktemp -d)
 sudo nixos-generate-config --no-filesystems --dir "$TMP_HW"
@@ -68,7 +67,7 @@ sudo rm -rf "$TMP_HW"
 git -C "$DOTFILES_DIR" add --intent-to-add -f \
   "nixos/hosts/$HOST/hardware-configuration.nix"
 
-# ===== Bring forward the ZFS hostId =====
+# Bring forward the ZFS hostId
 if [ -f "$INSTALLER_DIR/hostid" ]; then
   HOSTID=$(cat "$INSTALLER_DIR/hostid")
   cat > "$HOST_DIR/hostid.nix" <<EOF
@@ -86,7 +85,7 @@ EOF
   fi
 fi
 
-# ===== Carry forward disko.nix if the host doesn't have one yet =====
+# Carry forward disko.nix if the host doesn't have one yet
 if [ -f "$INSTALLER_DIR/disko.nix" ] && [ ! -f "$HOST_DIR/disko.nix" ]; then
   gum log --level info "Copying installer disko.nix → hosts/$HOST/disko.nix"
   cp "$INSTALLER_DIR/disko.nix" "$HOST_DIR/disko.nix"
@@ -94,27 +93,27 @@ if [ -f "$INSTALLER_DIR/disko.nix" ] && [ ! -f "$HOST_DIR/disko.nix" ]; then
   gum log --level warn "Make sure hosts/$HOST/configuration.nix imports disko's module and ./disko.nix"
 fi
 
-# ===== Apply dotfiles =====
+# Apply dotfiles
 echo
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply "$REPO" --force
 
-# ===== LUKS TPM autounlock =====
+# LUKS TPM autounlock
 if [ -x "$HOME/scripts/luks-tpm-autounlock.sh" ]; then
   "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
 fi
 
-# ===== User directories =====
+# User directories
 if [ -x "$HOME/scripts/update-user-dirs.sh" ]; then
   "$HOME/scripts/update-user-dirs.sh"
 fi
 
-# ===== rEFInd =====
+# rEFInd
 if [[ "$REFIND_ANSWER" == "y" ]] && [ -x "$HOME/scripts/rEFInd/nix_install-refind.sh" ]; then
   "$HOME/scripts/rEFInd/nix_install-refind.sh"
 fi
 
-# ===== Update flake =====
+# Update flake
 gum style \
   --border double --border-foreground 39 \
   --padding "1 4" --margin "1 0" \
@@ -124,12 +123,12 @@ gum log --level info "Updating Nix flake..."
 nix --extra-experimental-features "nix-command flakes" \
   flake update --flake "$DOTFILES_DIR/nixos"
 
-# ===== Apply system configuration =====
+# Apply system configuration
 echo
 gum log --level info "Applying system configuration..."
 sudo nixos-rebuild boot --flake "$DOTFILES_DIR/nixos#$HOST"
 
-# ===== Done =====
+# Done
 echo
 gum log --level info "POSTINSTALL COMPLETE."
 
