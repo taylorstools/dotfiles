@@ -107,7 +107,7 @@ trap 'shred -u /tmp/install/luks.key 2>/dev/null || rm -f /tmp/install/luks.key'
 
 # ===== Final confirmation =====
 echo
-gum style --foreground 196 --bold "===  DESTRUCTIVE OPERATION  ==="
+gum style --foreground 196 --bold "DESTRUCTIVE OPERATION!"
 gum log --level warn "Disk:     $DISK"
 gum log --level warn "Hostname: $HOSTNAME"
 gum log --level warn "HostId:   $HOSTID"
