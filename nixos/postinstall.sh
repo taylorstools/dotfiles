@@ -61,7 +61,7 @@ fi
 # ===== Generate hardware-configuration.nix (no filesystems; disko owns those) =====
 gum log --level info "Generating hardware-configuration.nix..."
 TMP_HW=$(mktemp -d)
-sudo nixos-generate-config --no-filesystems --root / --dir "$TMP_HW"
+sudo nixos-generate-config --no-filesystems --dir "$TMP_HW"
 sudo cp -f "$TMP_HW/hardware-configuration.nix" "$HOST_DIR/hardware-configuration.nix"
 sudo chown "$USER:" "$HOST_DIR/hardware-configuration.nix"
 sudo rm -rf "$TMP_HW"
