@@ -121,18 +121,36 @@ gum confirm "Wipe $DISK and install?" \
   --affirmative "Yes, wipe and install" --negative "Abort" \
   || { gum log --level error "Aborted."; exit 1; }
 
-# ===== Clean up any leftover state from a previous failed run =====
+# ===== Clean up any leftover state =====
 gum log --level info "Cleaning up any prior install state..."
 cryptsetup close cryptroot 2>/dev/null || true
 umount -R /mnt/disko-install-root 2>/dev/null || true
 zpool export zroot 2>/dev/null || true
 
-# ===== Wipe signatures so disko starts from zero =====
-gum log --level info "Wiping existing signatures on $DISK..."
+# ===== Wipe partition signatures FIRST, then the disk =====
+gum log --level info "Wiping existing partition signatures on $DISK..."
+# Per-partition wipe catches LUKS headers, ZFS labels, etc. that live inside
+# the partition rather than at the disk start.
+while read -r part; do
+  [ -n "$part" ] && [ "$part" != "$DISK" ] || continue
+  gum log --level info "  wiping $part"
+  wipefs -af "$part" 2>/dev/null || true
+done < <(lsblk -ln -o PATH "$DISK" 2>/dev/null | tail -n +2)
+
+gum log --level info "Zapping partition table on $DISK..."
 wipefs -af "$DISK" || true
 sgdisk --zap-all "$DISK" || true
+
+# Belt and suspenders: zero the first and last 16 MiB to nuke
+# any GPT/MBR/boot remnants the tools missed.
+dd if=/dev/zero of="$DISK" bs=1M count=16 conv=fsync status=none 2>/dev/null || true
+DISK_BYTES=$(blockdev --getsize64 "$DISK")
+SEEK_MB=$(( (DISK_BYTES / 1048576) - 16 ))
+dd if=/dev/zero of="$DISK" bs=1M count=16 seek="$SEEK_MB" conv=fsync status=none 2>/dev/null || true
+
 partprobe "$DISK" || true
-sleep 1
+udevadm settle || true
+sleep 2
 
 # ===== Partition + install in one shot =====
 cd "$STAGE"
