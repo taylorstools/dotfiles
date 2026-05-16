@@ -116,36 +116,30 @@ gum confirm "Wipe $DISK and install?" \
   --affirmative "Yes, wipe and install" --negative "Abort" \
   || { gum log --level error "Aborted."; exit 1; }
 
-gum log --level info "Wiping existing signatures from $DISK..."
-
-# Unmount anything using the disk
+gum log --level info "Wiping $DISK..."
 umount -R /mnt 2>/dev/null || true
-
-# Remove any existing ZFS labels
 zpool labelclear -f "$DISK" 2>/dev/null || true
 
-# Remove filesystem/RAID/ZFS signatures
-wipefs -af "$DISK"
+# Hardware-level erase via TRIM. Instant on NVMe.
+if ! blkdiscard -f "$DISK" 2>/dev/null; then
+  gum log --level warn "blkdiscard unsupported — falling back to zero-write."
+  # Cover at least the first 2 GiB — past the ESP and well past the LUKS header.
+  dd if=/dev/zero of="$DISK" bs=1M count=2048 conv=fsync status=progress
+fi
 
-# Zap GPT/MBR structures
-sgdisk --zap-all "$DISK"
+wipefs -af "$DISK" || true
+sgdisk --zap-all "$DISK" || true
+partprobe "$DISK" || true
+udevadm settle || true
+sleep 2
 
-# Clear beginning and end of disk
-dd if=/dev/zero of="$DISK" bs=1M count=100 status=progress
-disk_size=$(blockdev --getsize64 "$DISK")
-seek_mb=$(( disk_size / 1024 / 1024 - 100 ))
-dd if=/dev/zero of="$DISK" bs=1M seek="$seek_mb" count=100 status=progress
-
-# Inform kernel of partition changes
-partprobe "$DISK"
-
-if blkid "$DISK"* 2>/dev/null | grep -q .; then
-    gum log --level error "Wipe failed — signatures still present:"
-    blkid "$DISK"*
-    exit 1
-  fi
-
-gum log --level info "Disk wipe complete."
+# Verify — this should print nothing
+gum log --level info "Post-wipe signatures (should be empty):"
+if blkid "$DISK"* 2>/dev/null | tee /dev/stderr | grep -q .; then
+  gum log --level error "Wipe failed — signatures still present. Aborting."
+  exit 1
+fi
+gum log --level info "Disk is clean."
 
 # ===== Partition + format + mount =====
 cd "$STAGE"
