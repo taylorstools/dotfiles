@@ -16,25 +16,6 @@ gum style \
   --padding "1 4" --margin "1 0" \
   --bold "NixOS Install Script"
 
-# ===== Clone dotfiles to get install templates =====
-mkdir -p "$WORK"
-if [ ! -d "$DOTFILES" ]; then
-  gum log --level info "Cloning dotfiles..."
-  git clone --depth 1 "$REPO" "$DOTFILES"
-else
-  gum log --level info "Dotfiles already present; pulling..."
-  git -C "$DOTFILES" pull --ff-only
-fi
-
-TEMPLATE_DIR="$DOTFILES/nixos/install"
-DISKO_TEMPLATE="$TEMPLATE_DIR/disko.nix"
-CONFIG_TEMPLATE="$TEMPLATE_DIR/configuration.nix"
-FLAKE_TEMPLATE="$TEMPLATE_DIR/flake.nix"
-
-for f in "$DISKO_TEMPLATE" "$CONFIG_TEMPLATE" "$FLAKE_TEMPLATE"; do
-  [ -f "$f" ] || { gum log --level error "Missing template: $f"; exit 1; }
-done
-
 # ===== Choose target disk =====
 echo
 gum log --level info "Detected disks:"
@@ -121,36 +102,30 @@ gum confirm "Wipe $DISK and install?" \
   --affirmative "Yes, wipe and install" --negative "Abort" \
   || { gum log --level error "Aborted."; exit 1; }
 
-# ===== Clean up any leftover state =====
-gum log --level info "Cleaning up any prior install state..."
-cryptsetup close cryptroot 2>/dev/null || true
-umount -R /mnt/disko-install-root 2>/dev/null || true
-zpool export zroot 2>/dev/null || true
+gum log --level info "Wiping existing signatures from $DISK..."
 
-# ===== Wipe partition signatures FIRST, then the disk =====
-gum log --level info "Wiping existing partition signatures on $DISK..."
-# Per-partition wipe catches LUKS headers, ZFS labels, etc. that live inside
-# the partition rather than at the disk start.
-while read -r part; do
-  [ -n "$part" ] && [ "$part" != "$DISK" ] || continue
-  gum log --level info "  wiping $part"
-  wipefs -af "$part" 2>/dev/null || true
-done < <(lsblk -ln -o PATH "$DISK" 2>/dev/null | tail -n +2)
+# Unmount anything using the disk
+umount -R /mnt 2>/dev/null || true
 
-gum log --level info "Zapping partition table on $DISK..."
-wipefs -af "$DISK" || true
-sgdisk --zap-all "$DISK" || true
+# Remove any existing ZFS labels
+zpool labelclear -f "$DISK" 2>/dev/null || true
 
-# Belt and suspenders: zero the first and last 16 MiB to nuke
-# any GPT/MBR/boot remnants the tools missed.
-dd if=/dev/zero of="$DISK" bs=1M count=16 conv=fsync status=none 2>/dev/null || true
-DISK_BYTES=$(blockdev --getsize64 "$DISK")
-SEEK_MB=$(( (DISK_BYTES / 1048576) - 16 ))
-dd if=/dev/zero of="$DISK" bs=1M count=16 seek="$SEEK_MB" conv=fsync status=none 2>/dev/null || true
+# Remove filesystem/RAID/ZFS signatures
+wipefs -af "$DISK"
 
-partprobe "$DISK" || true
-udevadm settle || true
-sleep 2
+# Zap GPT/MBR structures
+sgdisk --zap-all "$DISK"
+
+# Clear beginning and end of disk
+dd if=/dev/zero of="$DISK" bs=1M count=100 status=progress
+disk_size=$(blockdev --getsize64 "$DISK")
+seek_mb=$(( disk_size / 1024 / 1024 - 100 ))
+dd if=/dev/zero of="$DISK" bs=1M seek="$seek_mb" count=100 status=progress
+
+# Inform kernel of partition changes
+partprobe "$DISK"
+
+gum log --level info "Disk wipe complete."
 
 # ===== Partition + install in one shot =====
 cd "$STAGE"
