@@ -89,6 +89,22 @@ if gum confirm "Review/edit configuration.nix?"; then
   ${EDITOR:-nano} "$STAGE/configuration.nix"
 fi
 
+# ===== LUKS passphrase (written to a file disko can read) =====
+gum log --level info "Set the LUKS passphrase for this install."
+while :; do
+  LUKS_PASS=$(gum input --password --header "LUKS passphrase:")
+  [ -z "$LUKS_PASS" ] && { gum log --level error "Passphrase can't be empty."; continue; }
+  LUKS_CONFIRM=$(gum input --password --header "Confirm passphrase:")
+  [ "$LUKS_PASS" = "$LUKS_CONFIRM" ] && break
+  gum log --level warn "Passphrases didn't match; try again."
+done
+
+install -d -m 0700 /tmp/install
+printf '%s' "$LUKS_PASS" > /tmp/install/luks.key
+chmod 600 /tmp/install/luks.key
+unset LUKS_PASS LUKS_CONFIRM
+trap 'shred -u /tmp/install/luks.key 2>/dev/null || rm -f /tmp/install/luks.key' EXIT
+
 # ===== Final confirmation =====
 echo
 gum style --foreground 196 --bold "===  DESTRUCTIVE OPERATION  ==="
