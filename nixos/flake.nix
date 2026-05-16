@@ -96,7 +96,27 @@
         type = "app";
         program = "${pkgs.writeShellApplication {
           name = "install";
-          runtimeInputs = [ pkgs.git pkgs.gum ];
+          runtimeInputs = with pkgs; [
+            git
+            gum
+            nano
+            nix
+
+            # Coreutils + text processing
+            coreutils
+            gawk
+            gnused
+
+            # Partition + filesystem tooling
+            util-linux
+            parted
+            gptfdisk
+
+            # Encryption + ZFS
+            cryptsetup
+            zfs
+            kmod
+          ];
           text = builtins.readFile ./install.sh;
         }}/bin/install";
       };

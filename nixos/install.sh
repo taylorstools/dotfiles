@@ -121,6 +121,19 @@ gum confirm "Wipe $DISK and install?" \
   --affirmative "Yes, wipe and install" --negative "Abort" \
   || { gum log --level error "Aborted."; exit 1; }
 
+# ===== Clean up any leftover state from a previous failed run =====
+gum log --level info "Cleaning up any prior install state..."
+cryptsetup close cryptroot 2>/dev/null || true
+umount -R /mnt/disko-install-root 2>/dev/null || true
+zpool export zroot 2>/dev/null || true
+
+# ===== Wipe signatures so disko starts from zero =====
+gum log --level info "Wiping existing signatures on $DISK..."
+wipefs -af "$DISK" || true
+sgdisk --zap-all "$DISK" || true
+partprobe "$DISK" || true
+sleep 1
+
 # ===== Partition + install in one shot =====
 cd "$STAGE"
 
