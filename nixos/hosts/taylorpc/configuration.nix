@@ -3,6 +3,8 @@
 {
   networking.hostName = "taylorpc";
 
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+
   imports = [
     ./disko.nix
     ./hostid.nix
