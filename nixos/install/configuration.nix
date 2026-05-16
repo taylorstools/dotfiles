@@ -5,7 +5,6 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  # Boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
@@ -14,11 +13,9 @@
   boot.initrd.availableKernelModules =
     [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
 
-  # Hardware
   hardware.enableRedistributableFirmware = true;
   nixpkgs.hostPlatform = "x86_64-linux";
 
-  # Networking
   networking.hostName = "@HOSTNAME@";
   networking.hostId   = "@HOSTID@";         # required by ZFS
   networking.networkmanager.enable = true;
@@ -29,11 +26,9 @@
     settings.PermitRootLogin = "no";
   };
 
-  # Time / locale
   time.timeZone = "America/Phoenix";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # User
   users.mutableUsers = true;
   users.users.taylor = {
     isNormalUser = true;
@@ -41,8 +36,14 @@
     initialPassword = "password";
   };
 
-  # Tooling for postinstall (bootstrap.sh)
-  environment.systemPackages = with pkgs; [ git gum chezmoi xdg-user-dirs ];
+  environment.systemPackages = with pkgs; [
+    chezmoi
+    dconf
+    git
+    gum
+    xdg-user-dirs
+  ];
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   security.sudo.wheelNeedsPassword = false;
 
