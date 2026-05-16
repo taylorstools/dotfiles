@@ -77,6 +77,21 @@ HOSTNAME=$(gum input --header "Hostname for the minimal install:" \
 HOSTID=$(head -c4 /dev/urandom | od -A none -tx4 | tr -d ' ')
 gum log --level info "Generated networking.hostId = $HOSTID"
 
+# ===== Brand the live ISO with the chosen hostId =====
+# So the ZFS pool gets created with the same hostId we bake into the config.
+gum log --level info "Setting /etc/hostid on live ISO to $HOSTID..."
+if command -v zgenhostid >/dev/null; then
+  zgenhostid -f "$HOSTID"
+else
+  # 4 bytes little-endian
+  printf '%b' "\x${HOSTID:6:2}\x${HOSTID:4:2}\x${HOSTID:2:2}\x${HOSTID:0:2}" \
+    > /etc/hostid
+fi
+
+# Sanity check: `hostid` should now print $HOSTID
+got=$(hostid)
+[ "$got" = "$HOSTID" ] || gum log --level warn "hostid reports '$got', expected '$HOSTID' — proceeding anyway"
+
 # ===== Stage configs with substitutions =====
 STAGE="$WORK/stage"
 rm -rf "$STAGE"; mkdir -p "$STAGE"
