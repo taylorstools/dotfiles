@@ -2,7 +2,8 @@
 
 Dotfiles for my NixOS systems, managed by [chezmoi](https://github.com/twpayne/chezmoi).
 
-## Installation Script
+## Setup
+### Installation Script
 
 Boot into a minimal NixOS ISO, connect to Wi-Fi with `nmtui` if needed, then run this command to install the base system:
 
@@ -10,10 +11,79 @@ Boot into a minimal NixOS ISO, connect to Wi-Fi with `nmtui` if needed, then run
 nix run github:taylorstools/dotfiles?dir=nixos#install --extra-experimental-features "nix-command flakes"
 ```
 
-## Post-Install Script
+This will ask you to select an entire drive for your NixOS system, which it will then wipe. It does not yet support more advanced partitioning, or dual boot on a single drive (hopefully will eventually though). Before erasing the drive, the installation script does give you a chance to review `disko.nix`, though, so you can make any changes as needed.
 
-After it installs the system, boot into it, then login with the temporary password. Connect to Wi-Fi again with `nmtui` if needed, then run the post-install script:
+### Post-Install Script
+
+After the installation script installs the system, boot into it, then login with the credentials you set previously. Connect to Wi-Fi again with `nmtui` if needed, then run the post-install script:
 
 ```sh
 nix run github:taylorstools/dotfiles?dir=nixos#postinstall
 ```
+
+When the post-install script is complete, you will see a message that asks if you want to power down the system, so that you can enable Secure Boot.
+
+### Secure Boot Setup
+
+The post-install script prepares the system for Secure Boot, with [Lanzaboote](https://github.com/nix-community/lanzaboote). After the post-install script runs and powers down your system, go into your BIOS setup to enable Secure Boot.
+
+#### Per-manufacturer steps
+##### HP
+
+1. Mash F10 to get into BIOS.
+2. Security tab > BIOS Sure Start > Disable "Sure Start Secure Boot Keys Protection".
+3. Security tab > Create BIOS Administrator Password. Go through the steps to create a BIOS admin password.
+4. Security tab > Secure Boot Configuration > Enable "Secure Boot".
+
+Save and exit. HP may ask you to type in a 4 digit number for authorization. Do that, then immediately boot back into the BIOS:
+
+1. Security tab > Secure Boot Configuration > Enable "Clear Secure Boot keys"
+1. Security tab > Secure Boot Configuration > Enable "Enable MS UEFI CA key"
+
+Then save and exit. Enter the 4 digit PIN from HP for authorization, and then your system should boot into NixOS without any issues.
+
+##### Asus
+
+1. Mash Esc to get into BIOS.
+2. Press the "Advanced Settings" button in the corner or press F7 to jump right into it.
+3. Security tab > Secure Boot > set "Secure Boot Control" to Enabled.
+4. Security tab > Secure Boot > Expert Key Management > Reset to Setup Mode.
+
+Then save and exit, your system should boot into NixOS without any issues.
+
+##### Other computers
+
+Refer to Lanzaboote's documentation for steps on enabling Secure Boot if you are trying to do this on another computer: [Enable Secure Boot](https://nix-community.github.io/lanzaboote/getting-started/enable-secure-boot.html).
+
+#### Enroll keys in NixOS
+
+After enabling Secure Boot, your system should boot into NixOS.
+
+Open a terminal and enter this command:
+
+```sh
+sudo sbctl enroll-keys --microsoft
+```
+
+Then reboot.
+
+### Verify Secure Boot and Auto-Unlock LUKS with TPM
+
+After you reboot, verify the state of Secure Boot on your system:
+
+```sh
+~ > sbctl status
+Installed:	✓ sbctl is installed
+Owner GUID:	3d950534-810e-4350-80a6-2b1a65ef4bef
+Setup Mode:	✓ Disabled
+Secure Boot:	✓ Enabled
+Vendor Keys:	microsoft
+```
+
+If it is enabled, then you are good! You can now move on to enabling your LUKS encrypted drive to be auto-unlocked at boot by the TPM:
+
+```sh
+"$HOME/scripts/luks-tpm-autounlock.sh" --hostname $HOSTNAME
+```
+
+Run through the steps in the script, and when it's complete, reboot. You should no longer be prompted for a password to unlock your LUKS encrypted drive.
