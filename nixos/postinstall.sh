@@ -73,16 +73,16 @@ echo
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply "$REPO" --force
 
-if [ -x "$HOME/scripts/prepare-secure-boot.sh" ]; then
-  "$HOME/scripts/prepare-secure-boot.sh"
-fi
-
 if [ -x "$HOME/scripts/update-user-dirs.sh" ]; then
   "$HOME/scripts/update-user-dirs.sh"
 fi
 
 if [[ "$REFIND_ANSWER" == "y" ]] && [ -x "$HOME/scripts/rEFInd/nix_install-refind.sh" ]; then
   "$HOME/scripts/rEFInd/nix_install-refind.sh"
+fi
+
+if [ -x "$HOME/scripts/prepare-secure-boot.sh" ]; then
+  "$HOME/scripts/prepare-secure-boot.sh"
 fi
 
 # Sync /etc/nixos -> dotfiles
