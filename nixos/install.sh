@@ -69,7 +69,7 @@ HOSTNAME=$(printf "%s\n" "${HOSTS[@]}" | gum choose --header "Select host:")
 LUKS_SIZE="100%"
 if [[ "$HOSTNAME" == "taylorpc" ]]; then
   echo
-  if gum confirm "Plan on dual-booting Windows on this drive?" --default=No; then
+  if gum confirm "Plan on dual-booting Windows on this drive?"; then
     # disko's `size` only accepts "100%" or a concrete size like "119G".
     # Compute 25% of the disk as whole GiB.
     DISK_BYTES=$(blockdev --getsize64 "$DISK")
