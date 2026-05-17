@@ -40,9 +40,6 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # NVIDIA driver
-  myOptions.nvidia.mode = "disabled";
-
   # PipeWire
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
