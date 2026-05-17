@@ -70,8 +70,12 @@ LUKS_SIZE="100%"
 if [[ "$HOSTNAME" == "taylorpc" ]]; then
   echo
   if gum confirm "Plan on dual-booting Windows on this drive?" --default=No; then
-    LUKS_SIZE="25%"
-    gum log --level info "LUKS will use 25% of $DISK; the rest stays unallocated for Windows."
+    # disko's `size` only accepts "100%" or a concrete size like "119G".
+    # Compute 25% of the disk as whole GiB.
+    DISK_BYTES=$(blockdev --getsize64 "$DISK")
+    LUKS_GIB=$(( DISK_BYTES / 4 / 1024 / 1024 / 1024 ))
+    LUKS_SIZE="${LUKS_GIB}G"
+    gum log --level info "LUKS will use ${LUKS_SIZE} of $DISK; the rest stays unallocated for Windows."
   fi
 fi
 
