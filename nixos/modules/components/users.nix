@@ -10,6 +10,7 @@ in
     isNormalUser = true;
     description = description;
     extraGroups = [ "networkmanager" "wheel" "input" ];
+    hashedPasswordFile = "/etc/users/taylor.hash";
   };
 
   # Passwordless sudo

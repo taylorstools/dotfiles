@@ -114,6 +114,19 @@ chmod 600 /tmp/install/luks.key
 unset LUKS_PASS LUKS_CONFIRM
 trap 'shred -u /tmp/install/luks.key 2>/dev/null || rm -f /tmp/install/luks.key' EXIT
 
+# User password (hashed; never enters the nix store)
+gum log --level info "Set the password for the 'taylor' user."
+while :; do
+  USER_PASS=$(gum input --password --header "User password:")
+  [ -z "$USER_PASS" ] && { gum log --level error "Password can't be empty."; continue; }
+  USER_CONFIRM=$(gum input --password --header "Confirm password:")
+  [ "$USER_PASS" = "$USER_CONFIRM" ] && break
+  gum log --level warn "Passwords didn't match; try again."
+done
+
+USER_HASH=$(printf '%s' "$USER_PASS" | mkpasswd -m yescrypt -s)
+unset USER_PASS USER_CONFIRM
+
 # Final confirmation
 echo
 gum style --foreground 196 --bold "DESTRUCTIVE OPERATION!"
@@ -170,6 +183,14 @@ mountpoint -q /mnt      || { gum log --level error "/mnt is not mounted";      e
 mountpoint -q /mnt/boot || { gum log --level error "/mnt/boot is not mounted"; exit 1; }
 gum log --level info "Checks passed. /mnt and /mnt/boot are mounted."
 
+# Stage the user password hash where activation will read it. Must exist
+# before nixos-install runs since hashedPasswordFile is read during activation.
+gum log --level info "Writing user password hash to /mnt/etc/users/taylor.hash..."
+install -d -m 0755 /mnt/etc/users
+printf '%s\n' "$USER_HASH" > /mnt/etc/users/taylor.hash
+chmod 0600 /mnt/etc/users/taylor.hash
+unset USER_HASH
+
 # nixos-install
 gum log --level info "Running nixos-install..."
 nixos-install \
@@ -187,8 +208,7 @@ cat > /mnt/etc/nixos/hostid.nix <<EOF
 { networking.hostId = "$HOSTID"; }
 EOF
 
-# Keep the installer's minimal configuration.nix around so postinstall.sh can
-# detect whether the default 'password' is still active.
+# Sentinel so postinstall.sh can confirm install.sh was used.
 install -d -m 0755 /mnt/etc/nixos-installer
 cp "$STAGE/configuration.nix" /mnt/etc/nixos-installer/configuration.nix
 
@@ -196,7 +216,7 @@ cp "$STAGE/configuration.nix" /mnt/etc/nixos-installer/configuration.nix
 echo
 gum style --border double --border-foreground 39 --padding "1 4" --bold "Install complete"
 echo
-gum log --level info "Reboot, log in as 'taylor' (password: 'password'), set a real password, then run your postinstall."
+gum log --level info "Reboot, log in as 'taylor' with the password you set, then run your postinstall."
 if gum confirm "Reboot now?"; then
   umount -R /mnt 2>/dev/null || true
   reboot
