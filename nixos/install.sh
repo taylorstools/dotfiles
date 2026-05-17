@@ -19,7 +19,6 @@ gum style \
   --bold "NixOS Install Script"
 
 # Choose target disk for NixOS install
-echo
 gum log --level info "Detected disks:"
 echo
 lsblk -dpno NAME,SIZE,TRAN,MODEL,TYPE | awk '$NF=="disk"{$NF=""; print}'
