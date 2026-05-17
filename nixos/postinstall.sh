@@ -125,7 +125,7 @@ sudo nixos-rebuild boot --flake "$DOTFILES_DIR/nixos#$HOST"
 echo
 gum log --level info "POST-INSTALL SCRIPT COMPLETE."
 
-if gum confirm "Reboot now?"; then
+if gum confirm "Power off now? Enable Secure Boot in your system's BIOS!"; then
   [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
-  sudo reboot
+  sudo poweroff
 fi
