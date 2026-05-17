@@ -11,8 +11,12 @@ REFIND_EFI="/boot/EFI/refind/refind_x64.efi"
 nix-shell -p sbctl gum --run "
     set -euo pipefail
 
-    gum log -l info 'Creating Secure Boot keys'
-    sudo sbctl create-keys
+    if sudo test -d /var/lib/sbctl/keys; then
+        gum log -l info 'Secure Boot keys already exist; skipping create-keys'
+    else
+        gum log -l info 'Creating Secure Boot keys'
+        sudo sbctl create-keys
+    fi
 
     if sudo test -f '$REFIND_EFI'; then
         gum log -l info 'Signing and registering rEFInd' path '$REFIND_EFI'
