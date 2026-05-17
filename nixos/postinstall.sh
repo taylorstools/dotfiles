@@ -10,11 +10,15 @@ fi
 REPO="https://github.com/taylorstools/dotfiles"
 DOTFILES_DIR="$HOME/.dotfiles"
 INSTALLER_DIR="/etc/nixos-installer"
+HOST=$(hostname)
+HOST_DIR="$DOTFILES_DIR/nixos/hosts/$HOST"
 
 gum style \
   --border double --border-foreground 39 \
   --padding "1 4" --margin "1 0" \
   --bold "NixOS Post-Install Script"
+
+gum log --level info "Detected host: $HOST"
 
 if [ ! -d "$INSTALLER_DIR" ]; then
   gum log --level warn "No $INSTALLER_DIR, was this booted from install.sh?"
@@ -38,18 +42,12 @@ else
   git -C "$DOTFILES_DIR" pull --ff-only
 fi
 
-# Select host for NixOS configuration
-hosts=()
-for dir in "$DOTFILES_DIR/nixos/hosts"/*/; do
-  [ -d "$dir" ] || continue
-  hosts+=("$(basename "$dir")")
-done
-
-echo
-gum log --level info "Select host configuration:"
-HOST=$(printf "%s\n" "${hosts[@]}" | gum choose --header "Choose host:")
-[ -z "$HOST" ] && { gum log --level error "No host selected."; exit 1; }
-HOST_DIR="$DOTFILES_DIR/nixos/hosts/$HOST"
+# Sanity check: host directory must exist in dotfiles
+if [ ! -d "$HOST_DIR" ]; then
+  gum log --level error "Host directory not found: $HOST_DIR"
+  gum log --level error "The running hostname '$HOST' has no matching dotfiles host config."
+  exit 1
+fi
 
 # rEFInd prompt (taylorpc only)
 REFIND_ANSWER="n"
