@@ -14,7 +14,7 @@ nix-shell -p sbctl gum --run "
     gum log -l info 'Creating Secure Boot keys'
     sudo sbctl create-keys
 
-    if [[ -f '$REFIND_EFI' ]]; then
+    if sudo test -f '$REFIND_EFI'; then
         gum log -l info 'Signing and registering rEFInd' path '$REFIND_EFI'
         sudo sbctl sign -s '$REFIND_EFI'
     else
