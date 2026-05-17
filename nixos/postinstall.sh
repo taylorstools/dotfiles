@@ -96,9 +96,9 @@ echo
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply "$REPO" --force
 
-# LUKS TPM autounlock
+# Secure boot script
 if [ -x "$HOME/scripts/luks-tpm-autounlock.sh" ]; then
-  "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
+  "$HOME/scripts/prepare-secure-boot.sh"
 fi
 
 # User directories
