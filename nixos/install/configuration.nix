@@ -41,6 +41,7 @@
     dconf
     git
     gum
+    python3
     xdg-user-dirs
   ];
 
