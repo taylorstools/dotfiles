@@ -20,7 +20,6 @@ SYNC_FILES=(
   hardware-configuration.nix
   hostid.nix
   disko.nix
-  luks-tpm-autounlock.nix
 )
 
 gum style \
@@ -74,9 +73,8 @@ echo
 gum log --level info "Applying dotfiles with chezmoi..."
 chezmoi init --source "$DOTFILES_DIR" --apply "$REPO" --force
 
-# Helpers. luks-tpm-autounlock.sh writes /etc/nixos/luks-tpm-autounlock.nix.
-if [ -x "$HOME/scripts/luks-tpm-autounlock.sh" ]; then
-  "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$HOST" --norebuild
+if [ -x "$HOME/scripts/prepare-secure-boot.sh" ]; then
+  "$HOME/scripts/prepare-secure-boot.sh"
 fi
 
 if [ -x "$HOME/scripts/update-user-dirs.sh" ]; then
