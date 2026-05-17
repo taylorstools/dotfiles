@@ -33,13 +33,13 @@ if [ -f "$INSTALLER_DIR/configuration.nix" ] \
 fi
 
 # rEFInd prompt (taylorpc only)
-echo
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
 # Clone or update dotfiles
+echo
 gum log --level info "Cloning dotfiles..."
 if [ ! -d "$DOTFILES_DIR" ]; then
   git clone "$REPO" "$DOTFILES_DIR"
