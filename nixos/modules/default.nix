@@ -23,8 +23,6 @@
     timeout = 1;
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   time.timeZone = "America/Phoenix";
 
   # Locale

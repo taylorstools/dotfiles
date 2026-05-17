@@ -3,8 +3,6 @@
 {
   networking.hostName = "taylorpc";
 
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
-
   # NVIDIA driver
   myOptions.nvidia.mode = "disabled";
 
