@@ -32,6 +32,13 @@ if [ -f "$INSTALLER_DIR/configuration.nix" ] \
   gum confirm "Set a real password now?" && passwd
 fi
 
+# rEFInd prompt (taylorpc only)
+REFIND_ANSWER="n"
+if [[ "$HOST" == "taylorpc" ]]; then
+  echo
+  gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
+fi
+
 # Clone or update dotfiles
 echo
 gum log --level info "Cloning dotfiles..."
@@ -47,13 +54,6 @@ if [ ! -d "$HOST_DIR" ]; then
   gum log --level error "Host directory not found: $HOST_DIR"
   gum log --level error "The running hostname '$HOST' has no matching dotfiles host config."
   exit 1
-fi
-
-# rEFInd prompt (taylorpc only)
-REFIND_ANSWER="n"
-if [[ "$HOST" == "taylorpc" ]]; then
-  echo
-  gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
 # Generate hardware-configuration.nix

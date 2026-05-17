@@ -115,7 +115,7 @@
         program = "${pkgs.writeShellApplication {
           name = "postinstall";
           runtimeInputs = with pkgs; [
-            chezmoi git gum
+            chezmoi git gum unzip
           ];
           text = builtins.readFile ./postinstall.sh;
         }}/bin/postinstall";

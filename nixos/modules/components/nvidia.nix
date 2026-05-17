@@ -5,8 +5,8 @@ let
 in
 {
   options.myOptions.nvidia.mode = lib.mkOption {
-    type = lib.types.enum [ "proprietary" "open" "nouveau" "disabled" ];
-    default = "disabled";
+    type = lib.types.enum [ "none" "proprietary" "open" "nouveau" "disabled" ];
+    default = "none";
     description = "Which Nvidia driver setup to use.";
   };
 
