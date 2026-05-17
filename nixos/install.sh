@@ -69,31 +69,33 @@ HOSTNAME=$(printf "%s\n" "${HOSTS[@]}" | gum choose --header "Select host:")
 LUKS_SIZE="100%"
 if [[ "$HOSTNAME" == "taylorpc" ]]; then
   echo
-  while :; do
-    PCT=$(gum input \
-      --header "Percentage of $DISK to use for NixOS (1-100):" \
-      --value "100" --placeholder "1-100")
-    [ -z "$PCT" ] && PCT=100
-    PCT="${PCT%\%}"   # strip trailing % if user typed it
-    if [[ "$PCT" =~ ^[0-9]+$ ]] && [ "$PCT" -ge 1 ] && [ "$PCT" -le 100 ]; then
-      break
-    fi
-    gum log --level warn "Enter a whole number between 1 and 100."
-  done
+  if gum confirm "Plan on dual-booting Windows on this drive?"; then
+    while :; do
+      PCT=$(gum input \
+        --header "Percentage of $DISK to use for NixOS (1-100):" \
+        --value "25" --placeholder "1-100")
+      [ -z "$PCT" ] && PCT=25
+      PCT="${PCT%\%}"   # strip trailing % if user typed it
+      if [[ "$PCT" =~ ^[0-9]+$ ]] && [ "$PCT" -ge 1 ] && [ "$PCT" -le 100 ]; then
+        break
+      fi
+      gum log --level warn "Enter a whole number between 1 and 100."
+    done
 
-  if [ "$PCT" -eq 100 ]; then
-    LUKS_SIZE="100%"
-    gum log --level info "LUKS will use 100% of $DISK."
-  else
-    # disko's `size` only accepts "100%" or a concrete size like "119G".
-    DISK_BYTES=$(blockdev --getsize64 "$DISK")
-    LUKS_GIB=$(( DISK_BYTES * PCT / 100 / 1024 / 1024 / 1024 ))
-    if [ "$LUKS_GIB" -lt 1 ]; then
-      gum log --level error "Computed LUKS size (${LUKS_GIB}G) is too small; pick a larger percentage."
-      exit 1
+    if [ "$PCT" -eq 100 ]; then
+      LUKS_SIZE="100%"
+      gum log --level info "LUKS will use 100% of $DISK."
+    else
+      # disko's `size` only accepts "100%" or a concrete size like "119G".
+      DISK_BYTES=$(blockdev --getsize64 "$DISK")
+      LUKS_GIB=$(( DISK_BYTES * PCT / 100 / 1024 / 1024 / 1024 ))
+      if [ "$LUKS_GIB" -lt 1 ]; then
+        gum log --level error "Computed LUKS size (${LUKS_GIB}G) is too small; pick a larger percentage."
+        exit 1
+      fi
+      LUKS_SIZE="${LUKS_GIB}G"
+      gum log --level info "LUKS will use ${LUKS_SIZE} (${PCT}%) of $DISK; the rest stays unallocated."
     fi
-    LUKS_SIZE="${LUKS_GIB}G"
-    gum log --level info "LUKS will use ${LUKS_SIZE} (${PCT}%) of $DISK; the rest stays unallocated."
   fi
 fi
 
