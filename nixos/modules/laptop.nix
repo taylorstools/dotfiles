@@ -6,7 +6,6 @@
     ./components/dms.nix
     ./components/greetd.nix
     ./components/niri.nix
-    #./components/secure-boot.nix
     ./components/thunar.nix
   ];
 

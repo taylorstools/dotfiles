@@ -7,6 +7,7 @@
     ./components/git.nix
     ./components/nvidia.nix
     ./components/printing.nix
+    ./components/secure-boot.nix
     ./components/ssh.nix
     ./components/update-alias.nix
     ./components/users.nix
