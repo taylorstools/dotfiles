@@ -23,6 +23,8 @@
     timeout = 1;
   };
 
+  boot.zfs.forceImportRoot = false;
+
   time.timeZone = "America/Phoenix";
 
   # Locale

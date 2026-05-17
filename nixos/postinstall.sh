@@ -34,13 +34,6 @@ if [ ! -d "$INSTALLER_DIR" ]; then
   gum confirm "Continue anyway?" || exit 1
 fi
 
-# Prompt to change default password
-if [ -f "$INSTALLER_DIR/configuration.nix" ] \
-   && grep -q 'initialPassword = "password"' "$INSTALLER_DIR/configuration.nix"; then
-  gum log --level warn "Default 'password' password may still be active."
-  gum confirm "Set a real password now?" && passwd
-fi
-
 # rEFInd prompt (taylorpc only)
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
@@ -125,5 +118,6 @@ gum log --level info "POST-INSTALL SCRIPT COMPLETE."
 
 if gum confirm "Power off now? Enable Secure Boot in your system's BIOS!"; then
   [ -d "$HOME/rEFI2nd" ] && rm -rf "$HOME/rEFI2nd"
+  [ -f "/etc/nixos/configuration.nix" ] && sudo rm -f "/etc/nixos/configuration.nix"
   sudo poweroff
 fi

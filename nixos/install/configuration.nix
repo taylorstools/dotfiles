@@ -33,7 +33,7 @@
   users.users.taylor = {
     isNormalUser = true;
     extraGroups  = [ "wheel" "networkmanager" ];
-    initialPassword = "password";
+    hashedPasswordFile = "/etc/users/taylor.hash";
   };
 
   environment.systemPackages = with pkgs; [

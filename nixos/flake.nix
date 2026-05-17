@@ -98,8 +98,8 @@
         program = "${pkgs.writeShellApplication {
           name = "install";
           runtimeInputs = with pkgs; [
-            coreutils cryptsetup curl gawk git gnused
-            gptfdisk gum jq kmod nano parted util-linux zfs
+            coreutils cryptsetup curl gawk git gnused gptfdisk
+            gum jq kmod mkpasswd nano parted util-linux zfs
           ];
           text = ''
             export DISKO_TEMPLATE="${./install/disko.nix}"
