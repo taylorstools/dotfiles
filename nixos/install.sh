@@ -8,6 +8,9 @@ fi
 
 clear
 
+REPO_OWNER="taylorstools"
+REPO_NAME="dotfiles"
+HOSTS_PATH="nixos/hosts"
 WORK="/tmp/install"
 
 gum style \
@@ -49,11 +52,21 @@ done
 DISK="${DISK_BY_ID:-${WWN_FALLBACK:-$DISK_DEV}}"
 gum log --level info "Using disk path: $DISK"
 
-# Hostname + ZFS hostId
-HOSTNAME=$(gum input --header "Hostname for the minimal install:" \
-                    --value "nixos" --placeholder "nixos")
-[ -z "$HOSTNAME" ] && { gum log --level error "Hostname required."; exit 1; }
+# Pick hostname from dotfiles hosts directory on GitHub
+gum log --level info "Fetching host list from GitHub..."
+mapfile -t HOSTS < <(
+  curl -sfL "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contents/$HOSTS_PATH" \
+    | jq -r '.[] | select(.type=="dir") | .name'
+)
+if [ "${#HOSTS[@]}" -eq 0 ]; then
+  gum log --level error "Couldn't fetch host list from GitHub."
+  exit 1
+fi
 
+HOSTNAME=$(printf "%s\n" "${HOSTS[@]}" | gum choose --header "Select host:")
+[ -z "$HOSTNAME" ] && { gum log --level error "No host selected."; exit 1; }
+
+# Generate ZFS hostId
 HOSTID=$(head -c4 /dev/urandom | od -A none -tx4 | tr -d ' ')
 gum log --level info "Generated networking.hostId = $HOSTID"
 

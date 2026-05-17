@@ -98,25 +98,8 @@
         program = "${pkgs.writeShellApplication {
           name = "install";
           runtimeInputs = with pkgs; [
-            git
-            gum
-            nano
-            nix
-
-            # Coreutils + text processing
-            coreutils
-            gawk
-            gnused
-
-            # Partition + filesystem tooling
-            util-linux
-            parted
-            gptfdisk
-
-            # Encryption + ZFS
-            cryptsetup
-            zfs
-            kmod
+            coreutils cryptsetup curl gawk git gnused
+            gptfdisk gum jq kmod nano parted util-linux zfs
           ];
           text = ''
             export DISKO_TEMPLATE="${./install/disko.nix}"
@@ -131,7 +114,9 @@
         type = "app";
         program = "${pkgs.writeShellApplication {
           name = "postinstall";
-          runtimeInputs = [ pkgs.chezmoi pkgs.git pkgs.gum pkgs.nix ];
+          runtimeInputs = with pkgs; [
+            chezmoi git gum
+          ];
           text = builtins.readFile ./postinstall.sh;
         }}/bin/postinstall";
       };
