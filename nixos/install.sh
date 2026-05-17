@@ -187,6 +187,7 @@ echo "$HOSTID" > /mnt/etc/nixos-installer/hostid
 # Done
 echo
 gum style --border double --border-foreground 39 --padding "1 4" --bold "Install complete"
+echo
 gum log --level info "Reboot, log in as 'taylor' (password: 'password'), set a real password, then run your postinstall."
 if gum confirm "Reboot now?"; then
   umount -R /mnt 2>/dev/null || true
