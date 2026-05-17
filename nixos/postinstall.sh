@@ -35,7 +35,6 @@ fi
 # rEFInd prompt (taylorpc only)
 REFIND_ANSWER="n"
 if [[ "$HOST" == "taylorpc" ]]; then
-  echo
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 
