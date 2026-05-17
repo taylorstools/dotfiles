@@ -65,6 +65,16 @@ fi
 HOSTNAME=$(printf "%s\n" "${HOSTS[@]}" | gum choose --header "Select host:")
 [ -z "$HOSTNAME" ] && { gum log --level error "No host selected."; exit 1; }
 
+# Dual-boot allocation (taylorpc only)
+LUKS_SIZE="100%"
+if [[ "$HOSTNAME" == "taylorpc" ]]; then
+  echo
+  if gum confirm "Plan on dual-booting Windows on this drive?" --default=No; then
+    LUKS_SIZE="25%"
+    gum log --level info "LUKS will use 25% of $DISK; the rest stays unallocated for Windows."
+  fi
+fi
+
 # Generate ZFS hostId
 HOSTID=$(head -c4 /dev/urandom | od -A none -tx4 | tr -d ' ')
 gum log --level info "Generated networking.hostId = $HOSTID"
@@ -87,7 +97,8 @@ got=$(hostid)
 STAGE="$WORK/stage"
 rm -rf "$STAGE"; mkdir -p "$STAGE"
 
-sed "s|@DISK@|$DISK|g" "$DISKO_TEMPLATE" > "$STAGE/disko.nix"
+sed -e "s|@DISK@|$DISK|g" -e "s|@LUKS_SIZE@|$LUKS_SIZE|g" \
+    "$DISKO_TEMPLATE" > "$STAGE/disko.nix"
 sed -e "s|@HOSTNAME@|$HOSTNAME|g" -e "s|@HOSTID@|$HOSTID|g" \
     "$CONFIG_TEMPLATE" > "$STAGE/configuration.nix"
 cp "$FLAKE_TEMPLATE" "$STAGE/flake.nix"
@@ -133,6 +144,7 @@ gum style --foreground 196 --bold "DESTRUCTIVE OPERATION!"
 gum log --level warn "Disk:     $DISK"
 gum log --level warn "Hostname: $HOSTNAME"
 gum log --level warn "HostId:   $HOSTID"
+gum log --level warn "LUKS:     $LUKS_SIZE of disk"
 echo
 gum confirm "Wipe $DISK and install?" \
   --affirmative "Yes, wipe and install" --negative "Abort" \

@@ -18,7 +18,7 @@
             };
           };
           luks = {
-            size = "100%";
+            size = "@LUKS_SIZE@";
             content = {
               type = "luks";
               name = "cryptroot";          # becomes /dev/mapper/cryptroot
