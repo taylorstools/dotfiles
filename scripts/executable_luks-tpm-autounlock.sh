@@ -41,6 +41,11 @@ if [[ -z "$HOSTNAME" ]]; then
   exit 1
 fi
 
+DOTFILES="$HOME/.dotfiles"
+HOST_DIR="$DOTFILES/nixos/hosts/$HOSTNAME"
+ETC_FILE="/etc/nixos/luks-tpm-autounlock.nix"
+DOT_FILE="$HOST_DIR/luks-tpm-autounlock.nix"
+
 gum style \
   --border double --border-foreground 39 \
   --padding "1 4" --margin "1 0" \
@@ -54,7 +59,7 @@ else
   gum log --level info "$action LUKS auto-unlock with TPM..."
 fi
 
-# Enroll TPM into LUKS device
+# Enroll TPM into a LUKS device (only when enabling)
 if [[ "$ENABLE" == true ]]; then
   DEVICE=$(
     nix-shell -p tpm2-tools gum --run '
@@ -87,70 +92,51 @@ if [[ "$ENABLE" == true ]]; then
   )
 
   gum log --level info "TPM enrolled to $DEVICE."
-
-  # Generate luks-tpm-autounlock.nix
-  NIX_FILE="$HOME/.dotfiles/nixos/hosts/$HOSTNAME/luks-tpm-autounlock.nix"
-
-  [ -f "$NIX_FILE" ] && rm -f "$NIX_FILE"
-
-  cat > "$NIX_FILE" <<-EOF
-	{ config, pkgs, ... }:
-
-	{
-	  boot.initrd.systemd.enable = true;
-	  boot.initrd.luks.devices.cryptroot.crypttabExtraOpts = [ "tpm2-device=auto" ];
-	}
-	EOF
-
-  gum log --level info "Generated luks-tpm-autounlock.nix for $HOSTNAME."
 fi
 
-# Edit configuration.nix import
-echo ""
-CONFIG="$HOME/.dotfiles/nixos/hosts/$HOSTNAME/configuration.nix"
-TARGET="./luks-tpm-autounlock.nix"
+# Write /etc/nixos/luks-tpm-autounlock.nix (source of truth)
+if [[ "$ENABLE" == true ]]; then
+  sudo tee "$ETC_FILE" > /dev/null <<EOF
+{ config, pkgs, ... }:
 
-[ ! -f "$CONFIG" ] && { gum log --level error "$CONFIG does not exist."; exit 1; }
-
-tmp="$(mktemp)"
-
-awk -v target="$TARGET" -v enable="$ENABLE" '
 {
-  if ($0 ~ target) {
-    match($0, /^[[:space:]]*/)
-    indent = substr($0, RSTART, RLENGTH)
-
-    line = $0
-    sub(/^[[:space:]]*/, "", line)
-    sub(/^#+/, "", line)
-    sub(/^[[:space:]]*/, "", line)
-
-    if (enable == "true") {
-      print indent line
-    } else {
-      print indent "#" line
-    }
-  } else {
-    print $0
-  }
+  boot.initrd.systemd.enable = true;
+  boot.initrd.luks.devices.cryptroot.crypttabExtraOpts = [ "tpm2-device=auto" ];
 }
-' "$CONFIG" > "$tmp"
+EOF
+  gum log --level info "Wrote $ETC_FILE (TPM auto-unlock enabled)."
+else
+  # Empty module so the host's configuration.nix can keep its unconditional
+  # `./luks-tpm-autounlock.nix` import without depending on whether TPM is on.
+  sudo tee "$ETC_FILE" > /dev/null <<EOF
+# TPM auto-unlock is disabled. This empty module keeps the host's
+# configuration.nix import valid.
+{ }
+EOF
+  gum log --level info "Wrote $ETC_FILE (disabled placeholder)."
+fi
 
-mv "$tmp" "$CONFIG"
-
-action=$($ENABLE && echo "include" || echo "exclude")
-gum log --level info "Edited configuration.nix for $HOSTNAME to $action luks-tpm-autounlock.nix."
+# Sync /etc/nixos -> dotfiles so the next rebuild picks it up
+if [ -d "$HOST_DIR" ]; then
+  sudo cp -f "$ETC_FILE" "$DOT_FILE"
+  sudo chown "$USER:" "$DOT_FILE"
+  git -C "$DOTFILES" add -f "nixos/hosts/$HOSTNAME/luks-tpm-autounlock.nix"
+  gum log --level info "Synced to $DOT_FILE."
+else
+  gum log --level warn "Host directory $HOST_DIR not found; skipping dotfiles sync."
+fi
 
 # Rebuild system
-[[ "$NOREBUILD" == true ]] || {
-  echo ""
-  gum log --level info "Rebuilding system configuration..."
-  sudo nixos-rebuild switch --flake "$HOME/.dotfiles/nixos#$HOSTNAME"
-}
-
-action=$($ENABLE && echo "ENABLED" || echo "DISABLED")
-echo ""
-gum log --level info "LUKS TPM auto-unlock $action."
 if [[ "$NOREBUILD" == true ]]; then
+  echo
+  action=$($ENABLE && echo "ENABLED" || echo "DISABLED")
+  gum log --level info "LUKS TPM auto-unlock $action."
   gum log --level info "Configuration rebuild required before changes go into effect."
+else
+  echo
+  gum log --level info "Rebuilding system configuration..."
+  sudo nixos-rebuild switch --flake "$DOTFILES/nixos#$HOSTNAME"
+  action=$($ENABLE && echo "ENABLED" || echo "DISABLED")
+  echo
+  gum log --level info "LUKS TPM auto-unlock $action."
 fi
