@@ -10,7 +10,7 @@ let
 
   refindSrc = pkgs.lib.cleanSource /home/taylor/rEFI2nd;
 
-  rEFI2nd = (pkgs.refind.override { gnu-efi = oldNixpkgs.gnu-efi; }).overrideAttrs (old: {
+  rEFI2nd = oldNixpkgs.refind.overrideAttrs (old: {
     src = refindSrc;
     patches = [];
   });
