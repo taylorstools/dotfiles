@@ -62,36 +62,36 @@
     );
 
     apps.${system} = {
-      # Create bootstrap script app
-      bootstrap = {
-        type = "app";
-        program = "${pkgs.writeShellApplication {
-          name = "bootstrap";
-          runtimeInputs = [ pkgs.chezmoi pkgs.git pkgs.gum pkgs.nix ];
-          text = builtins.readFile ./bootstrap.sh;
-        }}/bin/bootstrap";
-      };
+      # # Create bootstrap script app
+      # bootstrap = {
+      #   type = "app";
+      #   program = "${pkgs.writeShellApplication {
+      #     name = "bootstrap";
+      #     runtimeInputs = [ pkgs.chezmoi pkgs.git pkgs.gum pkgs.nix ];
+      #     text = builtins.readFile ./bootstrap.sh;
+      #   }}/bin/bootstrap";
+      # };
 
-      # Script to switch to unstable branch within live ISO after install
-      unstable-switch = {
-        type = "app";
-        program = "${pkgs.writeShellApplication {
-          name = "unstable-switch";
-          runtimeInputs = [ pkgs.gum pkgs.nix ];
-          text = builtins.readFile ./unstable-switch.sh;
-        }}/bin/unstable-switch";
-      };
+      # # Script to switch to unstable branch within live ISO after install
+      # unstable-switch = {
+      #   type = "app";
+      #   program = "${pkgs.writeShellApplication {
+      #     name = "unstable-switch";
+      #     runtimeInputs = [ pkgs.gum pkgs.nix ];
+      #     text = builtins.readFile ./unstable-switch.sh;
+      #   }}/bin/unstable-switch";
+      # };
 
-      # Script to fix mismatched LUKS UUIDs within live ISO after install
-      # This still seems to be a bug: https://github.com/NixOS/nixpkgs/issues/62444
-      bootfix = {
-        type = "app";
-        program = "${pkgs.writeShellApplication {
-          name = "bootfix";
-          runtimeInputs = [ pkgs.gum pkgs.nix ];
-          text = builtins.readFile ./bootfix.sh;
-        }}/bin/bootfix";
-      };
+      # # Script to fix mismatched LUKS UUIDs within live ISO after install
+      # # This still seems to be a bug: https://github.com/NixOS/nixpkgs/issues/62444
+      # bootfix = {
+      #   type = "app";
+      #   program = "${pkgs.writeShellApplication {
+      #     name = "bootfix";
+      #     runtimeInputs = [ pkgs.gum pkgs.nix ];
+      #     text = builtins.readFile ./bootfix.sh;
+      #   }}/bin/bootfix";
+      # };
 
       install = {
         type = "app";
