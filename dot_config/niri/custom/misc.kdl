@@ -12,6 +12,12 @@ overview {
     }
 }
 
+gestures {
+    hot-corners {
+        bottom-left
+    }
+}
+
 output "eDP-1" {
     scale 1.875
 }
