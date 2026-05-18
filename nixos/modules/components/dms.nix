@@ -44,6 +44,8 @@ in
       enableClipboardPaste = true;
     };
 
+    services.power-profiles-daemon.enable = true;
+
     environment.systemPackages = with pkgs; [
       accountsservice
       adw-gtk3
