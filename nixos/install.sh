@@ -298,15 +298,6 @@ else
     wipefs -af "$PART" 2>/dev/null || true
   done
 
-  # Format the ESP ourselves. Disko's `--mode format` doesn't reliably mkfs
-  # pre-existing partitions (only the ones it creates), so without this the
-  # subsequent mount step fails with "bad superblock". LUKS is still handled
-  # by disko since its content (luksFormat + ZFS pool) layers inside the
-  # partition rather than being the partition's own filesystem.
-  ESP_PART=$(readlink -f /dev/disk/by-partlabel/disk-main-ESP)
-  gum log --level info "Formatting $ESP_PART as FAT32..."
-  mkfs.vfat -F 32 "$ESP_PART"
-
   gum log --level info "New partitions ready; existing partitions untouched."
 fi
 
@@ -317,16 +308,50 @@ git add -A
 gum log --level info "Locking installer flake inputs..."
 nix --extra-experimental-features "nix-command flakes" flake lock
 
-# Partition, format, mount (mode depends on whether we wiped or carved)
-gum log --level info "Running disko (mode: $DISKO_MODE)..."
-nix --extra-experimental-features "nix-command flakes" \
-  run "github:nix-community/disko/latest" -- \
-  --mode "$DISKO_MODE" \
-  --flake ".#installer"
+# Partition, format, mount (path depends on whether we wiped or carved)
+if [ "$DISKO_MODE" = "disko" ]; then
+  # Full-wipe path: disko handles everything (destroy + create + format + mount)
+  gum log --level info "Running disko (destroy, format, mount)..."
+  nix --extra-experimental-features "nix-command flakes" \
+    run "github:nix-community/disko/latest" -- \
+    --mode disko \
+    --flake ".#installer"
+else
+  # Unalloc path: format ourselves, then use disko only to mount. Disko's
+  # `--mode format` mishandles pre-existing partitions for vfat (produces a
+  # boot sector with bogus reserved-sector count). Bypass it.
+  ESP_PART=$(readlink -f /dev/disk/by-partlabel/disk-main-ESP)
+  LUKS_PART=$(readlink -f /dev/disk/by-partlabel/disk-main-luks)
 
-# `--mode format` does not mount; run a follow-up mount pass for the unalloc path.
-if [ "$DISKO_MODE" = "format" ]; then
-  gum log --level info "Running disko mount..."
+  gum log --level info "Formatting ESP ($ESP_PART) as FAT32..."
+  mkfs.vfat -F 32 "$ESP_PART"
+
+  gum log --level info "Formatting LUKS ($LUKS_PART)..."
+  cryptsetup luksFormat \
+    --type luks2 \
+    --cipher aes-xts-plain64 \
+    --key-size 512 \
+    --pbkdf argon2id \
+    --batch-mode \
+    --key-file /tmp/install/luks.key \
+    "$LUKS_PART"
+  cryptsetup open --key-file /tmp/install/luks.key "$LUKS_PART" cryptroot
+
+  gum log --level info "Creating ZFS pool zroot..."
+  zpool create -f \
+    -o ashift=12 \
+    -O acltype=posixacl \
+    -O atime=off \
+    -O com.sun:auto-snapshot=false \
+    -O compression=zstd \
+    -O mountpoint=none \
+    -O xattr=sa \
+    zroot /dev/mapper/cryptroot
+
+  gum log --level info "Creating ZFS datasets..."
+  zfs create -o mountpoint=legacy zroot/root
+
+  gum log --level info "Mounting filesystems via disko..."
   nix --extra-experimental-features "nix-command flakes" \
     run "github:nix-community/disko/latest" -- \
     --mode mount \
