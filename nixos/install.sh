@@ -143,10 +143,12 @@ sed -e "s|@HOSTNAME@|$HOSTNAME|g" -e "s|@HOSTID@|$HOSTID|g" \
     "$CONFIG_TEMPLATE" > "$STAGE/configuration.nix"
 cp "$FLAKE_TEMPLATE" "$STAGE/flake.nix"
 
-# Disko optional review to user
-echo
-if gum confirm "Review/edit disko.nix?" --default=No; then
-  ${EDITOR:-nano} "$STAGE/disko.nix"
+# Disko optional review (only relevant when disko owns the partitioning)
+if [ "$WIPE" = true ]; then
+  echo
+  if gum confirm "Review/edit disko.nix?" --default=No; then
+    ${EDITOR:-nano} "$STAGE/disko.nix"
+  fi
 fi
 
 # LUKS passphrase (written to a file disko can read)
@@ -348,8 +350,11 @@ else
     -O xattr=sa \
     zroot /dev/mapper/cryptroot
 
+  # Keep these in sync with zpool.zroot.datasets in disko.nix.
   gum log --level info "Creating ZFS datasets..."
   zfs create -o mountpoint=legacy zroot/root
+  zfs create -o mountpoint=legacy zroot/nix
+  zfs create -o mountpoint=legacy zroot/home
 
   gum log --level info "Mounting filesystems via disko..."
   nix --extra-experimental-features "nix-command flakes" \
