@@ -313,6 +313,15 @@ nix --extra-experimental-features "nix-command flakes" \
   --mode "$DISKO_MODE" \
   --flake ".#installer"
 
+# `--mode format` does not mount; run a follow-up mount pass for the unalloc path.
+if [ "$DISKO_MODE" = "format" ]; then
+  gum log --level info "Running disko mount..."
+  nix --extra-experimental-features "nix-command flakes" \
+    run "github:nix-community/disko/latest" -- \
+    --mode mount \
+    --flake ".#installer"
+fi
+
 # Verify mounts exist before running nixos-install
 gum log --level info "Verifying mounts under /mnt..."
 mountpoint -q /mnt      || { gum log --level error "/mnt is not mounted";      exit 1; }
