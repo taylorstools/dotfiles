@@ -291,15 +291,21 @@ else
     fi
   done
 
-  # Discard contents of both new partitions to clear stale filesystem and LUKS
-  # signatures from the underlying sectors. Without this, disko's format mode
-  # sees the old vfat/LUKS metadata via blkid and skips its mkfs/luksFormat
-  # step, which leads to mount failures later.
+  # Clear stale signatures from both new partitions.
   for label in disk-main-ESP disk-main-luks; do
     PART=$(readlink -f "/dev/disk/by-partlabel/$label")
     blkdiscard -f "$PART" 2>/dev/null || true
     wipefs -af "$PART" 2>/dev/null || true
   done
+
+  # Format the ESP ourselves. Disko's `--mode format` doesn't reliably mkfs
+  # pre-existing partitions (only the ones it creates), so without this the
+  # subsequent mount step fails with "bad superblock". LUKS is still handled
+  # by disko since its content (luksFormat + ZFS pool) layers inside the
+  # partition rather than being the partition's own filesystem.
+  ESP_PART=$(readlink -f /dev/disk/by-partlabel/disk-main-ESP)
+  gum log --level info "Formatting $ESP_PART as FAT32..."
+  mkfs.vfat -F 32 "$ESP_PART"
 
   gum log --level info "New partitions ready; existing partitions untouched."
 fi
