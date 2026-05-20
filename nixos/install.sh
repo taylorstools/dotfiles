@@ -33,7 +33,7 @@ mapfile -t DISK_LINES < <(
   }'
 )
 DISK_CHOICE=$(printf "%s\n" "${DISK_LINES[@]}" \
-  | gum choose --header "Target disk (WILL BE WIPED):")
+  | gum choose --header "Target disk:")
 [ -z "$DISK_CHOICE" ] && { gum log --level error "No disk selected."; exit 1; }
 DISK_DEV=$(echo "$DISK_CHOICE" | awk '{print $1}')
 
@@ -65,37 +65,53 @@ fi
 HOSTNAME=$(printf "%s\n" "${HOSTS[@]}" | gum choose --header "Select host:")
 [ -z "$HOSTNAME" ] && { gum log --level error "No host selected."; exit 1; }
 
-# Disk allocation (taylorpc only)
+# Disk strategy (taylorpc only)
 LUKS_SIZE="100%"
+WIPE=true
+DISKO_MODE="disko"
+
 if [[ "$HOSTNAME" == "taylorpc" ]]; then
   echo
   if gum confirm "Plan on dual-booting Windows on this drive?"; then
-    while :; do
-      PCT=$(gum input \
-        --header "Percentage of $DISK to use for NixOS (1-100):" \
-        --value "25" --placeholder "1-100")
-      [ -z "$PCT" ] && PCT=25
-      PCT="${PCT%\%}"   # strip trailing % if user typed it
-      if [[ "$PCT" =~ ^[0-9]+$ ]] && [ "$PCT" -ge 1 ] && [ "$PCT" -le 100 ]; then
-        break
-      fi
-      gum log --level warn "Enter a whole number between 1 and 100."
-    done
+    STRATEGY=$(gum choose --header "How should NixOS be placed?" \
+      "Wipe drive (allocate a percentage of the disk to NixOS)" \
+      "Install to existing unallocated space (preserve existing partitions)")
 
-    if [ "$PCT" -eq 100 ]; then
-      LUKS_SIZE="100%"
-      gum log --level info "LUKS will use 100% of $DISK."
-    else
-      # disko's `size` only accepts "100%" or a concrete size like "119G".
-      DISK_BYTES=$(blockdev --getsize64 "$DISK")
-      LUKS_GIB=$(( DISK_BYTES * PCT / 100 / 1024 / 1024 / 1024 ))
-      if [ "$LUKS_GIB" -lt 1 ]; then
-        gum log --level error "Computed LUKS size (${LUKS_GIB}G) is too small; pick a larger percentage."
-        exit 1
-      fi
-      LUKS_SIZE="${LUKS_GIB}G"
-      gum log --level info "LUKS will use ${LUKS_SIZE} (${PCT}%) of $DISK; the rest stays unallocated."
-    fi
+    case "$STRATEGY" in
+      "Wipe drive"*)
+        while :; do
+          PCT=$(gum input \
+            --header "Percentage of $DISK to use for NixOS (1-100):" \
+            --value "25" --placeholder "1-100")
+          [ -z "$PCT" ] && PCT=25
+          PCT="${PCT%\%}"
+          if [[ "$PCT" =~ ^[0-9]+$ ]] && [ "$PCT" -ge 1 ] && [ "$PCT" -le 100 ]; then
+            break
+          fi
+          gum log --level warn "Enter a whole number between 1 and 100."
+        done
+
+        if [ "$PCT" -eq 100 ]; then
+          LUKS_SIZE="100%"
+          gum log --level info "LUKS will use 100% of $DISK."
+        else
+          DISK_BYTES=$(blockdev --getsize64 "$DISK")
+          LUKS_GIB=$(( DISK_BYTES * PCT / 100 / 1024 / 1024 / 1024 ))
+          if [ "$LUKS_GIB" -lt 1 ]; then
+            gum log --level error "Computed LUKS size (${LUKS_GIB}G) is too small; pick a larger percentage."
+            exit 1
+          fi
+          LUKS_SIZE="${LUKS_GIB}G"
+          gum log --level info "LUKS will use ${LUKS_SIZE} (${PCT}%) of $DISK; the rest stays unallocated."
+        fi
+        ;;
+      "Install to existing unallocated space"*)
+        WIPE=false
+        DISKO_MODE="format"
+        LUKS_SIZE="100%"
+        gum log --level info "NixOS will be placed in the largest unallocated region; existing partitions preserved."
+        ;;
+    esac
   fi
 fi
 
@@ -168,36 +184,113 @@ gum style --foreground 196 --bold "DESTRUCTIVE OPERATION!"
 gum log --level warn "Disk:     $DISK"
 gum log --level warn "Hostname: $HOSTNAME"
 gum log --level warn "HostId:   $HOSTID"
-gum log --level warn "LUKS:     $LUKS_SIZE of disk"
+if [ "$WIPE" = true ]; then
+  gum log --level warn "Action:   wipe entire disk"
+  gum log --level warn "LUKS:     $LUKS_SIZE of disk"
+else
+  gum log --level warn "Action:   install to largest unallocated region (existing partitions preserved)"
+fi
 echo
-gum confirm "Wipe $DISK and install?" \
-  --affirmative "Yes, wipe and install" --negative "Abort" \
+
+if [ "$WIPE" = true ]; then
+  CONFIRM_PROMPT="Wipe $DISK and install?"
+else
+  CONFIRM_PROMPT="Install NixOS to unallocated space on $DISK?"
+fi
+gum confirm "$CONFIRM_PROMPT" \
+  --affirmative "Yes, proceed" --negative "Abort" \
   || { gum log --level error "Aborted."; exit 1; }
 
-# Wipe disk
-gum log --level info "Wiping $DISK..."
-umount -R /mnt 2>/dev/null || true
-zpool labelclear -f "$DISK" 2>/dev/null || true
+# Prepare disk
+if [ "$WIPE" = true ]; then
+  # Full disk wipe
+  gum log --level info "Wiping $DISK..."
+  umount -R /mnt 2>/dev/null || true
+  zpool labelclear -f "$DISK" 2>/dev/null || true
 
-if ! blkdiscard -f "$DISK" 2>/dev/null; then
-  gum log --level warn "blkdiscard unsupported, falling back to zero-write."
-  # Cover at least the first 2 GiB, past the ESP and well past the LUKS header
-  dd if=/dev/zero of="$DISK" bs=1M count=2048 conv=fsync status=progress
+  if ! blkdiscard -f "$DISK" 2>/dev/null; then
+    gum log --level warn "blkdiscard unsupported, falling back to zero-write."
+    dd if=/dev/zero of="$DISK" bs=1M count=2048 conv=fsync status=progress
+  fi
+
+  wipefs -af "$DISK" || true
+  sgdisk --zap-all "$DISK" || true
+  partprobe "$DISK" || true
+  udevadm settle || true
+  sleep 2
+
+  gum log --level info "Post-wipe signatures (should be empty):"
+  if blkid "$DISK"* 2>/dev/null | tee /dev/stderr | grep -q .; then
+    gum log --level error "Wipe failed, signatures still present. Aborting."
+    exit 1
+  fi
+  gum log --level info "Disk is clean."
+else
+  # Carve partitions out of unallocated space; leave existing partitions alone.
+  gum log --level info "Locating largest unallocated region on $DISK..."
+  umount -R /mnt 2>/dev/null || true
+  zpool labelclear -f "$DISK" 2>/dev/null || true
+
+  # Idempotency: if a previous failed run left disk-main-ESP / disk-main-luks
+  # partitions on disk, delete them so this run starts from a clean slate.
+  for label in disk-main-ESP disk-main-luks; do
+    if [ -e "/dev/disk/by-partlabel/$label" ]; then
+      OLD_PART=$(readlink -f "/dev/disk/by-partlabel/$label")
+      OLD_NUM=$(echo "$OLD_PART" | grep -oE '[0-9]+$')
+      if [ -n "$OLD_NUM" ]; then
+        gum log --level info "Removing stale partition $label (number $OLD_NUM)..."
+        sgdisk --delete="$OLD_NUM" "$DISK" || true
+      fi
+    fi
+  done
+  partprobe "$DISK" || true
+  udevadm settle || true
+
+  # Find the largest contiguous free range.
+  read -r FREE_FIRST FREE_LAST < <(sgdisk --first-aligned-in-largest --end-of-largest "$DISK" 2>/dev/null | tr '\n' ' ')
+  if ! [[ "$FREE_FIRST" =~ ^[0-9]+$ ]] || ! [[ "$FREE_LAST" =~ ^[0-9]+$ ]]; then
+    gum log --level error "Could not locate unallocated space on $DISK."
+    exit 1
+  fi
+
+  SECTOR=$(blockdev --getss "$DISK")
+  FREE_BYTES=$(( (FREE_LAST - FREE_FIRST + 1) * SECTOR ))
+  FREE_GIB=$(( FREE_BYTES / 1024 / 1024 / 1024 ))
+  if [ "$FREE_GIB" -lt 16 ]; then
+    gum log --level error "Only ${FREE_GIB} GiB unallocated; need at least 16 GiB."
+    exit 1
+  fi
+  gum log --level info "Found ${FREE_GIB} GiB of unallocated space (sectors ${FREE_FIRST}-${FREE_LAST})."
+
+  # Create ESP (1G) and LUKS (rest of free region) with partlabels disko expects.
+  # `--new=0:...` lets sgdisk pick the next available partition number.
+  sgdisk \
+    --new="0:${FREE_FIRST}:+1G" \
+    --typecode=0:EF00 \
+    --change-name=0:disk-main-ESP \
+    --new="0:0:${FREE_LAST}" \
+    --typecode=0:8309 \
+    --change-name=0:disk-main-luks \
+    "$DISK"
+  partprobe "$DISK"
+  udevadm settle
+  sleep 2
+
+  # Sanity check
+  for label in disk-main-ESP disk-main-luks; do
+    if [ ! -e "/dev/disk/by-partlabel/$label" ]; then
+      gum log --level error "Expected /dev/disk/by-partlabel/$label after sgdisk."
+      exit 1
+    fi
+  done
+
+  # Discard the new LUKS partition so disko's luksFormat doesn't see any
+  # stale signatures left over from whatever used to live there.
+  LUKS_PART=$(readlink -f /dev/disk/by-partlabel/disk-main-luks)
+  blkdiscard -f "$LUKS_PART" 2>/dev/null || wipefs -af "$LUKS_PART" 2>/dev/null || true
+
+  gum log --level info "New partitions ready; existing partitions untouched."
 fi
-
-wipefs -af "$DISK" || true
-sgdisk --zap-all "$DISK" || true
-partprobe "$DISK" || true
-udevadm settle || true
-sleep 2
-
-# Verify drive wipe
-gum log --level info "Post-wipe signatures (should be empty):"
-if blkid "$DISK"* 2>/dev/null | tee /dev/stderr | grep -q .; then
-  gum log --level error "Wipe failed, signatures still present. Aborting."
-  exit 1
-fi
-gum log --level info "Disk is clean."
 
 cd "$STAGE"
 git init -q
@@ -206,11 +299,11 @@ git add -A
 gum log --level info "Locking installer flake inputs..."
 nix --extra-experimental-features "nix-command flakes" flake lock
 
-# Partition, format, mount
-gum log --level info "Running disko (destroy, format, mount)..."
+# Partition, format, mount (mode depends on whether we wiped or carved)
+gum log --level info "Running disko (mode: $DISKO_MODE)..."
 nix --extra-experimental-features "nix-command flakes" \
   run "github:nix-community/disko/latest" -- \
-  --mode disko \
+  --mode "$DISKO_MODE" \
   --flake ".#installer"
 
 # Verify mounts exist before running nixos-install
