@@ -291,10 +291,15 @@ else
     fi
   done
 
-  # Discard the new LUKS partition so disko's luksFormat doesn't see any
-  # stale signatures left over from whatever used to live there.
-  LUKS_PART=$(readlink -f /dev/disk/by-partlabel/disk-main-luks)
-  blkdiscard -f "$LUKS_PART" 2>/dev/null || wipefs -af "$LUKS_PART" 2>/dev/null || true
+  # Discard contents of both new partitions to clear stale filesystem and LUKS
+  # signatures from the underlying sectors. Without this, disko's format mode
+  # sees the old vfat/LUKS metadata via blkid and skips its mkfs/luksFormat
+  # step, which leads to mount failures later.
+  for label in disk-main-ESP disk-main-luks; do
+    PART=$(readlink -f "/dev/disk/by-partlabel/$label")
+    blkdiscard -f "$PART" 2>/dev/null || true
+    wipefs -af "$PART" 2>/dev/null || true
+  done
 
   gum log --level info "New partitions ready; existing partitions untouched."
 fi
