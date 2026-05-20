@@ -247,9 +247,16 @@ else
   udevadm settle || true
 
   # Find the largest contiguous free range.
-  read -r FREE_FIRST FREE_LAST < <(sgdisk --first-aligned-in-largest --end-of-largest "$DISK" 2>/dev/null | tr '\n' ' ')
+  FREE_INFO=$(sgdisk --first-in-largest --end-of-largest "$DISK" 2>&1) || {
+    gum log --level error "sgdisk failed to query free space on $DISK:"
+    gum log --level error "$FREE_INFO"
+    exit 1
+  }
+  FREE_FIRST=$(echo "$FREE_INFO" | sed -n '1p')
+  FREE_LAST=$(echo "$FREE_INFO" | sed -n '2p')
+
   if ! [[ "$FREE_FIRST" =~ ^[0-9]+$ ]] || ! [[ "$FREE_LAST" =~ ^[0-9]+$ ]]; then
-    gum log --level error "Could not locate unallocated space on $DISK."
+    gum log --level error "Could not parse sgdisk output: $FREE_INFO"
     exit 1
   fi
 
