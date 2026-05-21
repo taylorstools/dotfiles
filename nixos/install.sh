@@ -274,7 +274,7 @@ else
   # Create ESP (1G) and LUKS (rest of free region) with partlabels disko expects.
   # `--new=0:...` lets sgdisk pick the next available partition number.
   sgdisk \
-    --new="0:${FREE_FIRST}:+1G" \
+    --new="0:0:+1G" \
     --typecode=0:EF00 \
     --change-name=0:disk-main-ESP \
     --new="0:0:${FREE_LAST}" \
