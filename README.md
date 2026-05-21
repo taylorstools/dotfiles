@@ -40,7 +40,7 @@ Then save and exit. Enter the 4 digit PIN from HP for authorization, and then yo
 
 ### Asus
 
-1. Mash Esc to get into BIOS.
+1. Mash F2 to get into BIOS.
 2. Press the "Advanced Settings" button in the corner or press F7 to jump right into it.
 3. Security tab > Secure Boot > set "Secure Boot Control" to Enabled.
 4. Security tab > Secure Boot > Expert Key Management > Reset to Setup Mode.

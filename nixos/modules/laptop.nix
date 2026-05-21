@@ -9,6 +9,9 @@
     ./components/thunar.nix
   ];
 
+  services.power-profiles-daemon.enable = true;
+  powerManagement.powertop.enable = true;
+
   programs = {
     obs-studio.enable = true;
   };

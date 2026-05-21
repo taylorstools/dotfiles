@@ -92,6 +92,7 @@
     imagemagick
     kitty
     mission-center
+    pciutils
     posy-cursors
     python3
     qbittorrent
