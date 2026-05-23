@@ -10,7 +10,7 @@ Boot into a minimal NixOS ISO, connect to Wi-Fi with `nmtui` if needed, then run
 nix run github:taylorstools/dotfiles?dir=nixos#install --extra-experimental-features "nix-command flakes"
 ```
 
-This will ask you to select an entire drive for your NixOS system, which it will then wipe. If `taylorpc` is selected as the host, the script will ask you if you plan on dual-booting and, if affirmative, prompt you for the size of the Linux partition to create, so you can install Windows to the unallocated space later. Before erasing the drive, the installation script also gives you a chance to review `disko.nix`, so you can make any changes as needed.
+This will ask you to select a drive for your NixOS system to be installed to. If `taylorpc` is selected as the host, the script will ask you if you plan on dual-booting on the drive. If you say yes, it will then prompt you either for the size of the Linux partition you want to create, so you can install Windows to the unallocated space later, or ask if you want to install NixOS to existing unallocated space on the drive. If the former, it wipes the drive and creates the Linux partition to be the size you specified. If the latter, it installs NixOS to the unallocated space without deleting any other partitions. And if you selected a host other than `taylorpc`, the entire drive is wiped and used for NixOS. Before making any changes to the drive, the installation script also gives you a chance to review `disko.nix`, so you can make any adjustments as needed.
 
 Once the installation finishes, boot into the new system and log in with the credentials you set previously. Connect to Wi-Fi again with `nmtui` if needed, then run the post-install script:
 
