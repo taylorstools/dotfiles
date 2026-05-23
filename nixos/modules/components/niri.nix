@@ -11,6 +11,12 @@
 
   systemd.packages = [ pkgs.libinput-gestures ];
 
+  qt = {
+    enable = true;
+    platformTheme = "gnome";
+    style = "adwaita-dark";
+  };
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     fd
