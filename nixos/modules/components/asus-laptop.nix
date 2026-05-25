@@ -21,4 +21,8 @@
       hotplug_type = "None";
     };
   };
+
+  environment.systemPackages = with pkgs; [
+    ryzenadj
+  ];
 }
