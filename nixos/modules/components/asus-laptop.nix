@@ -1,7 +1,9 @@
 { config, pkgs, ... }:
 
 {
-  hardware.cpu.amd.ryzen-smu.enable = true;
+  imports = [
+    ./amd-undervolt.nix
+  ];
 
   systemd.tmpfiles.rules = [
     "d /etc/asusd 0755 root root -"
@@ -21,8 +23,4 @@
       hotplug_type = "None";
     };
   };
-
-  environment.systemPackages = with pkgs; [
-    ryzenadj
-  ];
 }
