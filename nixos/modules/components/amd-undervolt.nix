@@ -12,7 +12,7 @@ let
     nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.pkg-config ];
   });
 
-  coMagnitude = 30;
+  coMagnitude = 40;
   coall = 1048576 - coMagnitude; # 0x100000 - coMagnitude
 
   ryzenadjBin = "${ryzenadj-latest}/bin/ryzenadj";
