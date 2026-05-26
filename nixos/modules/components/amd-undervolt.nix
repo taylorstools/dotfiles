@@ -20,7 +20,7 @@ in
 {
   hardware.cpu.amd.ryzen-smu.enable = true;
 
-  environment.systemPackages = [ ryzenadj-latest mprime ];
+  environment.systemPackages = [ ryzenadj-latest ];
 
   systemd.services.ryzenadj = {
     description = "ryzenadj power limits + Curve Optimizer undervolt";
