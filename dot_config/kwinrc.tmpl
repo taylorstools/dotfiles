@@ -18,7 +18,7 @@ WindowClasses=class1\nclass2\nclass3\nkitty
 BorderActivate=9
 
 [NightColor]
-Active=true
+Active={{ if eq .chezmoi.hostname "bedroompc" }}true{{ else }}false{{ end }}
 Mode=Constant
 NightTemperature=1800
 
