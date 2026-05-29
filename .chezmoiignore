@@ -36,7 +36,7 @@ Wallpapers{,/**}
   .config/Kvantum{,/**}
   .config/kwalletrc
   .config/kwinoutputconfig.json
-  #.config/kwinrc
+  .config/kwinrc
   .config/Launcher.png
   .config/menus{,/**}
   .config/plasma-org.kde.plasma.desktop-appletsrc
