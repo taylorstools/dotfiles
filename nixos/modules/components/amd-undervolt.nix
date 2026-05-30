@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 let
   ryzenadj-latest = pkgs.ryzenadj.overrideAttrs (old: {

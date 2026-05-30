@@ -8,7 +8,7 @@
 #   Logs:   journalctl -u xone-idle-shutoff -f
 #   Status: xone-idle-status
 
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 let
   # Idle seconds before the controller is powered off.
