@@ -1,10 +1,6 @@
 { pkgs, ... }:
 
 {
-  imports = [
-    ./krdp.nix
-  ];
-
   # Enable KDE
   services.desktopManager.plasma6.enable = true;
 
