@@ -9,7 +9,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, disko }: {
+  outputs = { nixpkgs, disko }: {
     nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
