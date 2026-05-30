@@ -1,4 +1,5 @@
 # Files to ignore on all hosts
+icons{,/**}
 nixos{,/**}
 README.md
 refind{,/**}
