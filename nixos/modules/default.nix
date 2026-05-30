@@ -91,6 +91,7 @@
     google-chrome
     gum
     imagemagick
+    kdePackages.krdc
     kitty
     mission-center
     pciutils
