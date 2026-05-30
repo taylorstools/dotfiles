@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Night Light off at login
+Comment=Suspend KWin Night Light at session start so it boots off
+Exec=/home/taylor/scripts/plasma_toggle-night-mode.sh
+Terminal=false
