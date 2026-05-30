@@ -118,3 +118,8 @@ Wallpapers{,/**}
   .local/share/applications/Snipping Tool.desktop
   .local/state/DankMaterialShell{,/**}
 {{- end }}
+
+# Files that only make it to livingroompc
+{{ if ne .chezmoi.hostname "livingroompc" }}
+  .config/autostart/nightlight-suspend.desktop
+{{ end }}
