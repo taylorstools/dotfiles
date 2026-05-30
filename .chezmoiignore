@@ -121,5 +121,5 @@ Wallpapers{,/**}
 
 # Files that only make it to livingroompc
 {{ if ne .chezmoi.hostname "livingroompc" }}
-  .config/autostart/nightlight-suspend.desktop
+  .config/autostart/plasma_toggle-night-mode.sh.desktop
 {{ end }}
