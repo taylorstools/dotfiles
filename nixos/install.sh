@@ -165,7 +165,7 @@ install -d -m 0700 /tmp/install
 printf '%s' "$LUKS_PASS" > /tmp/install/luks.key
 chmod 600 /tmp/install/luks.key
 unset LUKS_PASS LUKS_CONFIRM
-trap 'shred -u /tmp/install/luks.key 2>/dev/null || rm -f /tmp/install/luks.key' EXIT
+trap 'shred -u /tmp/install/luks.key /tmp/install/smb.cred 2>/dev/null; rm -f /tmp/install/luks.key /tmp/install/smb.cred' EXIT
 
 # User password (hashed; never enters the nix store)
 gum log --level info "Set the password for the 'taylor' user."
@@ -178,6 +178,14 @@ while :; do
 done
 
 USER_HASH=$(printf '%s' "$USER_PASS" | mkpasswd -m yescrypt -s)
+
+# Ventoy backup SMB credentials reuse the taylor password (livingroompc/bedroompc only).
+# Written to the target later, alongside the password hash, once /mnt is mounted.
+if [[ "$HOSTNAME" == "livingroompc" || "$HOSTNAME" == "bedroompc" ]]; then
+  printf 'username=taylor\npassword=%s\n' "$USER_PASS" > /tmp/install/smb.cred
+  chmod 0600 /tmp/install/smb.cred
+fi
+
 unset USER_PASS USER_CONFIRM
 
 # Final confirmation
@@ -376,6 +384,12 @@ install -d -m 0755 /mnt/etc/users
 printf '%s\n' "$USER_HASH" > /mnt/etc/users/taylor.hash
 chmod 0600 /mnt/etc/users/taylor.hash
 unset USER_HASH
+
+# SMB credentials for the Ventoy backup service (present only on the two backup hosts).
+if [ -f /tmp/install/smb.cred ]; then
+  gum log --level info "Installing Ventoy backup SMB credentials..."
+  install -D -m 0600 /tmp/install/smb.cred /mnt/etc/ventoy-backup-smb.cred
+fi
 
 # nixos-install
 gum log --level info "Running nixos-install..."
