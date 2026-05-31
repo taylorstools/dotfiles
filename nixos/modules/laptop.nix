@@ -6,6 +6,7 @@
     ./components/dms.nix
     ./components/greetd.nix
     ./components/niri.nix
+    ./components/sunshine.nix
     ./components/thunar.nix
   ];
 
@@ -22,8 +23,8 @@
   };
 
   environment.systemPackages = with pkgs; [
-    mprime
     obsidian
     vscodium
+    moonlight-qt
   ];
 }

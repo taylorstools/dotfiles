@@ -7,7 +7,6 @@
     ./components/git.nix
     ./components/nvidia.nix
     ./components/printing.nix
-    ./components/remoting.nix
     ./components/secure-boot.nix
     ./components/ssh.nix
     ./components/timeouts.nix
@@ -92,7 +91,6 @@
     google-chrome
     gum
     imagemagick
-    kdePackages.krdc
     kitty
     mission-center
     pciutils

@@ -14,8 +14,4 @@ in
   hardware.uinput.enable = true;
   
   users.users.${username}.extraGroups = [ "uinput" "input" ];
-
-  environment.systemPackages = [
-    pkgs.moonlight-qt
-  ];
 }
