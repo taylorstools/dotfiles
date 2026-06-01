@@ -79,8 +79,6 @@
   programs = {
     bash.enable = true;
     firefox.enable = true;
-    kdeconnect.enable = true;
-    localsend.enable = true;
   };
 
   environment.systemPackages = with pkgs; [

@@ -14,6 +14,7 @@
   programs = {
     steam.enable = true;
     dim-overlay.enable = true;
+    kdeconnect.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
