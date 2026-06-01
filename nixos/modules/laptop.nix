@@ -15,6 +15,7 @@
 
   programs = {
     obs-studio.enable = true;
+    localsend.enable = true;
   };
 
   myOptions = {
