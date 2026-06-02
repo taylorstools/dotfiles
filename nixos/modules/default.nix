@@ -82,6 +82,11 @@
     firefox.enable = true;
   };
 
+  # Bitwarden broke my config
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-39.8.10"
+  ];
+
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
     chezmoi
