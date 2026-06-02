@@ -11,6 +11,8 @@
 
   services.asusd.enable = true;
 
+  systemd.services.asus-shutdown.restartIfChanged = false;
+
   services.supergfxd = {
     enable = true;
     settings = {
