@@ -9,6 +9,7 @@
     ./components/printing.nix
     ./components/secure-boot.nix
     ./components/ssh.nix
+    ./components/sunshine.nix
     ./components/timeouts.nix
     ./components/update-alias.nix
     ./components/users.nix
