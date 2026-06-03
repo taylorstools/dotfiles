@@ -6,11 +6,9 @@
     ./components/dms.nix
     ./components/greetd.nix
     ./components/niri.nix
+    ./components/power-management.nix
     ./components/thunar.nix
   ];
-
-  services.power-profiles-daemon.enable = true;
-  powerManagement.powertop.enable = true;
 
   programs = {
     obs-studio.enable = true;
