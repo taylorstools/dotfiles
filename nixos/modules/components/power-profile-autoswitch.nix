@@ -31,8 +31,6 @@ in
   systemd.services.power-profile-switch = {
     description = "Set power profile based on AC/battery state";
     wantedBy = [ "multi-user.target" ];
-    after = [ "power-profiles-daemon.service" ];
-    wants = [ "power-profiles-daemon.service" ];
     path = [ pkgs.coreutils pkgs.power-profiles-daemon ];
     serviceConfig = {
       Type = "oneshot";
