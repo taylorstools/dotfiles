@@ -1,12 +1,13 @@
 { config, pkgs, ... }:
-
 let
   powerProfileSwitch = pkgs.writeShellScript "power-profile-switch" ''
     ppctl=${pkgs.power-profiles-daemon}/bin/powerprofilesctl
+    systemctl=${pkgs.systemd}/bin/systemctl
 
-    # Wait until the daemon is actually serving profiles
+    "$systemctl" start --no-block power-profiles-daemon.service 2>/dev/null || true
+
     for _ in $(seq 1 30); do
-      if timeout 3 "$ppctl" list >/dev/null 2>&1; then
+      if timeout 10 "$ppctl" list >/dev/null 2>&1; then
         break
       fi
       sleep 1
