@@ -2,7 +2,7 @@
 
 {
   imports = [
-    #./power-profile-autoswitch.nix
+    ./power-profile-autoswitch.nix
   ];
 
   services.power-profiles-daemon.enable = true;
