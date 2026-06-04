@@ -4,14 +4,19 @@ let
     ppctl=${pkgs.power-profiles-daemon}/bin/powerprofilesctl
     systemctl=${pkgs.systemd}/bin/systemctl
 
-    "$systemctl" start --no-block power-profiles-daemon.service 2>/dev/null || true
+    profilesReady() {
+      out=$(timeout 5 "$ppctl" list 2>/dev/null) && [ -n "$out" ]
+    }
 
-    for _ in $(seq 1 30); do
-      if timeout 10 "$ppctl" list >/dev/null 2>&1; then
-        break
-      fi
-      sleep 1
-    done
+    if ! profilesReady; then
+      for attempt in 1 2 3; do
+        timeout 30 "$systemctl" restart power-profiles-daemon.service 2>/dev/null || true
+        for _ in $(seq 1 10); do
+          if profilesReady; then break 2; fi
+          sleep 1
+        done
+      done
+    fi
 
     onAc=0
     for ps in /sys/class/power_supply/*; do
@@ -31,7 +36,6 @@ in
 {
   systemd.services.power-profile-switch = {
     description = "Set power profile based on AC/battery state";
-    wantedBy = [ "multi-user.target" ];
     path = [ pkgs.coreutils pkgs.power-profiles-daemon ];
     serviceConfig = {
       Type = "oneshot";
@@ -39,7 +43,16 @@ in
     };
   };
 
+  # Apply once 45 sec after boot
+  systemd.timers.power-profile-switch = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "45s";
+      Unit = "power-profile-switch.service";
+    };
+  };
+
   services.udev.extraRules = ''
-    SUBSYSTEM=="power_supply", ATTR{type}=="Mains", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart power-profile-switch.service"
+    SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ACTION=="change", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart power-profile-switch.service"
   '';
 }
