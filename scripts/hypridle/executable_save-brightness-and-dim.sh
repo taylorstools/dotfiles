@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
 PIDFILE="$XDG_RUNTIME_DIR/save-brightness-and-dim.sh.pid"
@@ -9,31 +8,30 @@ fi
 echo $$ > "$PIDFILE"
 
 cleanup() {
+    dms ipc call settings set osdBrightnessEnabled true || true
     rm -f "$PIDFILE"
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 STATE="/tmp/hypridle-dimmed"
 
-# Snapshot brightness once
 if [[ ! -f "$STATE" ]]; then
     brightnessctl -c backlight -s
     touch "$STATE"
 fi
 
-# Compute dimmed brightness
 max=$(brightnessctl -c backlight m)
 target=$(( max / 12 ))
 (( target < 1 )) && target=1
 
-# Smoothly dim
+step=$(( max * 3 / 100 ))
+(( step < 1 )) && step=1
+
+dms ipc call settings set osdBrightnessEnabled false
+
 while :; do
     cur=$(brightnessctl -c backlight g)
     (( cur <= target )) && break
-
-    step=$(( max * 3 / 100 ))
-    (( step < 1 )) && step=1
-
     brightnessctl -c backlight -q set "$(( cur - step ))"
     sleep 0.03
 done
