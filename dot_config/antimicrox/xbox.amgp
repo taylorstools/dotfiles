@@ -19,7 +19,7 @@
     <sets>
         <set index="1">
             <stick index="1">
-                <deadZone>2300</deadZone>
+                <deadZone>2500</deadZone>
                 <maxZone>32737</maxZone>
                 <diagonalRange>90</diagonalRange>
                 <stickbutton index="4">
