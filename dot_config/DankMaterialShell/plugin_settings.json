@@ -65,6 +65,7 @@
   },
   "betterRunningApps": {
     "minTitleWidth": 26,
-    "maxWidthPercent": 77
+    "maxWidthPercent": 100,
+    "maxRunningAppsWidth": 1160
   }
 }
