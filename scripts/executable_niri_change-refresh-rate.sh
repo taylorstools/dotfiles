@@ -19,7 +19,7 @@ mapfile -t ALL_MODES < <(
 )
 
 if [[ ${#ALL_MODES[@]} -eq 0 ]]; then
-    echo "No modes found for $OUTPUT"
+    dms ipc call toast info "No modes found for $OUTPUT"
     exit 1
 fi
 
@@ -45,7 +45,7 @@ for mode in "${ALL_MODES[@]}"; do
 done
 
 if [[ ${#MODES[@]} -lt 2 ]]; then
-    echo "Only one refresh rate available for $MAX_RESOLUTION"
+    dms ipc call toast info "Only one refresh rate available for $MAX_RESOLUTION"
     exit 0
 fi
 
@@ -70,7 +70,7 @@ for i in "${!MODES[@]}"; do
 done
 
 if [[ -z "$NEXT_MODE" ]]; then
-    echo "Current mode not found among max-resolution modes"
+    dms ipc call toast info "Current mode not found among max-resolution modes"
     exit 1
 fi
 
