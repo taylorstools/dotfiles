@@ -7,8 +7,10 @@ import qs.Modules.Plugins
 PluginComponent {
     id: root
 
+    signal dankHooksStarted
     property bool preparingForSleep: false
 
+    property string hookDankHooksStarted: pluginData.dankHooksStarted || ""
     property string hookWallpaperPath: pluginData.wallpaperPath || ""
     property string hookLightMode: pluginData.lightMode || ""
     property string hookTheme: pluginData.theme || ""
@@ -36,6 +38,21 @@ PluginComponent {
     property string hookMonitorWallpaper: pluginData.monitorWallpaper || ""
     property string hookSessionLocked: pluginData.sessionLocked || ""
     property string hookSessionUnlocked: pluginData.sessionUnlocked || ""
+
+    Connections {
+        function onDankHooksStarted() {
+            if (!pluginData.dankHooksStarted)
+                return;
+            if (!hookDankHooksStarted)
+                hookDankHooksStarted = pluginData.dankHooksStarted || "";
+            if (hookDankHooksStarted) {
+                const first_start = PluginService.getGlobalVar("dankHooks", "first_start", true);
+                executeHook(hookDankHooksStarted, "onDankHooksStarted", first_start ? "started" : "restarted");
+                if (first_start)
+                    PluginService.setGlobalVar("dankHooks", "first_start", false);
+            }
+        }
+    }
 
     Connections {
         target: SessionData
@@ -294,6 +311,11 @@ PluginComponent {
                 destroy();
             }
         }
+    }
+
+    onPluginDataChanged: {
+        if (pluginData)
+            dankHooksStarted();
     }
 
     Component.onDestruction: {
