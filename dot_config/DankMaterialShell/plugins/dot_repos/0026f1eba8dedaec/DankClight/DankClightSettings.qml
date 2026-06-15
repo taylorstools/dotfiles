@@ -404,45 +404,4 @@ PluginSettings {
             onClicked: ClightService.setInhibit(!ClightService.inhibited)
         }
     }
-
-    component SettingsSection: Column {
-        property string title: ""
-
-        width: parent.width
-        spacing: Theme.spacingS
-
-        StyledRect {
-            width: parent.width
-            height: 1
-            color: Theme.surfaceVariant
-        }
-
-        StyledText {
-            text: parent.title
-            font.pixelSize: Theme.fontSizeMedium
-            font.weight: Font.DemiBold
-            color: Theme.surfaceText
-        }
-    }
-
-    component TimeoutValue: Column {
-        property string label: ""
-        property int value: 0
-        property string suffix: ""
-
-        spacing: 2
-
-        StyledText {
-            text: parent.label
-            font.pixelSize: Theme.fontSizeSmall
-            color: Theme.surfaceVariantText
-        }
-
-        StyledText {
-            text: parent.suffix ? parent.value + parent.suffix : ClightService.formatTimeout(parent.value)
-            font.pixelSize: Theme.fontSizeMedium
-            font.weight: Font.Medium
-            color: Theme.surfaceText
-        }
-    }
 }

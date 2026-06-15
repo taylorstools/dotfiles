@@ -172,48 +172,59 @@ Singleton {
         case "pairStateChanged":
         case "nameChanged":
         case "pluginsChanged":
-        case "hasPairingRequestsChanged":
-        case "trustedChanged":
+        case "linksChanged":
+        case "typeChanged":
+        case "statusIconNameChanged":
             {
                 const id = extractDeviceIdFromPath(data.path);
-                if (id)
-                    fetchDeviceInfo(id);
+                if (!id)
+                    break;
+                fetchDeviceInfo(id);
                 break;
             }
         case "refreshed":
-        case "stateChanged":
-        case "chargeChanged":
             {
                 const id = extractDeviceIdFromPath(data.path);
-                if (id)
-                    fetchBatteryInfo(id);
+                if (!id)
+                    break;
+                fetchBatteryInfo(id);
                 break;
             }
         case "connectivityUpdated":
             {
                 const id = extractDeviceIdFromPath(data.path);
-                if (id)
+                if (!id)
+                    break;
+                fetchConnectivityInfo(id);
+                break;
+            }
+        case "PropertiesChanged":
+            {
+                const id = extractDeviceIdFromPath(data.path);
+                if (!id)
+                    break;
+                switch (data.body?.[0]) {
+                case batteryInterface:
+                    fetchBatteryInfo(id);
+                    break;
+                case connectivityInterface:
                     fetchConnectivityInfo(id);
+                    break;
+                case deviceInterface:
+                    fetchDeviceInfo(id);
+                    break;
+                }
                 break;
             }
         case "shareReceived":
             {
                 const id = extractDeviceIdFromPath(data.path);
+                if (!id)
+                    break;
                 const url = data.body?.[0] || "";
-                if (id)
-                    shareReceived(id, url);
+                shareReceived(id, url);
                 break;
             }
-        // ! TODO - we may want to handle these in the future if we add SMS inline or something.
-        case "notificationPosted":
-        case "notificationRemoved":
-        case "allNotificationsRemoved":
-        case "conversationLoaded":
-        case "conversationCreated":
-        case "conversationUpdated":
-        case "conversationRemoved":
-        case "propertiesChanged":
-            break;
         default:
             break;
         }

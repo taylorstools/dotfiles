@@ -15,6 +15,15 @@ Item {
     implicitHeight: layoutLoader.item ? layoutLoader.item.implicitHeight : 0
 
     property var widgetData: null
+    property string pluginId: "betterRunningApps"
+
+    // Read this plugin's saved settings straight from SettingsData. Binding to
+    // SettingsData.pluginSettings (reassigned on every save) makes it update live,
+    // without depending on pluginService being injected into a raw-Item widget.
+    readonly property var pluginData: {
+        SettingsData.pluginSettings; // dependency: re-evaluate whenever any plugin setting is saved
+        return (SettingsData && SettingsData.getPluginSettingsForPlugin) ? (SettingsData.getPluginSettingsForPlugin(pluginId) || ({})) : ({});
+    }
     property var barConfig: null
     property bool isVertical: axis?.isVertical ?? false
     property var axis: null
@@ -106,6 +115,7 @@ Item {
             _appIdSubstitutionsTrigger++;
         }
     }
+
     readonly property var groupedWindows: {
         if (!SettingsData.runningAppsGroupByApp) {
             return [];
@@ -137,15 +147,67 @@ Item {
         }
     }
     readonly property int windowCount: SettingsData.runningAppsGroupByApp ? (groupedWindows?.length || 0) : (sortedToplevels?.length || 0)
+
+    // --- Adaptive width ---
+    // Each app always shows its label; the title area shrinks (and elides) when
+    // many windows are open so the widget stays within a width budget instead of
+    // overflowing the right-side widgets. Reported width matches what is drawn.
+
+    // --- Tunables (driven by the plugin settings GUI; fall back to defaults) ---
+    function settingValue(key, fallback) {
+        if (root.pluginData && root.pluginData[key] !== undefined && root.pluginData[key] !== null) {
+            return root.pluginData[key];
+        }
+        if (root.widgetData && root.widgetData[key] !== undefined && root.widgetData[key] !== null) {
+            return root.widgetData[key];
+        }
+        return fallback;
+    }
+
+    property real fullTitleWidth: settingValue("fullTitleWidth", 120)       // title area width when there is plenty of room
+    property real minTitleWidth: settingValue("minTitleWidth", 48)          // below this label width, pills drop to icon-only instead of a tiny slice
+    property real maxRunningAppsWidth: settingValue("maxRunningAppsWidth", 0) > 0 ? settingValue("maxRunningAppsWidth", 0) : -1  // hard cap (px); <= 0 falls back to maxWidthFraction
+    property real maxWidthFraction: settingValue("maxWidthPercent", 60) / 100  // fraction of the screen width running apps may occupy before shrinking
+    property real reservedBarWidth: settingValue("reservedBarWidth", 0)     // additional px to subtract from the budget (e.g. for content left of this widget)
+
+    readonly property real iconAreaWidth: 24 + Theme.spacingXS
+    readonly property real iconOnlyWidth: 24
+
+    readonly property real availableWidth: {
+        if (maxRunningAppsWidth > 0) {
+            return maxRunningAppsWidth;
+        }
+        const screenW = parentScreen ? parentScreen.width : 0;
+        if (screenW <= 0) {
+            return -1; // unknown: don't shrink
+        }
+        return screenW * maxWidthFraction - reservedBarWidth;
+    }
+
+    // Space available per app for a title, before any clamping.
+    readonly property real rawTitleBudget: {
+        if (windowCount === 0) {
+            return 0;
+        }
+        if (isVertical || availableWidth <= 0) {
+            return fullTitleWidth;
+        }
+        const fixed = (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2;
+        return (availableWidth - fixed) / windowCount - iconAreaWidth;
+    }
+
+    // Once the title area would be narrower than minTitleWidth, drop labels and show icon-only pills.
+    readonly property bool labelsVisible: windowCount > 0 && rawTitleBudget >= minTitleWidth
+
+    readonly property real effectiveTitleWidth: labelsVisible ? Math.min(fullTitleWidth, Math.max(0, rawTitleBudget)) : 0
+
+    readonly property real perAppWidth: labelsVisible ? (iconAreaWidth + effectiveTitleWidth) : iconOnlyWidth
+
     readonly property int calculatedSize: {
         if (windowCount === 0) {
             return 0;
         }
-        if (widgetData?.runningAppsCompactMode !== undefined ? widgetData.runningAppsCompactMode : SettingsData.runningAppsCompactMode) {
-            return windowCount * 24 + (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2;
-        } else {
-            return windowCount * (24 + Theme.spacingXS + 120) + (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2;
-        }
+        return Math.round(windowCount * perAppWidth + (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2);
     }
 
     width: windowCount > 0 ? (isVertical ? barThickness : calculatedSize) : 0
@@ -349,7 +411,7 @@ Item {
                         }
                         return appName + (windowTitle ? " • " + windowTitle : "");
                     }
-                    readonly property real visualWidth: 24 + Theme.spacingXS + 120
+                    readonly property real visualWidth: root.perAppWidth
 
                     implicitWidth: visualWidth
                     height: root.barThickness
@@ -383,7 +445,7 @@ Item {
                         IconImage {
                             id: iconImg
                             anchors.left: parent.left
-                            anchors.leftMargin: Theme.spacingXS
+                            anchors.leftMargin: root.labelsVisible ? Theme.spacingXS : Math.max(0, (delegateItem.visualWidth - width) / 2)
                             anchors.verticalCenter: parent.verticalCenter
                             width: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
                             height: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
@@ -412,7 +474,7 @@ Item {
 
                         DankIcon {
                             anchors.left: parent.left
-                            anchors.leftMargin: Theme.spacingXS
+                            anchors.leftMargin: root.labelsVisible ? Theme.spacingXS : Math.max(0, (delegateItem.visualWidth - size) / 2)
                             anchors.verticalCenter: parent.verticalCenter
                             size: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
                             name: "sports_esports"
@@ -464,7 +526,7 @@ Item {
                             anchors.rightMargin: Theme.spacingS
                             anchors.verticalCenter: iconImg.verticalCenter
                             anchors.verticalCenterOffset: 1
-                            visible: true
+                            visible: root.labelsVisible
                             text: windowTitle
                             font.pixelSize: Theme.barTextSize(barThickness, barConfig?.fontScale)
                             color: Theme.widgetTextColor

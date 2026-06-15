@@ -301,6 +301,14 @@ PluginSettings {
     }
 
     StringSetting {
+        settingKey: "dankHooksStarted"
+        label: "Dank Hooks Started"
+        description: "Hook: onDankHooksStarted | Value: 'started' or 'restarted'"
+        placeholder: "/path/to/dankhooks-hook.sh"
+        defaultValue: ""
+    }
+
+    StringSetting {
         settingKey: "doNotDisturb"
         label: "Do Not Disturb Changed"
         description: "Hook: onDoNotDisturbChanged | Value: 'enabled' or 'disabled'"

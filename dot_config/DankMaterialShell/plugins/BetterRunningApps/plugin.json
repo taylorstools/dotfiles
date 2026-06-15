@@ -8,6 +8,8 @@
     "icon": "widgets",
     "firstParty": false,
     "component": "./BetterRunningApps.qml",
+    "settings": "./BetterRunningAppsSettings.qml",
+    "capabilities": ["dankbar-widget"],
     "permissions": [
         "settings_read",
         "settings_write"

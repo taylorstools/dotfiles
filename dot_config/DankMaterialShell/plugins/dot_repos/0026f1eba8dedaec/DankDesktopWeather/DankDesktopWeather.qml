@@ -423,7 +423,11 @@ DesktopPluginComponent {
                         visible: root.showWind
                         icon: "air"
                         label: I18n.tr("Wind")
-                        value: { SettingsData.windSpeedUnit; SettingsData.useFahrenheit; return WeatherService.formatSpeed(root.weather.wind) || "--"; }
+                        value: {
+                            SettingsData.windSpeedUnit;
+                            SettingsData.useFahrenheit;
+                            return WeatherService.formatSpeed(root.weather.wind) || "--";
+                        }
                         accentColor: root.accentColor
                         textColor: root.textColor
                         dimColor: root.dimColor
@@ -539,7 +543,11 @@ DesktopPluginComponent {
                     WeatherMetric {
                         visible: root.showWind
                         icon: "air"
-                        value: { SettingsData.windSpeedUnit; SettingsData.useFahrenheit; return WeatherService.formatSpeed(root.weather.wind) || "--"; }
+                        value: {
+                            SettingsData.windSpeedUnit;
+                            SettingsData.useFahrenheit;
+                            return WeatherService.formatSpeed(root.weather.wind) || "--";
+                        }
                         accentColor: root.accentColor
                         textColor: root.textColor
                         dimColor: root.dimColor
@@ -717,51 +725,6 @@ DesktopPluginComponent {
                     }
                 }
             }
-        }
-    }
-
-    component WeatherMetric: RowLayout {
-        property string icon: ""
-        property string label: ""
-        property string value: ""
-        property color accentColor: Theme.primary
-        property color textColor: Theme.surfaceText
-        property color dimColor: Theme.surfaceVariantText
-        property bool compact: false
-        property real iconSize: Theme.iconSizeSmall
-        property real fontSize: Theme.fontSizeSmall
-
-        spacing: 2
-
-        DankIcon {
-            name: parent.icon
-            size: compact ? parent.iconSize - 2 : parent.iconSize
-            color: parent.accentColor
-        }
-
-        ColumnLayout {
-            spacing: 0
-            visible: !compact
-
-            StyledText {
-                visible: parent.parent.label.length > 0
-                text: parent.parent.label
-                font.pixelSize: parent.parent.fontSize - 2
-                color: parent.parent.dimColor
-            }
-
-            StyledText {
-                text: parent.parent.value
-                font.pixelSize: parent.parent.fontSize
-                color: parent.parent.textColor
-            }
-        }
-
-        StyledText {
-            visible: compact
-            text: parent.value
-            font.pixelSize: parent.fontSize
-            color: parent.textColor
         }
     }
 }
