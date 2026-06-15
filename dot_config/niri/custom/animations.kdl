@@ -8,21 +8,21 @@ animations {
         curve "ease-out-quad"
     }
     horizontal-view-movement {
-        spring damping-ratio=0.9 stiffness=423 epsilon=0.0001
+        spring damping-ratio=0.9 stiffness=1500 epsilon=0.0001
     }
     config-notification-open-close {
-        spring damping-ratio=0.9 stiffness=923 epsilon=0.001
+        spring damping-ratio=0.9 stiffness=1000 epsilon=0.001
     }
     overview-open-close {
         spring damping-ratio=0.9 stiffness=2000 epsilon=0.0001
     }
     window-resize {
-        spring damping-ratio=0.9 stiffness=952 epsilon=0.0001
+        spring damping-ratio=0.9 stiffness=1000 epsilon=0.0001
     }
     window-movement {
-        spring damping-ratio=0.9 stiffness=727 epsilon=0.0001
+        spring damping-ratio=0.9 stiffness=1000 epsilon=0.0001
     }
     workspace-switch {
-        spring damping-ratio=0.9 stiffness=1177 epsilon=0.0001
+        spring damping-ratio=0.9 stiffness=1500 epsilon=0.0001
     }
 }
