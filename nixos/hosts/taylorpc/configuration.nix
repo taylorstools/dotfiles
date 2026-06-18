@@ -7,9 +7,9 @@
   myOptions.nvidia.mode = "disabled";
 
   imports = [
+    ../../modules/laptop.nix
     ./disko.nix
     ./hostid.nix
     ./luks-tpm-autounlock.nix
-    ../../modules/laptop.nix
   ];
 }
