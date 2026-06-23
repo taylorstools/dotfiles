@@ -98,6 +98,7 @@
     imagemagick
     kitty
     mission-center
+    mpv
     pciutils
     posy-cursors
     python3
