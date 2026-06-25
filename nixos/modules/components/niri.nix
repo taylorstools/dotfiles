@@ -6,6 +6,7 @@
   ];
 
   programs.niri.enable = true;
+  programs.dconf.enable = true;
 
   services.gnome.gnome-keyring.enable = true;
 
@@ -24,6 +25,7 @@
     gnome-calculator
     gparted
     grim
+    gsettings-desktop-schemas
     hypridle
     loupe
     nwg-look
