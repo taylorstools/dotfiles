@@ -45,4 +45,4 @@ debug {
 
 screenshot-path "/tmp/screenshot.png"
 
-prefer-no-csd
+//prefer-no-csd
