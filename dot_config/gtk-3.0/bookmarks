@@ -6,6 +6,7 @@ file:///home/taylor/Videos
 file:///home/taylor/.dotfiles
 file:///home/taylor/.dotfiles/nixos
 file:///home/taylor/.config
+file:///home/taylor/.config/niri
 file:///home/taylor/scripts
 smb://192.168.0.63/taylornas/ TaylorNAS
 smb://192.168.0.63/taylornas/jellyfin jellyfin
