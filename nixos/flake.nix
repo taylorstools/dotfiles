@@ -23,6 +23,11 @@
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    sysboard-src = {
+      url = "github:System64fumo/sysboard";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, ... }:
@@ -30,6 +35,12 @@
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs { inherit system; };
+
+    sysboardOverlay = final: prev: {
+      sysboard = final.callPackage ./modules/components/pkgs/sysboard.nix {
+        src = inputs.sysboard-src;
+      };
+    };
 
     mkHost = hostName: nixpkgs.lib.nixosSystem {
       inherit system;
@@ -39,6 +50,7 @@
       };
 
       modules = [
+        { nixpkgs.overlays = [ sysboardOverlay ]; }
         inputs.disko.nixosModules.disko
         inputs.dms.nixosModules.dank-material-shell
         ./modules/default.nix

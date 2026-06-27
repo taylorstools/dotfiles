@@ -3,6 +3,7 @@
 let
   username = "taylor";
   userHome = config.users.users.${username}.home;
+  logFile = "${userHome}/upgrade.log";
 
   preUpgrade = pkgs.writeShellScript "nixos-upgrade-pre" ''
     set -euo pipefail
@@ -50,6 +51,9 @@ let
   '';
 in
 {
+  systemd.services.NetworkManager-wait-online.enable = true;
+  systemd.network.wait-online.enable = false;
+
   system.autoUpgrade = {
     enable = true;
     dates = "daily";
@@ -58,7 +62,14 @@ in
     allowReboot = false;
   };
 
-  systemd.services.nixos-upgrade.serviceConfig.ExecStartPre = [ "${preUpgrade}" ];
+  systemd.services.nixos-upgrade.serviceConfig = {
+    StandardOutput = "append:${logFile}";
+    ExecStartPre = [
+      "${pkgs.coreutils}/bin/truncate -s 0 ${logFile}"
+      "${pkgs.coreutils}/bin/chown ${username}:users ${logFile}"
+      "${preUpgrade}"
+    ];
+  };
 
   nix.gc = {
     automatic = true;

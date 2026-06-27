@@ -22,8 +22,8 @@
 
   environment.systemPackages = with pkgs; [
     obsidian
+    sysboard
     vscodium
     moonlight-qt
-    wvkbd
   ];
 }
