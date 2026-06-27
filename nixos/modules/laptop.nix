@@ -24,5 +24,6 @@
     obsidian
     vscodium
     moonlight-qt
+    wvkbd
   ];
 }

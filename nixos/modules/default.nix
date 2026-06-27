@@ -96,6 +96,7 @@
     google-chrome
     gum
     imagemagick
+    jq
     kitty
     mission-center
     mpv
