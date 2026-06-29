@@ -16,7 +16,7 @@ binds {
     Mod+Q       { close-window; }
     Mod+Up      { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action maximize-window-to-edges"; }
     Mod+Return  { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action maximize-window-to-edges"; }
-    Mod+F       { toggle-window-floating; }
+    Mod+F       { spawn "sh" "-c" "$HOME/scripts/niri_toggle-floating.sh"; }
 
     // Navigation
     Mod+Left        { focus-column-left; }
