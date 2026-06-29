@@ -32,7 +32,12 @@ recent-windows {
 }
 
 switch-events {
-    lid-close { spawn "sh" "-c" "pidof hyprlock || hyprlock -q"; }
+    lid-close {
+        spawn "sh" "-c" "$HOME/scripts/hypridle/save-kbd-brightness-and-dim.sh; pidof hyprlock || hyprlock -q"
+    }
+    lid-open {
+        spawn "sh" "-c" "$HOME/scripts/hypridle/restore-kbd-brightness.sh"
+    }
 }
 
 hotkey-overlay {
