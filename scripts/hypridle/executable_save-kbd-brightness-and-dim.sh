@@ -16,8 +16,10 @@ trap cleanup EXIT
 KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
 KBD_STATE="/tmp/dms-kbdbacklight"
 
-# Save current brightness to file
-"$KBD_SCRIPT" -get > "$KBD_STATE"
+# Save current brightness only if we're not already dimmed
+if [[ ! -f "$KBD_STATE" ]]; then
+    "$KBD_SCRIPT" -get > "$KBD_STATE"
+fi
 
 # Turn off keyboard backlight
 "$KBD_SCRIPT" -set 0
