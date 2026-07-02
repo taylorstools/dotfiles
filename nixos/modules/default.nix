@@ -4,6 +4,7 @@
   imports = [
     ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
+    ./components/fonts.nix
     ./components/git.nix
     ./components/nvidia.nix
     ./components/printing.nix
@@ -109,11 +110,6 @@
     wget
     xdg-user-dirs
     zoxide
-  ];
-
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
-    inter
   ];
 
   system.stateVersion = "25.11";
