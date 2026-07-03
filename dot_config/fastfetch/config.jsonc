@@ -12,6 +12,7 @@
     "display",
     "memory",
     "disk",
+    "uptime",
     "break",
   ]
 }
