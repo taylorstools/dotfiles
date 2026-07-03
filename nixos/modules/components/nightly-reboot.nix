@@ -34,12 +34,15 @@ let
       for Id in "''${Ids[@]}"; do
         [ -n "$Id" ] || continue
         Class="$(run_as_user "${kdotoolBin}" getwindowclassname "$Id" 2>/dev/null || true)"
-        # plasmashell appears as both "plasmashell" and "org.kde.plasmashell";
-        # match the substring so the desktop, panels, and OSDs are all ignored.
         ClassLower="''${Class,,}"
         case "$ClassLower" in
-          *plasmashell*|"") ;;
-          *) AppCount=$((AppCount + 1)) ;;
+          *plasmashell*|"")
+            echo "Ignoring window $Id (class: '$Class')"
+            ;;
+          *)
+            AppCount=$((AppCount + 1))
+            echo "Counting window $Id (class: '$Class')"
+            ;;
         esac
       done
 
