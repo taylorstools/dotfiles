@@ -36,7 +36,7 @@ let
         Class="$(run_as_user "${kdotoolBin}" getwindowclassname "$Id" 2>/dev/null || true)"
         ClassLower="''${Class,,}"
         case "$ClassLower" in
-          *plasmashell*|"")
+          *plasmashell*|python3.13|"")
             echo "Ignoring window $Id (class: '$Class')"
             ;;
           *)
