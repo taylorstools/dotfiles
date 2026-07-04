@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Ensure tracked Dolphin Places entries exist; strip device-anchored separators."""
+import socket
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -12,6 +13,18 @@ TRACKED = [
     {"href": f"file://{HOME}/.dotfiles/nixos",      "title": "nixos",     "icon": "inode-directory"},
     {"href": "smb://192.168.0.63/TaylorNAS",          "title": "TaylorNAS", "icon": "network-workgroup"},
     {"href": "smb://192.168.0.63/TaylorNAS/jellyfin", "title": "jellyfin",  "icon": "network-workgroup"},
+]
+
+# Host-conditional SFTP peers: each host links to the others by hostname.
+# The sidebar title is just the peer hostname (no user@ / no path shown).
+HOSTNAME = socket.gethostname()
+SFTP_PEERS = {
+    "livingroompc": ["taylorpc", "bedroompc"],
+    "bedroompc":    ["taylorpc", "livingroompc"],
+}
+TRACKED += [
+    {"href": f"sftp://{peer}/home/taylor", "title": peer, "icon": "network-server"}
+    for peer in SFTP_PEERS.get(HOSTNAME, [])
 ]
 
 FDO = "http://freedesktop.org"
