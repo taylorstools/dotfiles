@@ -23,5 +23,13 @@ else
   niri msg action toggle-window-floating
   niri msg action set-window-width "$FloatWidth"
   niri msg action set-window-height "$FloatHeight"
-  niri msg action center-window   # last, so it centers at the new size
+  
+  # Wait up to ~500ms for the committed size to catch up, then center.
+  for _ in $(seq 1 25); do
+    read -r W H < <(niri msg --json focused-window \
+      | jq -r '.layout.window_size | "\(.[0]|floor) \(.[1]|floor)"')
+    [ "$W" = "$FloatWidth" ] && [ "$H" = "$FloatHeight" ] && break
+    sleep 0.02
+  done
+  niri msg action center-window
 fi
