@@ -1,28 +1,17 @@
 { pkgs, ... }:
 
 let
-  ryzenadj-latest = pkgs.ryzenadj.overrideAttrs (old: {
-    version = "0.19.0";
-    src = pkgs.fetchFromGitHub {
-      owner = "FlyGoat";
-      repo = "RyzenAdj";
-      rev = "v0.19.0";
-      hash = "sha256-SNtCKZ3bugawzD8R3DjwPs/ls3kyTw1LdIcXuR6fumc=";
-    };
-    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.pkg-config ];
-  });
-
   coMagnitude = 25;
   coall = 1048576 - coMagnitude; # 0x100000 - coMagnitude
 
-  ryzenadjBin = "${ryzenadj-latest}/bin/ryzenadj";
+  ryzenadjBin = "${pkgs.ryzenadj}/bin/ryzenadj";
 in
 {
   hardware.cpu.amd.ryzen-smu.enable = true;
 
-  environment.systemPackages = [
-    pkgs.mprime
-    ryzenadj-latest
+  environment.systemPackages = with pkgs; [
+    mprime
+    ryzenadj
   ];
 
   systemd.services.ryzenadj = {
