@@ -27,7 +27,7 @@
   "wallpaperCyclingInterval": 900,
   "wallpaperCyclingTime": "06:00",
   "monitorCyclingSettings": {},
-  "nightModeEnabled": true,
+  "nightModeEnabled": false,
   "nightModeTemperature": 3500,
   "nightModeHighTemperature": 6500,
   "nightModeAutoEnabled": false,
