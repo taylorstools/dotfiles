@@ -22,6 +22,7 @@
     brightnessctl
     fd
     fzf
+    ghostty
     gnome-calculator
     gparted
     grim
