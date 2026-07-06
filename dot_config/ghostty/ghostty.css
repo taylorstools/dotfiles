@@ -1,0 +1,9 @@
+revealer.raised.top-bar {
+  background: alpha(#000000, 0.8);
+  box-shadow: none;
+}
+revealer.raised.top-bar *:not(button):not(tab),
+revealer.raised.top-bar *:not(button):not(tab):backdrop {
+  background: transparent;
+  background-color: transparent;
+}

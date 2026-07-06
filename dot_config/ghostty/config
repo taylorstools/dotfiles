@@ -1,0 +1,42 @@
+background = #000000
+
+# Font Configuration
+font-family = JetBrains Mono
+font-size = 12
+
+# Window Configuration
+window-padding-x = 12
+window-padding-y = 12
+window-decoration = client
+window-theme = ghostty
+gtk-custom-css = ghostty.css
+background-opacity = 0.8
+gtk-titlebar-style = tabs
+
+# Behavior
+confirm-close-surface = false
+
+# Cursor Configuration
+cursor-style = block
+cursor-style-blink = true
+
+# Scrollback (Ghostty counts BYTES, not lines — ~5MB here)
+scrollback-limit = 5000000
+
+# Selection
+copy-on-select = clipboard
+
+# Tabs (native adwaita — no powerline style)
+gtk-tabs-location = top
+
+# Shell integration
+shell-integration = detect
+
+# Key bindings
+keybind = ctrl+shift+n=new_window
+keybind = ctrl+t=new_tab
+keybind = ctrl+plus=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+keybind = ctrl+zero=reset_font_size
+keybind = ctrl+c=copy_to_clipboard
+keybind = ctrl+v=paste_from_clipboard
