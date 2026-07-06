@@ -13,7 +13,7 @@
     "shuffleInterval": "3"
   },
   "dankActions": {
-    "enabled": true,
+    "enabled": false,
     "variants": [
       {
         "icon": "filter_none",
