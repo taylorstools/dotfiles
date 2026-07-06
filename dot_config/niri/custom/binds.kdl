@@ -1,13 +1,13 @@
 binds {
     // Apps
-    Mod+T               { spawn "kitty"; }
+    Mod+T               { spawn "ghostty"; }
     Mod+E               { spawn "thunar"; }
     Mod+B               { spawn "google-chrome-stable"; }
     Ctrl+Shift+Escape   { spawn "missioncenter"; }
 
     // Run apps as root
     Mod+Shift+E { spawn  "sh" "-c" "sudo -EH thunar"; }
-    Mod+Shift+T { spawn "sh" "-c" "kitty -c $HOME/.config/kitty/kitty.conf -e sudo -i"; }
+    Mod+Shift+T { spawn "ghostty" "-e" "sudo" "-i"; }
 
     // Screenshot
     Print   { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
