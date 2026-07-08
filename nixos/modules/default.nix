@@ -93,7 +93,7 @@
     chezmoi
     efibootmgr
     eza
-    fastfetch
+    (fastfetch.override { zfsSupport = true; })
     google-chrome
     gum
     imagemagick
