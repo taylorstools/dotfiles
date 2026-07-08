@@ -16,6 +16,8 @@ gtk-titlebar-style = tabs
 
 # Behavior
 confirm-close-surface = false
+working-directory = home
+window-inherit-working-directory = false
 
 # Cursor Configuration
 cursor-style = block
