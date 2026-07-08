@@ -33,7 +33,7 @@ recent-windows {
 
 switch-events {
     lid-close {
-        spawn "sh" "-c" "$HOME/scripts/hypridle/save-kbd-brightness-and-dim.sh; pidof hyprlock || hyprlock -q"
+        spawn "sh" "-c" "$HOME/scripts/hypridle/save-kbd-brightness-and-dim.sh; pidof hyprlock || (hyprlock -q & sleep 1) && systemctl suspend"
     }
     lid-open {
         spawn "sh" "-c" "$HOME/scripts/hypridle/restore-kbd-brightness.sh"
