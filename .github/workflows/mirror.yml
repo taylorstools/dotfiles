@@ -1,0 +1,16 @@
+name: Mirror to GitLab
+on:
+  push:
+  delete:
+
+jobs:
+  to_gitlab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror to GitLab
+        run: |
+          git clone --mirror "https://github.com/${GITHUB_REPOSITORY}.git" repo.git
+          cd repo.git
+          git push --mirror "https://oauth2:${GITLAB_TOKEN}@gitlab.com/taylorstools/dotfiles.git"
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
