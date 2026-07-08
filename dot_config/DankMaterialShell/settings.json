@@ -39,8 +39,8 @@
   "windSpeedUnit": "kmh",
   "nightModeEnabled": false,
   "animationSpeed": 4,
-  "customAnimationDuration": 75,
-  "syncComponentAnimationSpeeds": false,
+  "customAnimationDuration": 50,
+  "syncComponentAnimationSpeeds": true,
   "popoutAnimationSpeed": 4,
   "popoutCustomAnimationDuration": 75,
   "modalAnimationSpeed": 4,
@@ -218,7 +218,7 @@
   "appsDockHideIndicators": false,
   "appsDockColorizeActive": false,
   "appsDockActiveColorMode": "primary",
-  "appsDockEnlargeOnHover": false,
+  "appsDockEnlargeOnHover": true,
   "appsDockEnlargePercentage": 125,
   "appsDockIconSizePercentage": 100,
   "keyboardLayoutNameCompactMode": false,
@@ -758,6 +758,9 @@
   "builtInPluginSettings": {
     "dms_settings_search": {
       "trigger": "?"
+    },
+    "dms_clipboard_search": {
+      "trigger": "cb"
     }
   },
   "clipboardClickToPaste": true,
