@@ -11,7 +11,7 @@
     "gpu",
     "display",
     "memory",
-    "disk",
+    "zpool",
     "uptime",
     "break",
   ]
