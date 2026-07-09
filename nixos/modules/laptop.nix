@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   imports = [
@@ -7,6 +7,7 @@
     ./components/greetd.nix
     ./components/niri.nix
     ./components/power-management.nix
+    ./components/remmina.nix
     ./components/thunar.nix
   ];
 
@@ -22,7 +23,6 @@
 
   environment.systemPackages = with pkgs; [
     obsidian
-    remmina
     sysboard
     vscodium
     moonlight-qt
