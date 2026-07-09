@@ -103,6 +103,7 @@ Wallpapers{,/**}
   .config/mimeapps.list
   .config/niri{,/**}
   .config/nwg-look{,/**}
+  .config/remmina{,/**}
   .config/Thunar{,/**}
   .config/VSCodium{,/**}
   .config/wlogout{,/**}
