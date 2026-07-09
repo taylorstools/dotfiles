@@ -43,11 +43,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783543350,
-        "narHash": "sha256-FnA0/LPAKhLEBGlFm/miFv9EhsR2qb7REb4gbxT8Pw8=",
+        "lastModified": 1783616037,
+        "narHash": "sha256-1GMNGQowuJokEBewKx/xcuhq+BsMQMobVu/u19i6G5c=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "a095d0ed905d72d4f6f78d0a63c8eeecd27940da",
+        "rev": "c0eeed4e894e728d2778d3c1952c83aaf8715620",
         "type": "github"
       },
       "original": {
@@ -134,6 +134,21 @@
         "type": "github"
       }
     },
+    "nix-flatpak": {
+      "locked": {
+        "lastModified": 1783368811,
+        "narHash": "sha256-0H8jDwR4Kegb3heaTrH1ftbgKfZVDT8JE+46uXxDy/Q=",
+        "owner": "gmodena",
+        "repo": "nix-flatpak",
+        "rev": "20d42f0ee98c9fe9f85e8d1de474f1409ed10d05",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gmodena",
+        "repo": "nix-flatpak",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1783224372,
@@ -198,6 +213,7 @@
         "disko": "disko",
         "dms": "dms",
         "lanzaboote": "lanzaboote",
+        "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
         "quickshell": "quickshell",
         "sysboard-src": "sysboard-src"

@@ -18,6 +18,15 @@
     style = "adwaita-dark";
   };
 
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-gnome
+    ];
+    config.common.default = "gtk";
+  };
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     fd
@@ -36,9 +45,6 @@
     slurp
     wlogout
     wlr-which-key
-    xdg-desktop-portal
-    xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk
     xed-editor
     xsettingsd
     xwayland-satellite
