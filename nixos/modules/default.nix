@@ -4,6 +4,7 @@
   imports = [
     ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
+    ./components/flatpak.nix
     ./components/fonts.nix
     ./components/git.nix
     ./components/nvidia.nix
@@ -71,7 +72,6 @@
   };
 
   services = {
-    flatpak.enable = true;
     gvfs.enable = true;
     samba.enable = true;
     upower.enable = true;
