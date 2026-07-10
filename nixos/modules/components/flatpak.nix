@@ -11,9 +11,9 @@
       location = "https://flathub.org/repo/flathub.flatpakrepo";
     }];
 
-    packages = [ "com.thincast.client" ];
+    packages = [];
 
-    uninstallUnmanaged = false;
-    update.onActivation = false;
+    uninstallUnmanaged = true;
+    update.onActivation = true;
   };
 }
