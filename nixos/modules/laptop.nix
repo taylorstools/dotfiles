@@ -17,8 +17,8 @@
   };
 
   myOptions = {
-    dms.source = "stable";
-    quickshell.source = "stable";
+    dms.source = "git";
+    quickshell.source = "git";
   };
 
   environment.systemPackages = with pkgs; [
