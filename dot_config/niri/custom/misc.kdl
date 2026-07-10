@@ -30,7 +30,7 @@ recent-windows {
         Alt+Shift+grave { previous-window filter="app-id"; }
     }
 }
-
+  
 switch-events {
     lid-close {
         spawn "sh" "-c" "$HOME/scripts/hypridle/save-kbd-brightness-and-dim.sh; pidof hyprlock || (hyprlock -q & sleep 1) && systemctl suspend"
