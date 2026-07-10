@@ -132,7 +132,7 @@ periodic_news_permitted=false
 periodic_news_last_checksum=
 periodic_usage_stats_permitted=false
 info_uid_prefix=WKMFWJ5TMWRQXJ
-disable_tip=false
+disable_tip=true
 
 [remmina]
 name=
