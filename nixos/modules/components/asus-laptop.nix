@@ -5,6 +5,8 @@
     ./amd-undervolt.nix
   ];
 
+  boot.kernelParams = [ "asus_nb_wmi.tablet_mode_sw=2" ];
+
   systemd.tmpfiles.rules = [
     "d /etc/asusd 0755 root root -"
   ];
