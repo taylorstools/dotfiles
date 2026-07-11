@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -6,5 +6,14 @@
   ];
 
   services.power-profiles-daemon.enable = true;
-  powerManagement.powertop.enable = true;
+  
+  systemd.services.powertop-autotune = {
+    description = "powertop --auto-tune (boot + resume)";
+    wantedBy = [ "multi-user.target" "post-resume.target" ];
+    after = [ "post-resume.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.powertop}/bin/powertop --auto-tune";
+    };
+  };
 }
