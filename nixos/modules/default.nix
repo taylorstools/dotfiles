@@ -74,6 +74,7 @@
   services = {
     gvfs.enable = true;
     samba.enable = true;
+    tailscale.enable = true;
     upower.enable = true;
     xserver.enable = false;
   };
