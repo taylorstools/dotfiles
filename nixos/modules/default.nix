@@ -74,7 +74,6 @@
   services = {
     gvfs.enable = true;
     samba.enable = true;
-    tailscale.enable = true;
     upower.enable = true;
     xserver.enable = false;
   };
@@ -101,11 +100,11 @@
     jq
     kitty
     mission-center
-    mpv
     pciutils
     posy-cursors
     python3
     qbittorrent
+    trayscale
     unzip
     vlc
     wget
