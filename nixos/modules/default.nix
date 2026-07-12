@@ -12,6 +12,7 @@
     ./components/secure-boot.nix
     ./components/ssh.nix
     ./components/sunshine.nix
+    ./components/tailscale.nix
     ./components/timeouts.nix
     ./components/update-alias.nix
     ./components/users.nix
@@ -74,7 +75,6 @@
   services = {
     gvfs.enable = true;
     samba.enable = true;
-    tailscale.enable = true;
     upower.enable = true;
     xserver.enable = false;
   };
@@ -105,7 +105,6 @@
     posy-cursors
     python3
     qbittorrent
-    trayscale
     unzip
     vlc
     wget
