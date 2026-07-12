@@ -18,6 +18,7 @@ gtk-titlebar-style = tabs
 confirm-close-surface = false
 working-directory = home
 window-inherit-working-directory = false
+shell-integration-features = ssh-env,ssh-terminfo
 
 # Cursor Configuration
 cursor-style = block
