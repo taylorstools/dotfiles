@@ -42,7 +42,6 @@ in
 
       enableDynamicTheming = true;
       enableClipboardPaste = true;
-      enableCalendarEvents = false;
     };
 
     environment.systemPackages = with pkgs; [
