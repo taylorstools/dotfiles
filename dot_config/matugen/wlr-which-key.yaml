@@ -1,10 +1,9 @@
-# Theming
 font: JetBrains Mono Nerd Font 12
 background: "#000000CC"
 color: "#ffffff"
-border: "#000000"
+border: "{{colors.primary.default.hex}}CC"
 separator: " ➜ "
-border_width: 0
+border_width: 1
 corner_r: 10
 padding: 25
 anchor: center
