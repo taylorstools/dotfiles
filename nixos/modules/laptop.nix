@@ -22,6 +22,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    kdePackages.krdc
     obsidian
     sysboard
     vscodium
