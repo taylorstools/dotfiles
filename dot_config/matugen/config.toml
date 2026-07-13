@@ -7,3 +7,7 @@ output_path = "~/.config/matugen/colors.conf"
 [templates.custom_css]
 input_path  = "~/.config/matugen/custom-css.toml"
 output_path = "~/.config/matugen/colors.css"
+
+[templates.wlr_which_key]
+input_path  = "~/.config/matugen/wlr-which-key.yaml"
+output_path = "~/.config/wlr-which-key/config.yaml"
