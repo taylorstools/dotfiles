@@ -7,7 +7,6 @@
     ./components/greetd.nix
     ./components/niri.nix
     ./components/power-management.nix
-    ./components/remmina.nix
     ./components/thunar.nix
   ];
 
