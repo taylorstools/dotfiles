@@ -7,6 +7,7 @@
     ./components/greetd.nix
     ./components/niri.nix
     ./components/power-management.nix
+    ./components/roland.nix
     ./components/thunar.nix
   ];
 
@@ -23,7 +24,6 @@
   environment.systemPackages = with pkgs; [
     kdePackages.krdc
     obsidian
-    sysboard
     vscodium
     moonlight-qt
   ];
