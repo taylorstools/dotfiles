@@ -15,7 +15,7 @@ rustPlatform.buildRustPackage {
     owner = "oknozor";
     repo = "roland";
     rev = "78351b998528bd335947fb59ea3e10c331c33331";
-    hash = lib.fakeHash;
+    hash = "sha256-wQCxgd2UavxWHKY4C3dZG/pRrLxSTDRajVgsO2E9GQM=";
   };
 
   cargoHash = lib.fakeHash;
