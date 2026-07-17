@@ -25,11 +25,6 @@
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    sysboard-src = {
-      url = "github:System64fumo/sysboard";
-      flake = false;
-    };
   };
 
   outputs = inputs@{ self, nixpkgs, ... }:
@@ -37,12 +32,6 @@
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs { inherit system; };
-
-    sysboardOverlay = final: prev: {
-      sysboard = final.callPackage ./modules/components/pkgs/sysboard.nix {
-        src = inputs.sysboard-src;
-      };
-    };
 
     mkHost = hostName: nixpkgs.lib.nixosSystem {
       inherit system;
@@ -85,7 +74,7 @@
       #     text = builtins.readFile ./bootstrap.sh;
       #   }}/bin/bootstrap";
       # };
-
+      #
       # # Script to switch to unstable branch within live ISO after install
       # unstable-switch = {
       #   type = "app";
@@ -95,7 +84,7 @@
       #     text = builtins.readFile ./unstable-switch.sh;
       #   }}/bin/unstable-switch";
       # };
-
+      #
       # # Script to fix mismatched LUKS UUIDs within live ISO after install
       # # This still seems to be a bug: https://github.com/NixOS/nixpkgs/issues/62444
       # bootfix = {
