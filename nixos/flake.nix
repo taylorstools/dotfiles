@@ -41,7 +41,6 @@
       };
 
       modules = [
-        { nixpkgs.overlays = [ sysboardOverlay ]; }
         inputs.disko.nixosModules.disko
         inputs.dms.nixosModules.dank-material-shell
         ./modules/default.nix
