@@ -64,11 +64,15 @@ in
 
       # niri: needed at startup for `niri msg -j outputs`
       # bash/coreutils: gesture actions are run via `sh -c <action>`
-      path = [
-        cfg.niriPackage
-        pkgs.bash
-        pkgs.coreutils
-      ];
+      environment.PATH = lib.mkForce (
+        lib.concatStringsSep ":" [
+          (lib.makeBinPath [ cfg.niriPackage ])
+          "/run/wrappers/bin"
+          "/etc/profiles/per-user/${cfg.user}/bin"
+          "/nix/var/nix/profiles/default/bin"
+          "/run/current-system/sw/bin"
+        ]
+      );
 
       serviceConfig = {
         Type = "simple";
