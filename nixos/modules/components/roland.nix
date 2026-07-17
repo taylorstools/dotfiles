@@ -14,14 +14,27 @@ in
     };
 
     configFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      example = lib.literalExpression "./roland-config.toml";
+      type = lib.types.str;
+      default = "%E/roland/config.toml";
+      example = "%E/roland/config.toml";
       description = ''
-        Config file passed to roland via --config. When null, roland is started
-        without the flag and falls back to its own default lookup
-        (~/.config/roland/config.toml), which is the right choice if you manage
-        that file with chezmoi or home-manager.
+        Path passed to roland's mandatory --config flag. There is no default
+        lookup in roland itself, so this must always resolve to a real file.
+
+        Defaults to a systemd specifier: %E expands to $XDG_CONFIG_HOME for
+        user units, giving ~/.config/roland/config.toml. Manage that file with
+        chezmoi/home-manager so gesture tweaks don't need a rebuild.
+      '';
+    };
+
+    niriPackage = lib.mkOption {
+      type = lib.types.package;
+      default = pkgs.niri;
+      defaultText = lib.literalExpression "pkgs.niri";
+      description = ''
+        roland shells out to `niri msg -j outputs` at startup to read screen
+        dimensions, and panics if that fails. If you get niri from niri-flake,
+        set this to config.programs.niri.package so the versions match.
       '';
     };
 
@@ -42,7 +55,7 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
-    # roland reads evdev devices directly out of /dev/input
+    # roland opens evdev devices directly via libinput's udev seat
     users.users.${cfg.user}.extraGroups = [ "input" ];
 
     systemd.user.services.roland = {
@@ -53,25 +66,21 @@ in
       after = [ "graphical-session.target" ];
       wantedBy = [ "graphical-session.target" ];
 
+      # niri: needed at startup for `niri msg -j outputs`
+      # bash/coreutils: gesture actions are run via `sh -c <action>`
+      path = [
+        cfg.niriPackage
+        pkgs.bash
+        pkgs.coreutils
+      ];
+
       serviceConfig = {
         Type = "simple";
-        ExecStart =
-          "${lib.getExe cfg.package}"
-          + lib.optionalString (cfg.configFile != null) " --config ${cfg.configFile}";
+        ExecStart = "${lib.getExe cfg.package} --config ${cfg.configFile}";
+
+        # niri may not be up yet on first try; roland unwraps and dies if so
         Restart = "on-failure";
         RestartSec = 2;
-
-        # roland needs /dev/input and libinput/udev; it does not need much else
-        PrivateTmp = true;
-        ProtectSystem = "strict";
-        ProtectHome = "read-only";
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        MemoryDenyWriteExecute = true;
-        SystemCallArchitectures = "native";
       };
     };
   };

@@ -9,21 +9,21 @@
 
 rustPlatform.buildRustPackage {
   pname = "roland";
-  version = "0.1.0-unstable-2026-07-16";
+  version = "0.1.0-unstable-2026-01-03";
 
   src = fetchFromGitHub {
     owner = "oknozor";
     repo = "roland";
-    rev = "<full-commit-sha>";
+    rev = "78351b998528bd335947fb59ea3e10c331c33331";
     hash = lib.fakeHash;
   };
 
   cargoHash = lib.fakeHash;
 
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook # only needed if input-sys regenerates bindings
-  ];
+  # config.rs has a test that reads a config.toml which isn't in the repo
+  doCheck = false;
+
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libinput
@@ -33,7 +33,7 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Simple touch gesture recognizer for Linux";
     homepage = "https://github.com/oknozor/roland";
-    license = lib.licenses.unfree; # repo has no LICENSE file — see note below
+    license = lib.licenses.unfree; # no LICENSE file upstream
     mainProgram = "roland";
     platforms = lib.platforms.linux;
   };
