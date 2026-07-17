@@ -18,7 +18,7 @@ rustPlatform.buildRustPackage {
     hash = "sha256-wQCxgd2UavxWHKY4C3dZG/pRrLxSTDRajVgsO2E9GQM=";
   };
 
-  cargoHash = lib.fakeHash;
+  cargoHash = "sha256-3r80j3UXQIIxhTIKozWcqxQSSRzDH8K1ND6vFTivXD8=";
 
   # config.rs has a test that reads a config.toml which isn't in the repo
   doCheck = false;
