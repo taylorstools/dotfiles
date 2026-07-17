@@ -18,12 +18,8 @@ in
       default = "%E/roland/config.toml";
       example = "%E/roland/config.toml";
       description = ''
-        Path passed to roland's mandatory --config flag. There is no default
-        lookup in roland itself, so this must always resolve to a real file.
-
-        Defaults to a systemd specifier: %E expands to $XDG_CONFIG_HOME for
-        user units, giving ~/.config/roland/config.toml. Manage that file with
-        chezmoi/home-manager so gesture tweaks don't need a rebuild.
+        Path passed to roland's --config flag. %E
+        expands to $XDG_CONFIG_HOME for user units.
       '';
     };
 
