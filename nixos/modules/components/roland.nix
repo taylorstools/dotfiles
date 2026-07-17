@@ -1,9 +1,4 @@
-.dotfiles/nixos/modules/components/pkgs{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.myOptions.roland;
