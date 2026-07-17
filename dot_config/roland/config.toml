@@ -1,0 +1,28 @@
+[[gestures]]
+num_fingers = 3
+kind = "SwipeDown"
+action = "niri msg action toggle-overview"
+min_duration = 50
+min_distance = 100
+
+[[gestures]]
+num_fingers = 2
+kind = "SwipeDown"
+action = "niri msg action focus-workspace-up"
+min_duration = 50
+min_distance = 200
+
+[[gestures]]
+num_fingers = 2
+kind = "SwipeUp"
+action = "niri msg action focus-workspace-down"
+min_duration = 50
+min_distance = 200
+
+[[gestures]]
+num_fingers = 1
+kind = "SwipeRight"
+action = "dms ipc call spotlight toggle"
+min_duration = 50
+min_distance = 100
+on_edge = { Left = 100 }

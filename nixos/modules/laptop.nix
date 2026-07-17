@@ -24,7 +24,6 @@
 
   environment.systemPackages = with pkgs; [
     kdePackages.krdc
-    libnotify
     obsidian
     vscodium
     moonlight-qt
