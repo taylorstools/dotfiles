@@ -19,10 +19,12 @@
   myOptions = {
     dms.source = "stable";
     quickshell.source = "stable";
+    roland.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
     kdePackages.krdc
+    libnotify
     obsidian
     vscodium
     moonlight-qt
