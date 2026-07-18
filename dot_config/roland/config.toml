@@ -10,14 +10,14 @@ num_fingers = 2
 kind = "SwipeDown"
 action = "niri msg action focus-workspace-up"
 min_duration = 50
-min_distance = 200
+min_distance = 150
 
 [[gestures]]
 num_fingers = 2
 kind = "SwipeUp"
 action = "niri msg action focus-workspace-down"
 min_duration = 50
-min_distance = 200
+min_distance = 150
 
 [[gestures]]
 num_fingers = 1
