@@ -20,7 +20,7 @@
 
       default_session = {
         command = "niri-session";
-        user = "taylor";
+        user = "taylor";d
       };
     };
   };
