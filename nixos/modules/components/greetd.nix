@@ -25,6 +25,8 @@
     };
   };
 
+  security.pam.services.hyprlock.enableGnomeKeyring = true;
+
   environment.systemPackages = with pkgs; [
     hyprlock
   ];
