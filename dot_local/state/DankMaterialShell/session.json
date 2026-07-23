@@ -3,7 +3,7 @@
   "doNotDisturb": false,
   "doNotDisturbUntil": 0,
   "terminalOverride": "",
-  "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/enlarge_alena-aenami-portal-001-w.jpg",
+  "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-lost-1k2.png",
   "perMonitorWallpaper": false,
   "monitorWallpapers": {},
   "perModeWallpaper": false,
@@ -51,10 +51,11 @@
   "weatherCoordinates": "40.7128,-74.0060",
   "pinnedApps": [
     "thunar",
-    "com.mitchellh.ghostty",
     "org.kde.krdc",
-    "obsidian",
+    "com.mitchellh.ghostty",
+    "com.anthropic.Claude",
     "vscodium",
+    "obsidian",
     "google-chrome"
   ],
   "barPinnedApps": [],
@@ -97,8 +98,9 @@
   "notepadLastMode": "",
   "launcherLastMode": "all",
   "launcherLastFileSearchType": "all",
-  "launcherLastQuery": "krdc",
+  "launcherLastQuery": "cl",
   "launcherQueryHistory": [
+    "cl",
     "krdc",
     "kr",
     "krd",
