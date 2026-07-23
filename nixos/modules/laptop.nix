@@ -17,6 +17,7 @@
   };
 
   myOptions = {
+    claude-desktop.enable = true;
     dms.source = "stable";
     quickshell.source = "stable";
     roland.enable = true;
