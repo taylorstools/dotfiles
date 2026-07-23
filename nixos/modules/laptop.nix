@@ -3,6 +3,7 @@
 {
   imports = [
     ./components/asus-laptop.nix
+    ./components/claude-desktop.nix
     ./components/dms.nix
     ./components/greetd.nix
     ./components/niri.nix
