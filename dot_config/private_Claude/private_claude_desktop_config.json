@@ -1,0 +1,45 @@
+{
+  "coworkUserFilesPath": "/home/taylor/Claude",
+  "preferences": {
+    "launchPreviewPersistedWorkspaces": [],
+    "launchPreviewSessionScopedSessions": [],
+    "coworkScheduledTasksEnabled": true,
+    "coworkHipaaRestricted": false,
+    "ccdScheduledTasksEnabled": true,
+    "sidebarMode": "chat",
+    "bypassPermissionsGateByAccount": {
+      "2d11ccc3-05f4-4008-83a7-c1084217be8b": false
+    },
+    "coworkWebSearchEnabled": true,
+    "coworkModelAutoFallbackByAccount": {
+      "2d11ccc3-05f4-4008-83a7-c1084217be8b": true
+    },
+    "remoteToolsDeviceName": "taylorpc",
+    "epitaxyPrefs": {
+      "desktop-frame.paneStore.v1": {
+        "state": {
+          "extraPanesByMode": {},
+          "colWeightsByMode": {},
+          "rowSplit": 0.5,
+          "draftNonce": 0
+        },
+        "version": 4
+      },
+      "starred-local-code-sessions": [],
+      "starred-cowork-spaces": [],
+      "starred-session-groups": [],
+      "ccd-sessions-filter": {
+        "state": {
+          "selectedProjects": []
+        },
+        "version": 0
+      },
+      "dframe-group-scopes": {},
+      "dframe-local-slice": {
+        "pinnedOrder": [],
+        "homeProjectsPinnedOrder": []
+      }
+    },
+    "menuBarEnabled": false
+  }
+}
