@@ -6,6 +6,8 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
+    davinci-resolve.url = "git+https://git.voidarc.co.uk/voidarc/nixos.davinci";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

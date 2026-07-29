@@ -13,7 +13,7 @@ in
   config = lib.mkMerge [
     (lib.mkIf (cfg.mode == "proprietary") {
       services.xserver.videoDrivers = [ "nvidia" ];
-      hardware.graphics.enable = true;
+      myOptions.graphics.enable = lib.mkDefault true;
       hardware.nvidia = {
         modesetting.enable = true;
         open = false;
@@ -24,7 +24,7 @@ in
 
     (lib.mkIf (cfg.mode == "open") {
       services.xserver.videoDrivers = [ "nvidia" ];
-      hardware.graphics.enable = true;
+      myOptions.graphics.enable = lib.mkDefault true;
       hardware.nvidia = {
         modesetting.enable = true;
         open = true;
@@ -35,7 +35,7 @@ in
 
     (lib.mkIf (cfg.mode == "nouveau") {
       services.xserver.videoDrivers = [ "nouveau" ];
-      hardware.graphics.enable = true;
+      myOptions.graphics.enable = lib.mkDefault true;
     })
 
     (lib.mkIf (cfg.mode == "disabled") {

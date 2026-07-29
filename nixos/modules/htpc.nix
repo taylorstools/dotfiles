@@ -3,7 +3,6 @@
 {
   imports = [
     ./components/dim-overlay
-    #./components/fix-plasma-env-vars.nix
     ./components/kde-plasma.nix
     ./components/sddm-autologin.nix
     ./components/ventoy-backup.nix

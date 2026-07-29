@@ -4,10 +4,13 @@
   imports = [
     ./components/autoupgrade.nix
     ./components/custom-tela-icons.nix
+    ./components/desktop-graphics.nix
     ./components/flatpak.nix
     ./components/fonts.nix
     ./components/git.nix
-    ./components/nvidia.nix
+    ./components/gpu-amd.nix
+    ./components/gpu-intel.nix
+    ./components/gpu-nvidia.nix
     ./components/printing.nix
     ./components/secure-boot.nix
     ./components/ssh.nix
@@ -83,11 +86,6 @@
     bash.enable = true;
     firefox.enable = true;
   };
-
-  # Bitwarden broke my config
-  nixpkgs.config.permittedInsecurePackages = [
-    "electron-39.8.10"
-  ];
 
   environment.systemPackages = with pkgs; [
     bitwarden-desktop
