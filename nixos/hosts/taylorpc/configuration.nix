@@ -3,8 +3,12 @@
 {
   networking.hostName = "taylorpc";
 
-  # NVIDIA driver
   myOptions.nvidia.mode = "disabled";
+
+  myOptions.amd = {
+    mode = "amdgpu";
+    rocm.enable = true;
+  };
 
   imports = [
     ../../modules/laptop.nix

@@ -4,6 +4,7 @@
   imports = [
     ./components/asus-laptop.nix
     ./components/claude-desktop.nix
+    ./components/davinci-resolve.nix
     ./components/dms.nix
     ./components/greetd.nix
     ./components/niri.nix
