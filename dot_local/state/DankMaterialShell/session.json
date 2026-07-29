@@ -27,7 +27,7 @@
   "wallpaperCyclingInterval": 900,
   "wallpaperCyclingTime": "06:00",
   "monitorCyclingSettings": {},
-  "nightModeEnabled": false,
+  "nightModeEnabled": true,
   "nightModeTemperature": 3500,
   "nightModeHighTemperature": 6500,
   "nightModeAutoEnabled": false,
@@ -56,7 +56,7 @@
     "com.anthropic.Claude",
     "vscodium",
     "obsidian",
-    "davinci-resolve-studio",
+    "resolve",
     "firefox",
     "google-chrome"
   ],
@@ -101,10 +101,10 @@
   "notepadLastMode": "",
   "launcherLastMode": "all",
   "launcherLastFileSearchType": "all",
-  "launcherLastQuery": "",
+  "launcherLastQuery": "res",
   "launcherQueryHistory": [
-    "da",
     "res",
+    "da",
     "krdp",
     "dav",
     "vsc",
@@ -135,7 +135,7 @@
   ],
   "appDrawerLastMode": "apps",
   "niriOverviewLastMode": "apps",
-  "settingsSidebarExpandedIds": ",workspaces_widgets,",
+  "settingsSidebarExpandedIds": ",workspaces_widgets,dock_launcher,",
   "settingsSidebarCollapsedIds": ",",
   "configVersion": 3
 }

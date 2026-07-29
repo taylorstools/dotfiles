@@ -92,3 +92,9 @@ window-rule {
     exclude title=r#"DaVinci Resolve Studio"#
     open-floating true
 }
+
+window-rule {
+    match app-id=r#"^resolve$"# title=r#"DaVinci Resolve Studio"#
+    open-fullscreen false
+    open-maximized-to-edges true
+}
