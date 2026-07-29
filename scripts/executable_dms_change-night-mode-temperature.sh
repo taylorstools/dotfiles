@@ -17,14 +17,13 @@ DEFAULT=2500
 CURRENT=$(dms ipc call night getCurrentTemp 2>/dev/null || echo "$DEFAULT")
 
 yad \
-  --title="Night Mode" \
+  --title="Night Mode Strength" \
   --scale \
   --hide-value \
   --enforce-step \
   --invert \
   --mark=6000K:6000 --mark=2500K:2500 \
   --text="<span size='x-large' weight='bold'>󰖨   Night Mode Strength</span>" \
-  --markup \
   --borders=30 \
   --min-value="$MIN" \
   --max-value="$MAX" \
