@@ -67,6 +67,7 @@
         "url": "https://git.voidarc.co.uk/voidarc/nixos.davinci"
       },
       "original": {
+        "rev": "c9859df9bd3781c63d838a1a90d22129885a910b",
         "type": "git",
         "url": "https://git.voidarc.co.uk/voidarc/nixos.davinci"
       }
@@ -333,10 +334,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1785700398,
-        "narHash": "sha256-YtHafCWeBPwALHStusze0YQwOzcRlLrzNpI7aR8iKW0=",
+        "lastModified": 1785704021,
+        "narHash": "sha256-eQtczKMAS4ItlB4pr1B3MqBZiyRVl2nkqNdtyRSQMa8=",
         "ref": "refs/heads/master",
-        "rev": "13eb7d6a00ef8560b8f346d182dee27de55515f5",
+        "rev": "28771c7c74b42e20afca0b1b63980cb46515537c",
         "revCount": 835,
         "type": "git",
         "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
