@@ -45,7 +45,7 @@ in
   config = lib.mkIf cfg.enable {
     nixpkgs.overlays = [
       (final: _prev: {
-        roland = final.callPackage ./pkgs/roland.nix { };
+        roland = final.callPackage ../../pkgs/roland/package.nix { };
       })
     ];
 
