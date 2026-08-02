@@ -1,7 +1,7 @@
 { pkgs, inputs, ... }:
 
 let
-  orchis-theme = pkgs.callPackage ../../pkgs/orchis-theme {
+  orchis-theme = pkgs.callPackage ../../pkgs/orchis-theme/package.nix {
     src = inputs.orchis-src;
   };
 in
