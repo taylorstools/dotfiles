@@ -5,23 +5,6 @@
     ./keyd.nix
   ];
 
-  nixpkgs.overlays = [
-    (final: prev: {
-      niri = prev.niri.override {
-        libdisplay-info = prev.libdisplay-info.overrideAttrs (_: {
-          version = "0.3.0";
-          src = prev.fetchFromGitLab {
-            domain = "gitlab.freedesktop.org";
-            owner = "emersion";
-            repo = "libdisplay-info";
-            rev = "0.3.0";
-            hash = "sha256-nXf2KGovNKvcchlHlzKBkAOeySMJXgxMpbi5z9gLrdc=";
-          };
-        });
-      };
-    })
-  ];
-
   programs.niri.enable = true;
   programs.dconf.enable = true;
 

@@ -32,6 +32,11 @@
       url = "github:aaddrick/claude-desktop-debian";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    orchis-src = {
+      url = "github:vinceliuice/Orchis-theme";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, ... }:

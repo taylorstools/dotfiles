@@ -103,6 +103,7 @@
     posy-cursors
     python3
     qbittorrent
+    ripgrep
     unzip
     vlc
     wget
