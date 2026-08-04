@@ -3,6 +3,7 @@
 {
   imports = [
     ./amd-undervolt.nix
+    ./asus-keyboard.nix
   ];
 
   boot.kernelParams = [ "asus_nb_wmi.tablet_mode_sw=2" ];

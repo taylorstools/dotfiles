@@ -8,6 +8,11 @@
 
     davinci-resolve.url = "git+https://git.voidarc.co.uk/voidarc/nixos.davinci?rev=c9859df9bd3781c63d838a1a90d22129885a910b";
 
+    asus-px-keyboard-tool = {
+      url = "github:a-chaudhari/asus-px-keyboard-tool";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
