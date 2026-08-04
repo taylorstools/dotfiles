@@ -11,6 +11,7 @@
     ./components/gpu-amd.nix
     ./components/gpu-intel.nix
     ./components/gpu-nvidia.nix
+    ./components/mission-center.nix
     ./components/printing.nix
     ./components/secure-boot.nix
     ./components/ssh.nix
@@ -98,7 +99,6 @@
     imagemagick
     jq
     kitty
-    mission-center
     pciutils
     posy-cursors
     python3
