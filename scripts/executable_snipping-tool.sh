@@ -5,7 +5,6 @@ OUT="/tmp/screenshot.png"
 values=$(yad \
     --title="Snipping Tool" \
     --form \
-    --markup \
     --borders=30 \
     --field="<span size='x-large' weight='bold'>   Snipping Tool</span>:LBL" "" \
     --field=" :LBL" "" \

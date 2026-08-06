@@ -21,6 +21,7 @@ window-rule {
     max-height 420
 }
 
+// All popups and context menus
 window-rule {
     popups {
         geometry-corner-radius 15
@@ -97,4 +98,15 @@ window-rule {
     match app-id=r#"^resolve$"# title=r#"DaVinci Resolve Studio"#
     open-fullscreen false
     open-maximized-to-edges true
+}
+
+// Davinci Resolve opening splash screen
+window-rule {
+    match app-id=r#"^resolve$"# title=r#"resolve"#
+    focus-ring {
+      off
+    }
+    shadow {
+      off
+    }
 }
