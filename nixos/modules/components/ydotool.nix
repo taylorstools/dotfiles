@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 
 let
   username = config.myOptions.user.name;
