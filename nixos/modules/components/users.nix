@@ -1,28 +1,44 @@
-{ ... }:
+{ config, lib, ... }:
 
 let
-  username = "taylor";
-  description = "Taylor";
-  avatar = ./assets/taylor.png;
+  cfg = config.myOptions.user;
 in
 {
-  users.users.${username} = {
-    isNormalUser = true;
-    description = description;
-    extraGroups = [ "networkmanager" "wheel" "input" ];
-    hashedPasswordFile = "/etc/users/taylor.hash";
+  options.myOptions.user = {
+    name = lib.mkOption {
+      type = lib.types.str;
+      default = "taylor";
+      description = "Login name of the primary user account.";
+    };
+
+    description = lib.mkOption {
+      type = lib.types.str;
+      default = "Taylor";
+      description = "Display name for the primary user account.";
+    };
+
+    avatar = lib.mkOption {
+      type = lib.types.path;
+      default = ./assets/taylor.png;
+      description = "Profile picture for the primary user account.";
+    };
   };
 
-  # Passwordless sudo
-  security.sudo.wheelNeedsPassword = false;
+  config = {
+    users.users.${cfg.name} = {
+      isNormalUser = true;
+      inherit (cfg) description;
+      extraGroups = [ "networkmanager" "wheel" "input" ];
+      hashedPasswordFile = "/etc/users/${cfg.name}.hash";
+    };
 
-  # Disable root
-  users.users.root.hashedPassword = "!";
+    security.sudo.wheelNeedsPassword = false;
+    users.users.root.hashedPassword = "!";
 
-  # Profile picture
-  systemd.tmpfiles.rules = [
-    "d /var/lib/AccountsService/icons 0755 root root -"
-    "L+ /var/lib/AccountsService/icons/${username} - - - - ${avatar}"
-    "f+ /var/lib/AccountsService/users/${username} 0600 root root - [User]\\nIcon=/var/lib/AccountsService/icons/${username}\\n"
-  ];
+    systemd.tmpfiles.rules = [
+      "d /var/lib/AccountsService/icons 0755 root root -"
+      "L+ /var/lib/AccountsService/icons/${cfg.name} - - - - ${cfg.avatar}"
+      "f+ /var/lib/AccountsService/users/${cfg.name} 0600 root root - [User]\\nIcon=/var/lib/AccountsService/icons/${cfg.name}\\n"
+    ];
+  };
 }

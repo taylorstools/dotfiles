@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  username = "taylor";
+  username = config.myOptions.user.name;
 in
 {
   services.tailscale = {

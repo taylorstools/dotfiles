@@ -1,7 +1,7 @@
 { ... }:
 
 let
-  username = "taylor";
+  username = config.myOptions.user.name;
 in
 {
   programs.ydotool.enable = true;

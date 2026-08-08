@@ -36,7 +36,6 @@
     gparted
     grim
     gsettings-desktop-schemas
-    hypridle
     loupe
     nwg-look
     python3
