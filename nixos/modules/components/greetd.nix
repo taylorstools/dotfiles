@@ -1,5 +1,8 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  username = config.myOptions.user.name;
+in
 {
   imports = [
     ./ydotool.nix
@@ -15,19 +18,16 @@
 
       initial_session = {
         command = "niri-session";
-        user = "taylor";
+        user = username;
       };
 
       default_session = {
         command = "niri-session";
-        user = "taylor";
+        user = username;
       };
     };
   };
 
+  programs.hyprlock.enable = true;
   security.pam.services.hyprlock.enableGnomeKeyring = true;
-
-  environment.systemPackages = with pkgs; [
-    hyprlock
-  ];
 }

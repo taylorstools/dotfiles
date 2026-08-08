@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  username = "taylor";
+  username = config.myOptions.user.name;
 in
 {
   programs.git = {

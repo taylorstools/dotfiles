@@ -9,7 +9,8 @@ in
 
     user = lib.mkOption {
       type = lib.types.str;
-      default = "taylor";
+      default = config.myOptions.user.name;
+      defaultText = lib.literalExpression "config.myOptions.user.name";
       description = "User account that runs roland and gets added to the input group.";
     };
 
@@ -36,19 +37,19 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.roland;
-      defaultText = lib.literalExpression "pkgs.roland";
-      description = "The roland package to use.";
+      default = pkgs.callPackage ../../pkgs/roland/package.nix { };
+      defaultText = lib.literalExpression
+        "pkgs.callPackage ../../pkgs/roland/package.nix { }";
+      description = ''
+        The roland package to use. Built directly rather than injected through
+        an overlay: setting nixpkgs.overlays from inside a module's config makes
+        pkgs depend on config, which is an infinite-recursion trap the moment
+        any condition in that path touches pkgs.
+      '';
     };
   };
 
   config = lib.mkIf cfg.enable {
-    nixpkgs.overlays = [
-      (final: _prev: {
-        roland = final.callPackage ../../pkgs/roland/package.nix { };
-      })
-    ];
-
     environment.systemPackages = [ cfg.package ];
 
     # roland opens evdev devices directly via libinput's udev seat

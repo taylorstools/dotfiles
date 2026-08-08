@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  targetUser = "taylor";
+  targetUser = config.myOptions.user.name;
 
   envBin = "${pkgs.coreutils}/bin/env";
   kdotoolBin = "${pkgs.kdotool}/bin/kdotool";
@@ -36,7 +36,7 @@ let
         Class="$(run_as_user "${kdotoolBin}" getwindowclassname "$Id" 2>/dev/null || true)"
         ClassLower="''${Class,,}"
         case "$ClassLower" in
-          *plasmashell*|python3.13|"")
+          *plasmashell*|python3*|"")
             echo "Ignoring window $Id (class: '$Class')"
             ;;
           *)

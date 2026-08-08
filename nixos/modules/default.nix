@@ -27,12 +27,12 @@
   nix.settings.experimental-features = [ "flakes" "nix-command" ];
 
   boot.loader = {
-    systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
     timeout = 1;
   };
 
   boot.zfs.forceImportRoot = false;
+  services.zfs.autoScrub.enable = true;
 
   time.timeZone = "America/Phoenix";
 
