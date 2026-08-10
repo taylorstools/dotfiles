@@ -1,8 +1,7 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   imports = [
-    ./components/asus-laptop.nix
     ./components/claude-desktop.nix
     ./components/davinci-resolve.nix
     ./components/dms.nix
@@ -22,7 +21,6 @@
     claude-desktop.enable = true;
     dms.source = "stable";
     quickshell.source = "stable";
-    roland.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
