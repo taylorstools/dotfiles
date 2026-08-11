@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786326255,
-        "narHash": "sha256-Fxnu/819VB5uDxAIGMTBMcMCxC0vp1sxYGhknAiPqBE=",
+        "lastModified": 1786334592,
+        "narHash": "sha256-8gg+Rv5LK67P81zTP2wBHBNTLp6hXz0vA7kDqhtHnH8=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "bd6a6d85b22060398cd0cf40bcadc079adf0ab43",
+        "rev": "2e8f6e02c5420db5b5944af3e0f3cb4ac1391d0d",
         "type": "github"
       },
       "original": {
@@ -121,11 +121,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786309844,
-        "narHash": "sha256-UYzTw5DVjp0lw7JPvHjrTTxRh0Vs4eX+zZxaJC4NMU8=",
+        "lastModified": 1786401309,
+        "narHash": "sha256-U58SLO6ecL1QUXtNo/NXOVrONIHyYcRqXX7vjTREdo0=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "db1ab5b7b42a222d5a4e7bcc9c4bc2c6efab65dd",
+        "rev": "2f27eab949cc7ef27d162fc0b3bcc85d9b07929b",
         "type": "github"
       },
       "original": {
@@ -311,11 +311,11 @@
     "orchis-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1783421402,
-        "narHash": "sha256-oX6+tPe0nGsl+OzFZCpbKvE00Z/xvP+NoHY7QZ9YAo0=",
+        "lastModified": 1786333523,
+        "narHash": "sha256-psFKMT1e4yhlHPgVd+G3l6JjNFPjRgorfY6oX+c9yz4=",
         "owner": "vinceliuice",
         "repo": "Orchis-theme",
-        "rev": "29975e38624ec93d8e460f8ea17129bcb68c05ef",
+        "rev": "50882dcfa96883b29be4c9091af188ccf8848f1e",
         "type": "github"
       },
       "original": {
