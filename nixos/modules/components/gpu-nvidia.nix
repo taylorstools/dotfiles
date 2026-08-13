@@ -14,6 +14,7 @@ in
     (lib.mkIf (cfg.mode == "proprietary") {
       services.xserver.videoDrivers = [ "nvidia" ];
       myOptions.graphics.enable = lib.mkDefault true;
+      boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
       hardware.nvidia = {
         modesetting.enable = true;
         open = false;
@@ -25,6 +26,7 @@ in
     (lib.mkIf (cfg.mode == "open") {
       services.xserver.videoDrivers = [ "nvidia" ];
       myOptions.graphics.enable = lib.mkDefault true;
+      boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
       hardware.nvidia = {
         modesetting.enable = true;
         open = true;
