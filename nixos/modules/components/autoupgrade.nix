@@ -11,9 +11,7 @@ let
       set -euo pipefail
       DOTFILES="${userHome}/.dotfiles"
       ETC_NIXOS="/etc/nixos"
-      HOSTNAME="$(${pkgs.nettools}/bin/hostname)"
-      HOST_DIR="$DOTFILES/nixos/hosts/$HOSTNAME"
-      LOCKFILE="$DOTFILES/nixos/flake.lock"
+      HOST_DIR="$DOTFILES/nixos/hosts/${config.networking.hostName}"
 
       SYNC_FILES=(
         hardware-configuration.nix
@@ -27,11 +25,6 @@ let
         exit 1
       fi
 
-      if [ -f "$LOCKFILE" ]; then
-        rm -f "$LOCKFILE"
-        ${pkgs.git}/bin/git -C "$DOTFILES" rm nixos/flake.lock --ignore-unmatch
-      fi
-
       ${pkgs.git}/bin/git -C "$DOTFILES" pull --rebase --autostash
 
       for f in "''${SYNC_FILES[@]}"; do
@@ -43,10 +36,8 @@ let
         fi
         ${pkgs.coreutils}/bin/cp -f "$SRC" "$DST"
         ${pkgs.git}/bin/git -C "$DOTFILES" add -f \
-          "nixos/hosts/$HOSTNAME/$f"
+          "nixos/hosts/${config.networking.hostName}/$f"
       done
-
-      ${pkgs.nix}/bin/nix flake update --flake "$DOTFILES/nixos"
     '
   '';
 in
@@ -73,8 +64,10 @@ in
 
   nix.gc = {
     automatic = true;
-    dates = "daily";
+    dates = "weekly";
     persistent = true;
-    options = "--delete-older-than 7d";
+    # Keep a month of generations: long enough to bisect a regression that
+    # is only noticed the next time an affected app is opened.
+    options = "--delete-older-than 30d";
   };
 }
