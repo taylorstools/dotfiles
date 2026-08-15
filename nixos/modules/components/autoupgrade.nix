@@ -38,6 +38,8 @@ let
         ${pkgs.git}/bin/git -C "$DOTFILES" add -f \
           "nixos/hosts/${config.networking.hostName}/$f"
       done
+
+      ${pkgs.nix}/bin/nix flake update --flake "$DOTFILES/nixos" --commit-lock-file
     '
   '';
 in
@@ -64,10 +66,8 @@ in
 
   nix.gc = {
     automatic = true;
-    dates = "weekly";
+    dates = "daily";
     persistent = true;
-    # Keep a month of generations: long enough to bisect a regression that
-    # is only noticed the next time an affected app is opened.
-    options = "--delete-older-than 30d";
+    options = "--delete-older-than 15d";
   };
 }
