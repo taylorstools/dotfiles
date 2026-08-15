@@ -27,6 +27,7 @@
     kdePackages.krdc
     obsidian
     vscodium
-    moonlight-qt
+    # Moonlight fails to build with ffmpeg 9
+    (moonlight-qt.override { ffmpeg = ffmpeg_8; })
   ];
 }
