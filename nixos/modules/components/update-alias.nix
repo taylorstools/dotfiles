@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 let
   update-alias = pkgs.writeShellApplication {
@@ -8,9 +8,10 @@ let
       set -euo pipefail
 
       DOTFILES="''${DOTFILES:-$HOME/.dotfiles}"
-      HOST="${config.networking.hostName}"
+      HOST="$(hostname)"
       HOST_DIR="$DOTFILES/nixos/hosts/$HOST"
       ETC_NIXOS="/etc/nixos"
+      LOCKFILE="$DOTFILES/nixos/flake.lock"
 
       # Per-host source-of-truth files synced from /etc/nixos before rebuild.
       SYNC_FILES=(
@@ -23,6 +24,12 @@ let
       if [ ! -d "$HOST_DIR" ]; then
         gum log --level error "Host directory $HOST_DIR does not exist!"
         exit 1
+      fi
+
+      if [ -f "$LOCKFILE" ]; then
+        gum log --level info "Removing flake.lock file..."
+        rm -f "$LOCKFILE"
+        git -C "$DOTFILES" rm nixos/flake.lock --ignore-unmatch
       fi
 
       gum log --level info "Pulling latest dotfiles..."
@@ -44,8 +51,8 @@ let
         git -C "$DOTFILES" add -f "nixos/hosts/$HOST/$f"
       done
 
-      gum log --level info "Updating flake inputs..."
-      nix flake update --flake "$DOTFILES/nixos" --commit-lock-file
+      gum log --level info "Updating flake..."
+      nix flake update --flake "$DOTFILES/nixos"
 
       gum log --level info "Rebuilding system configuration..."
       sudo nixos-rebuild switch --flake "$DOTFILES/nixos#$HOST"
