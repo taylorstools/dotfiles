@@ -11,7 +11,9 @@ let
       set -euo pipefail
       DOTFILES="${userHome}/.dotfiles"
       ETC_NIXOS="/etc/nixos"
-      HOST_DIR="$DOTFILES/nixos/hosts/${config.networking.hostName}"
+      HOSTNAME="$(${pkgs.nettools}/bin/hostname)"
+      HOST_DIR="$DOTFILES/nixos/hosts/$HOSTNAME"
+      LOCKFILE="$DOTFILES/nixos/flake.lock"
 
       SYNC_FILES=(
         hardware-configuration.nix
@@ -25,6 +27,11 @@ let
         exit 1
       fi
 
+      if [ -f "$LOCKFILE" ]; then
+        rm -f "$LOCKFILE"
+        ${pkgs.git}/bin/git -C "$DOTFILES" rm nixos/flake.lock --ignore-unmatch
+      fi
+
       ${pkgs.git}/bin/git -C "$DOTFILES" pull --rebase --autostash
 
       for f in "''${SYNC_FILES[@]}"; do
@@ -36,10 +43,10 @@ let
         fi
         ${pkgs.coreutils}/bin/cp -f "$SRC" "$DST"
         ${pkgs.git}/bin/git -C "$DOTFILES" add -f \
-          "nixos/hosts/${config.networking.hostName}/$f"
+          "nixos/hosts/$HOSTNAME/$f"
       done
 
-      ${pkgs.nix}/bin/nix flake update --flake "$DOTFILES/nixos" --commit-lock-file
+      ${pkgs.nix}/bin/nix flake update --flake "$DOTFILES/nixos"
     '
   '';
 in
@@ -68,6 +75,6 @@ in
     automatic = true;
     dates = "daily";
     persistent = true;
-    options = "--delete-older-than 15d";
+    options = "--delete-older-than 7d";
   };
 }
