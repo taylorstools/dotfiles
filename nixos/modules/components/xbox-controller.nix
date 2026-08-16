@@ -13,6 +13,10 @@
     ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="045e", ATTR{idProduct}=="02fe", TEST=="power/control", ATTR{power/control}="on"
   '';
 
+  boot.extraModprobeConfig = ''
+    options xone_dongle dyndbg=+p
+  '';
+
   environment.systemPackages = with pkgs; [
     antimicrox
   ];
