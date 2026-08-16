@@ -121,11 +121,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786818168,
-        "narHash": "sha256-3CLy2QXZ8kASMzorS0+X9YuUh83c7QWXVovZYMQATbs=",
+        "lastModified": 1786827240,
+        "narHash": "sha256-WZf0ILlQkV6YHyJyoQS1Vgx+l6C8IXzhgWurRdS/f7E=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "ed8fbf47b02ef38af51c165118f735a66a4571d2",
+        "rev": "d4fecfcd5c020f1e819df174ed4b0fb1f6187b8c",
         "type": "github"
       },
       "original": {
@@ -354,11 +354,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785704021,
-        "narHash": "sha256-eQtczKMAS4ItlB4pr1B3MqBZiyRVl2nkqNdtyRSQMa8=",
+        "lastModified": 1786852399,
+        "narHash": "sha256-zrapfXj33JWMcFmoNT7rA9mum2OHyTEhXVmnsS1MtyQ=",
         "ref": "refs/heads/master",
-        "rev": "28771c7c74b42e20afca0b1b63980cb46515537c",
-        "revCount": 835,
+        "rev": "78672a8405f95adb7e4bf6ecacff97f1a535716e",
+        "revCount": 843,
         "type": "git",
         "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       },
