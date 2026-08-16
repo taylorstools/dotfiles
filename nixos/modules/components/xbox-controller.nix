@@ -3,7 +3,6 @@
 {
   imports = [
     ./xone-idle-shutoff.nix
-    ./xone-dongle-rebind.nix
   ];
 
   hardware.xone.enable = true;
