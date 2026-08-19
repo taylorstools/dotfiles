@@ -52,4 +52,6 @@ while [ ! -f "$OUT" ]; do
     sleep 0.05
 done
 
+"$HOME/scripts/niri_switch-to-next-unused-workspace.sh"
+
 satty -f "$OUT" --disable-notifications
