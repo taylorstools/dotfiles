@@ -13,6 +13,7 @@
   ];
 
   programs = {
+    direnv.enable = true;
     localsend.enable = true;
     nix-ld.enable = true;
     obs-studio.enable = true;
