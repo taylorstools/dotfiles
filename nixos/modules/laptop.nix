@@ -13,8 +13,9 @@
   ];
 
   programs = {
-    obs-studio.enable = true;
     localsend.enable = true;
+    nix-ld.enable = true;
+    obs-studio.enable = true;
   };
 
   myOptions = {
@@ -25,8 +26,8 @@
 
   environment.systemPackages = with pkgs; [
     kdePackages.krdc
+    moonlight-qt
     obsidian
     vscodium
-    moonlight-qt
   ];
 }
