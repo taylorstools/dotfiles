@@ -38,12 +38,6 @@ switch-events {
     lid-open {
         spawn "sh" "-c" "$HOME/scripts/hypridle/restore-kbd-brightness.sh"
     }
-    tablet-mode-on {
-        spawn "sh" "-c" "pidof sysboard || sysboard &"
-    }
-    tablet-mode-off {
-        spawn "sh" "-c" "pidof sysboard && pkill sysboard"
-    }
 }
 
 hotkey-overlay {
