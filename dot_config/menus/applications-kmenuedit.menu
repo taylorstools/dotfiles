@@ -55,7 +55,6 @@
   <Filename>Jellyfin.desktop</Filename>
   <Filename>Kick.desktop</Filename>
   <Filename>Prime Video.desktop</Filename>
-  <Filename>qBittorrent.desktop</Filename>
   <Filename>Files.desktop</Filename>
   <Filename>Dim Screen.desktop</Filename>
   <Filename>Brighten Screen.desktop</Filename>
@@ -63,8 +62,11 @@
   <Filename>Toggle Night Light.desktop</Filename>
   <Filename>Terminal.desktop</Filename>
   <Filename>TaylorNAS.desktop</Filename>
+  <Filename>Sound_Effects.desktop</Filename>
  </Include>
- <Exclude/>
+ <Exclude>
+  <Filename>qBittorrent.desktop</Filename>
+ </Exclude>
  <Layout>
   <Merge type="files"/>
   <Filename>Chrome.desktop</Filename>
@@ -77,7 +79,7 @@
   <Filename>Jellyfin.desktop</Filename>
   <Filename>Kick.desktop</Filename>
   <Filename>Prime Video.desktop</Filename>
-  <Filename>qBittorrent.desktop</Filename>
+  <Filename>Sound_Effects.desktop</Filename>
   <Filename>Files.desktop</Filename>
   <Filename>Dim Screen.desktop</Filename>
   <Filename>Brighten Screen.desktop</Filename>
@@ -86,4 +88,10 @@
   <Filename>Terminal.desktop</Filename>
   <Filename>TaylorNAS.desktop</Filename>
  </Layout>
+ <Menu>
+  <Name>.hidden</Name>
+  <Include>
+   <Filename>qBittorrent.desktop</Filename>
+  </Include>
+ </Menu>
 </Menu>
