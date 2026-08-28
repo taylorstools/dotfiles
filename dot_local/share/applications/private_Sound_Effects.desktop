@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=easyeffects
+Icon=/home/taylor/.dotfiles/icons/soundeffects.svg
+Name=Sound Effects
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
