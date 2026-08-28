@@ -10,7 +10,7 @@ in
   hardware.cpu.amd.ryzen-smu.enable = true;
 
   environment.systemPackages = with pkgs; [
-    mprime
+    #mprime
     ryzenadj
   ];
 
