@@ -109,7 +109,7 @@ let
         --app-name="NixOS Upgrade" \
         --urgency=critical \
         --icon=dialog-error \
-        "Last automatic upgrade failed. Review the log." \
+        "Last automatic upgrade failed" \
         "${logFile}"
 
       : > "$StampFile"
