@@ -20,6 +20,7 @@
     };
 
     davinci.enable = true;
+    plymouth.enable = true;
     roland.enable = true;
   };
 }

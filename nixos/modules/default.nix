@@ -12,6 +12,7 @@
     ./components/gpu-intel.nix
     ./components/gpu-nvidia.nix
     ./components/mission-center.nix
+    ./components/plymouth.nix
     ./components/printing.nix
     ./components/secure-boot.nix
     ./components/ssh.nix
