@@ -5,7 +5,7 @@ let
 in
 {
   imports = [
-    ./ydotool.nix
+    #./ydotool.nix
   ];
 
   services.greetd = {
