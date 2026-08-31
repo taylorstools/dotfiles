@@ -166,20 +166,27 @@ fun display_password(prompt, count) {
   show_dots(count);
 }
 
+# Plymouth calls this more than once per submission -- once to dismiss the
+# entry, again for the mode change. The whole body is therefore guarded on
+# not already verifying: without that, the second call falls through to the
+# else branch (state.typed having just been cleared), shows the spinner, and
+# clears state.verifying, which is the flag the rejection detection needs.
 fun display_normal() {
-  if (state.typed) {
-    # A passphrase was just submitted. Hold the field, minus its dots, rather
-    # than cutting to the spinner: a rejection comes back within about a
-    # second, and a spinner that appears and vanishes reads as a glitch.
-    state.typed = 0;
-    state.verifying = 1;
-    state.wait = @VERIFY_GRACE@;
-    show_dots(0);
-  } else {
-    state.verifying = 0;
-    hide_field();
-    show_dots(0);
-    show_spinner();
+  if (state.verifying == 0) {
+    if (state.typed) {
+      # A passphrase was just submitted. Hold the field, minus its dots,
+      # rather than cutting to the spinner: a rejection comes back within
+      # about a second, and a spinner that appears and vanishes reads as a
+      # glitch.
+      state.typed = 0;
+      state.verifying = 1;
+      state.wait = @VERIFY_GRACE@;
+      show_dots(0);
+    } else {
+      hide_field();
+      show_dots(0);
+      show_spinner();
+    }
   }
 }
 
