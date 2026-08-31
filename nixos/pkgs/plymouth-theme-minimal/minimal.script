@@ -68,18 +68,22 @@ fun display_password(prompt, count) {
   field.sprite.SetOpacity(1);
   lock.sprite.SetOpacity(1);
 
-  if (count > bullet.max) {
-    count = bullet.max;
+  # Clamp into a local. Assigning to the callback's own parameter aborts the
+  # function part-way in Plymouth's script interpreter, which leaves the field
+  # and padlock drawn (their opacity is set above) and no dots at all.
+  n = count;
+  if (n > bullet.max) {
+    n = bullet.max;
   }
 
-  for (i = 0; i < count; i++) {
+  for (i = 0; i < n; i++) {
     bullets[i] = Sprite(bullet.image);
     bullets[i].SetX(bullet.x + i * bullet.spacing);
     bullets[i].SetY(bullet.y);
     bullets[i].SetZ(10);
   }
 
-  shown = count;
+  shown = n;
 }
 
 fun display_normal() {

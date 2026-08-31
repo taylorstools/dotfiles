@@ -1,14 +1,13 @@
 { lib
 , runCommand
 , librsvg
-, imagemagick
-, nerd-fonts
 , themeName ? "minimal"
 
-  # Plymouth script themes get no HiDPI scaling, so these are raw pixels,
-  # sized for the PX13's 2880x1800 panel. The .script derives all of its
-  # layout from the rendered image dimensions, so changing them here is
-  # enough -- the script itself never needs editing.
+  # Plymouth script themes get no HiDPI scaling, so these are raw pixels.
+  # The .script derives all of its layout from the rendered image dimensions,
+  # so changing them here is enough; the script itself never needs editing.
+  # Note the initrd often runs at a lower mode than the panel's native one,
+  # so these read larger at boot than they would on the desktop.
 , fieldWidth ? 420
 , fieldHeight ? 76
   # Half the field height renders as a full pill. Written as a ratio rather
@@ -17,14 +16,9 @@
 , cornerRadius ? fieldHeight / 2
 , borderWidth ? 3
 , bulletSize ? 14
-
-  # The padlock is the nf-fa-lock glyph (Font Awesome's lock, U+F023 in the
-  # Nerd Fonts private use area). It is taller than it is wide, so this sets
-  # the rendered height; width follows from the glyph's own aspect ratio.
-  # It sits inside the field, so keep it comfortably under fieldHeight.
+  # Padlock height; width follows from the glyph's aspect. It sits inside the
+  # field, so keep it comfortably under fieldHeight.
 , lockHeight ? 40
-, glyphFont ? nerd-fonts.symbols-only
-, glyphCodepoint ? "f023"
 
 , foreground ? "#e6e6e6"
 , background ? "#000000"
@@ -34,6 +28,24 @@ let
   # SVG strokes straddle the path, so inset by half the border to keep the
   # outline inside the rendered bitmap.
   inset = borderWidth / 2.0;
+
+  # The nf-fa-lock outline, lifted verbatim from Font Awesome's "lock" glyph
+  # (U+F023), which is the contour Nerd Fonts vendors under that name.
+  # Embedding the path rather than rasterising text from a font file is
+  # deliberate: a font that fails to load, or that lacks the codepoint, does
+  # not raise an error. It silently renders .notdef boxes, which is exactly
+  # how this theme first shipped a row of tofu where the padlock should be.
+  # Font Awesome by Dave Gandy, SIL OFL 1.1.
+  lockPath =
+    "M320 768V960C320 1101 435 1216 576 1216C717 1216 832 1101 832 960V768Z"
+    + "M1152 672C1152 725 1109 768 1056 768H1024V960C1024 1206 822 1408 576 "
+    + "1408C330 1408 128 1206 128 960V768H96C43 768 0 725 0 672V96C0 43 43 0 "
+    + "96 0H1056C1109 0 1152 43 1152 96Z";
+
+  # Glyph em box, from the font's own metrics.
+  lockUnitsW = 1152;
+  lockUnitsH = 1408;
+  lockWidth = (lockHeight * lockUnitsW + (lockUnitsH / 2)) / lockUnitsH;
 
   fieldSvg = builtins.toFile "field.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -47,6 +59,16 @@ let
     </svg>
   '';
 
+  # Font outlines are Y-up, SVG is Y-down, hence the flip.
+  lockSvg = builtins.toFile "lock.svg" ''
+    <svg xmlns="http://www.w3.org/2000/svg"
+         viewBox="0 0 ${toString lockUnitsW} ${toString lockUnitsH}">
+      <g transform="scale(1,-1) translate(0,-${toString lockUnitsH})">
+        <path d="${lockPath}" fill="${foreground}"/>
+      </g>
+    </svg>
+  '';
+
   bulletSvg = builtins.toFile "bullet.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
       <circle cx="8" cy="8" r="6" fill="${foreground}"/>
@@ -55,7 +77,7 @@ let
 in
 runCommand "plymouth-theme-${themeName}"
   {
-    nativeBuildInputs = [ librsvg imagemagick ];
+    nativeBuildInputs = [ librsvg ];
 
     meta = {
       description =
@@ -70,35 +92,10 @@ runCommand "plymouth-theme-${themeName}"
 
     rsvg-convert -w ${toString fieldWidth} -h ${toString fieldHeight} \
       ${fieldSvg} -o "$dir/field.png"
+    rsvg-convert -w ${toString lockWidth} -h ${toString lockHeight} \
+      ${lockSvg} -o "$dir/lock.png"
     rsvg-convert -w ${toString bulletSize} -h ${toString bulletSize} \
       ${bulletSvg} -o "$dir/bullet.png"
-
-    # Rasterise the padlock straight out of the Nerd Font. -trim strips the
-    # glyph's side bearings so the bitmap is exactly the mark, which lets the
-    # .script position it from its own dimensions.
-    font=$(find ${glyphFont}/share/fonts -type f \
-      \( -name '*.ttf' -o -name '*.otf' \) | sort | head -n1)
-    if [ -z "$font" ]; then
-      echo "no font file found in ${glyphFont}" >&2
-      exit 1
-    fi
-    echo "glyph font: $font"
-
-    glyph=$(printf '\u${glyphCodepoint}')
-    magick -background none -fill "${foreground}" -font "$font" \
-      -pointsize 512 "label:$glyph" \
-      -trim +repage -resize "x${toString lockHeight}" \
-      "$dir/lock.png"
-
-    # A missing glyph renders as nothing at all rather than failing, so check.
-    dims=$(magick identify -format '%wx%h' "$dir/lock.png")
-    echo "lock glyph: $dims"
-    case "$dims" in
-      [0-3]x*|*x[0-3])
-        echo "glyph U+${glyphCodepoint} rendered empty; wrong font or codepoint" >&2
-        exit 1
-        ;;
-    esac
 
     cp ${./minimal.script} "$dir/${themeName}.script"
 
