@@ -27,10 +27,20 @@
   # height anyway, so anything larger looks identical.
 , cornerRadius ? fieldHeight / 2
 , borderWidth ? 2
-, bulletSize ? 8
+, bulletSize ? 10
+  # Centre-to-centre dot spacing as a multiple of dot size. Lower it and the
+  # dots read bolder without growing; raise it and they read as a thin trail.
+, bulletSpacing ? 1.6
   # Padlock height; width follows from the glyph's aspect. It sits inside the
   # field, so keep it comfortably under fieldHeight.
 , lockHeight ? 22
+  # The padlock's ink is bottom-heavy -- the solid body outweighs the thin
+  # shackle, putting its centre of mass 10.1% of the glyph height below the
+  # geometric centre. Centred by geometry it reads as sitting low. Rather than
+  # offset it in the script, the glyph is rendered into a viewBox padded at the
+  # bottom, so the bitmap's geometric centre already is the optical centre and
+  # plain centring does the right thing. Set to 0 for true geometric centring.
+, lockOpticalShift ? 0.101
 
   # Spinner shown while the rest of boot happens: a row of dots that brighten
   # and swell in sequence, echoing the passphrase dots. spinnerWidth is the
@@ -80,6 +90,12 @@ let
   lockUnitsH = 1408;
   lockWidth = (lockHeight * lockUnitsW + (lockUnitsH / 2)) / lockUnitsH;
 
+  # Transparent padding below the glyph, twice the correction so the shift
+  # lands on the midpoint.
+  lockPadUnits = builtins.floor (2.0 * lockOpticalShift * lockUnitsH + 0.5);
+  lockBoxH = lockUnitsH + lockPadUnits;
+  lockRenderH = (lockHeight * lockBoxH + (lockUnitsH / 2)) / lockUnitsH;
+
   fieldSvg = builtins.toFile "field.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg"
          viewBox="0 0 ${toString fieldWidth} ${toString fieldHeight}">
@@ -95,7 +111,7 @@ let
   # Font outlines are Y-up, SVG is Y-down, hence the flip.
   lockSvg = builtins.toFile "lock.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg"
-         viewBox="0 0 ${toString lockUnitsW} ${toString lockUnitsH}">
+         viewBox="0 0 ${toString lockUnitsW} ${toString lockBoxH}">
       <g transform="scale(1,-1) translate(0,-${toString lockUnitsH})">
         <path d="${lockPath}" fill="${foreground}"/>
       </g>
@@ -125,7 +141,7 @@ runCommand "plymouth-theme-${themeName}"
 
     rsvg-convert -w ${px fieldWidth} -h ${px fieldHeight} \
       ${fieldSvg} -o "$dir/field.png"
-    rsvg-convert -w ${px lockWidth} -h ${px lockHeight} \
+    rsvg-convert -w ${px lockWidth} -h ${px lockRenderH} \
       ${lockSvg} -o "$dir/lock.png"
     rsvg-convert -w ${px bulletSize} -h ${px bulletSize} \
       ${bulletSvg} -o "$dir/bullet.png"
@@ -159,7 +175,8 @@ runCommand "plymouth-theme-${themeName}"
       i=$(( i + 1 ))
     done
 
-    sed -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/" \
+    sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/" \
+        -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/" \
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
