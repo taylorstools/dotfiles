@@ -64,6 +64,16 @@
 
 , foreground ? "#e6e6e6"
 , background ? "#000000"
+  # Border colour after a rejected passphrase. Reverts to foreground as soon
+  # as you start typing again.
+, errorColour ? "#e05a52"
+
+  # Refresh ticks (50/sec) to hold the field on screen after a passphrase is
+  # submitted, before giving up and switching to the spinner. Plymouth calls
+  # display_normal on submit, so without this hold a rejected passphrase shows
+  # a full second of spinner before the field returns, which reads as a
+  # glitch. Needs to comfortably exceed the argon2id derivation time.
+, verifyGraceTicks ? 90
 }:
 
 let
@@ -98,27 +108,33 @@ let
   lockBoxH = lockUnitsH + lockPadUnits;
   lockRenderH = (lockHeight * lockBoxH + (lockUnitsH / 2)) / lockUnitsH;
 
-  fieldSvg = builtins.toFile "field.svg" ''
+  mkFieldSvg = name: stroke: builtins.toFile name ''
     <svg xmlns="http://www.w3.org/2000/svg"
          viewBox="0 0 ${toString fieldWidth} ${toString fieldHeight}">
       <rect x="${toString inset}" y="${toString inset}"
             width="${toString (fieldWidth - borderWidth)}"
             height="${toString (fieldHeight - borderWidth)}"
             rx="${toString cornerRadius}"
-            fill="${background}" stroke="${foreground}"
+            fill="${background}" stroke="${stroke}"
             stroke-width="${toString borderWidth}"/>
     </svg>
   '';
 
+  fieldSvg = mkFieldSvg "field.svg" foreground;
+  fieldErrorSvg = mkFieldSvg "field-error.svg" errorColour;
+
   # Font outlines are Y-up, SVG is Y-down, hence the flip.
-  lockSvg = builtins.toFile "lock.svg" ''
+  mkLockSvg = name: fill: builtins.toFile name ''
     <svg xmlns="http://www.w3.org/2000/svg"
          viewBox="0 0 ${toString lockUnitsW} ${toString lockBoxH}">
       <g transform="scale(1,-1) translate(0,-${toString lockUnitsH})">
-        <path d="${lockPath}" fill="${foreground}"/>
+        <path d="${lockPath}" fill="${fill}"/>
       </g>
     </svg>
   '';
+
+  lockSvg = mkLockSvg "lock.svg" foreground;
+  lockErrorSvg = mkLockSvg "lock-error.svg" errorColour;
 
   bulletSvg = builtins.toFile "bullet.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
@@ -143,8 +159,12 @@ runCommand "plymouth-theme-${themeName}"
 
     rsvg-convert -w ${px fieldWidth} -h ${px fieldHeight} \
       ${fieldSvg} -o "$dir/field.png"
+    rsvg-convert -w ${px fieldWidth} -h ${px fieldHeight} \
+      ${fieldErrorSvg} -o "$dir/field-error.png"
     rsvg-convert -w ${px lockWidth} -h ${px lockRenderH} \
       ${lockSvg} -o "$dir/lock.png"
+    rsvg-convert -w ${px lockWidth} -h ${px lockRenderH} \
+      ${lockErrorSvg} -o "$dir/lock-error.png"
     rsvg-convert -w ${px bulletSize} -h ${px bulletSize} \
       ${bulletSvg} -o "$dir/bullet.png"
 
@@ -178,6 +198,7 @@ runCommand "plymouth-theme-${themeName}"
     done
 
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/" \
+        -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/" \
         -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/" \
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
