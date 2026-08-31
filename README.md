@@ -61,7 +61,7 @@ sudo sbctl enroll-keys --microsoft
 
 Then reboot.
 
-## Verify Secure Boot and auto-unlock LUKS with TPM
+## Verify Secure Boot
 
 After you reboot, verify the state of Secure Boot on your system:
 
@@ -74,10 +74,53 @@ Secure Boot:	✓ Enabled
 Vendor Keys:	microsoft
 ```
 
-If it is enabled, then you are good! You can now move on to enabling your LUKS encrypted drive to be auto-unlocked at boot by the TPM:
+If Secure Boot is enabled, you are good.
+
+## LUKS unlock at boot
+
+Every host encrypts its root with LUKS2. How you get past that at boot differs by machine, deliberately:
+
+| Host | Unlock | Why |
+| --- | --- | --- |
+| `livingroompc`, `bedroompc` | TPM2 auto-unlock (PCR 0+7) | HTPCs across the room; typing a passphrase on a media box is impractical |
+| `taylorpc` | Passphrase at a Plymouth prompt | A laptop that leaves the house, so the disk should not open itself |
+
+A fresh install always starts with auto-unlock **off**. The post-install script seeds `/etc/nixos/luks-tpm-autounlock.nix` in that state, because no TPM keyslot exists yet. On `taylorpc` that is the final state and there is nothing more to do — the graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`.
+
+### Enabling TPM auto-unlock
+
+Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot keys changes PCR 7, and a TPM keyslot bound to the old PCR 7 stops working the moment it does. The same applies later: firmware updates and any further key changes invalidate the enrolment, and you fall back to the passphrase until you re-run this.
 
 ```sh
-"$HOME/scripts/luks-tpm-autounlock.sh" --hostname $HOSTNAME
+"$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$(hostname)" --enable
 ```
 
-Run through the steps in the script, and when it's complete, reboot. You should no longer be prompted for a password to unlock your LUKS encrypted drive.
+Reboot when it finishes; the drive should unlock without a prompt.
+
+The script always changes the LUKS header and the NixOS config **together** — enrolling or wiping the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
+
+Other flags:
+
+```sh
+--status         # report header state vs config state; changes nothing
+--disable        # wipe the TPM keyslot and go back to the passphrase
+--device <path>  # skip the device chooser
+--keep-slot      # with --disable, leave the keyslot in the header
+--norebuild      # write config, skip nixos-rebuild
+--yes            # assume yes, for unattended runs
+```
+
+`--status` is the first thing to run when auto-unlock stops behaving; it names the drift in either direction.
+
+The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change. Move those backups off the machine — a header file plus your passphrase decrypts the disk.
+
+## Per-host configuration files
+
+Four files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
+
+- `hardware-configuration.nix`
+- `hostid.nix`
+- `disko.nix`
+- `luks-tpm-autounlock.nix`
+
+The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive** — the next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`, or for the LUKS module through `luks-tpm-autounlock.sh`, which writes both.
