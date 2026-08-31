@@ -48,7 +48,8 @@ in
     # systemd password agent, so the initrd has to be the systemd one.
     boot.initrd.systemd.enable = lib.mkDefault true;
 
-    boot.kernelParams = [ "splash" ] ++ lib.optionals cfg.quietBoot [
+    # The upstream plymouth module already adds "splash" itself.
+    boot.kernelParams = lib.optionals cfg.quietBoot [
       "quiet"
       "loglevel=3"
       "rd.systemd.show_status=false"
