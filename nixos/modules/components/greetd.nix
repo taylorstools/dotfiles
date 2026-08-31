@@ -29,5 +29,5 @@ in
   };
 
   programs.hyprlock.enable = true;
-  security.pam.services.hyprlock.enableGnomeKeyring = true;
+  #security.pam.services.hyprlock.enableGnomeKeyring = true;
 }
