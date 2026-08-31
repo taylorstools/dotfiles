@@ -48,7 +48,7 @@ lock.sprite.SetY((screen.height - lock.image.GetHeight()) / 2);
 lock.sprite.SetZ(10);
 lock.sprite.SetOpacity(0);
 
-bullet.spacing = bullet.image.GetWidth() * 1.8;
+bullet.spacing = bullet.image.GetWidth() * @BULLET_SPACING@;
 bullet.x = field.x + pad;
 bullet.y = (screen.height - bullet.image.GetHeight()) / 2;
 
