@@ -1,0 +1,94 @@
+# Minimal Plymouth theme: a bordered passphrase field with the nf-fa-lock
+# padlock glyph inset at its right edge.
+#
+# The prompt string systemd-cryptsetup sends ("Please enter passphrase for
+# disk cryptroot...") arrives as the first argument to display_password and is
+# deliberately discarded. A script-plugin theme draws every pixel itself, so
+# there is no keyboard-layout indicator either unless one is drawn here.
+#
+# Plymouth's script language has no drawing primitives -- it only composites
+# images -- so the field border is a pre-rendered PNG. All layout below is
+# derived from the image dimensions, which means changing the sizes in
+# package.nix is enough; nothing here needs editing.
+
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+screen.width = Window.GetWidth();
+screen.height = Window.GetHeight();
+
+field.image = Image("field.png");
+lock.image = Image("lock.png");
+bullet.image = Image("bullet.png");
+
+pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
+
+field.x = (screen.width - field.image.GetWidth()) / 2;
+field.y = (screen.height - field.image.GetHeight()) / 2;
+
+field.sprite = Sprite(field.image);
+field.sprite.SetX(field.x);
+field.sprite.SetY(field.y);
+field.sprite.SetZ(5);
+field.sprite.SetOpacity(0);
+
+# Padlock sits inside the field, inset from the right edge and vertically
+# centred on it.
+lock.sprite = Sprite(lock.image);
+lock.sprite.SetX(field.x + field.image.GetWidth() - pad - lock.image.GetWidth());
+lock.sprite.SetY((screen.height - lock.image.GetHeight()) / 2);
+lock.sprite.SetZ(10);
+lock.sprite.SetOpacity(0);
+
+bullet.spacing = bullet.image.GetWidth() * 1.8;
+bullet.x = field.x + pad;
+bullet.y = (screen.height - bullet.image.GetHeight()) / 2;
+
+# Room for dots is the field minus: left padding, a gap before the padlock,
+# the padlock itself, and its right padding. Without this cap a long
+# passphrase would run underneath the padlock and out the far side.
+bullet.room = field.image.GetWidth() - pad * 3 - lock.image.GetWidth();
+bullet.max = (bullet.room + (bullet.spacing - bullet.image.GetWidth())) / bullet.spacing;
+
+shown = 0;
+
+fun clear_bullets() {
+  for (i = 0; i < shown; i++) {
+    bullets[i] = NULL;
+  }
+  shown = 0;
+}
+
+# A wrong passphrase makes systemd re-prompt, which calls this again with a
+# count of 0 -- the dots simply clear and you start over. That is the only
+# failure feedback, and it is intentional.
+fun display_password(prompt, count) {
+  clear_bullets();
+
+  field.sprite.SetOpacity(1);
+  lock.sprite.SetOpacity(1);
+
+  if (count > bullet.max) {
+    count = bullet.max;
+  }
+
+  for (i = 0; i < count; i++) {
+    bullets[i] = Sprite(bullet.image);
+    bullets[i].SetX(bullet.x + i * bullet.spacing);
+    bullets[i].SetY(bullet.y);
+    bullets[i].SetZ(10);
+  }
+
+  shown = count;
+}
+
+fun display_normal() {
+  clear_bullets();
+  field.sprite.SetOpacity(0);
+  lock.sprite.SetOpacity(0);
+}
+
+Plymouth.SetDisplayPasswordFunction(display_password);
+Plymouth.SetDisplayNormalFunction(display_normal);
+Plymouth.SetDisplayQuestionFunction(fun (prompt, entry) { display_normal(); });
+Plymouth.SetMessageFunction(fun (text) { });
