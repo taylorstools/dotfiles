@@ -27,20 +27,22 @@
   # height anyway, so anything larger looks identical.
 , cornerRadius ? fieldHeight / 2
 , borderWidth ? 2
-, bulletSize ? 10
+, bulletSize ? 12
   # Centre-to-centre dot spacing as a multiple of dot size. Lower it and the
   # dots read bolder without growing; raise it and they read as a thin trail.
-, bulletSpacing ? 1.6
+, bulletSpacing ? 1.5
   # Padlock height; width follows from the glyph's aspect. It sits inside the
   # field, so keep it comfortably under fieldHeight.
 , lockHeight ? 22
   # The padlock's ink is bottom-heavy -- the solid body outweighs the thin
   # shackle, putting its centre of mass 10.1% of the glyph height below the
-  # geometric centre. Centred by geometry it reads as sitting low. Rather than
+  # geometric centre. Centred by geometry it reads as sitting low, but
+  # correcting by the full 0.101 overshoots into a visible 6px/10px gap, so
+  # this is half of it: 7px above, 9px below. Rather than
   # offset it in the script, the glyph is rendered into a viewBox padded at the
   # bottom, so the bitmap's geometric centre already is the optical centre and
   # plain centring does the right thing. Set to 0 for true geometric centring.
-, lockOpticalShift ? 0.101
+, lockOpticalShift ? 0.05
 
   # Spinner shown while the rest of boot happens: a row of dots that brighten
   # and swell in sequence, echoing the passphrase dots. spinnerWidth is the
