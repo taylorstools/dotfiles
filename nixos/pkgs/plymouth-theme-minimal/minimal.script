@@ -28,7 +28,9 @@ screen.width = Window.GetWidth();
 screen.height = Window.GetHeight();
 
 field.image = Image("field.png");
+field.error = Image("field-error.png");
 lock.image = Image("lock.png");
+lock.error = Image("lock-error.png");
 bullet.image = Image("bullet.png");
 
 pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
@@ -78,6 +80,15 @@ spinner.on = 0;
 spinner.tick = 0;
 spinner.index = 0;
 
+# Plymouth gives no "wrong passphrase" callback, but the call sequence is
+# unambiguous: display_password (typing) -> display_normal (submitted) ->
+# display_password again only ever happens when the passphrase was rejected.
+# On success display_password never comes back. Backspacing to empty does not
+# trigger display_normal, so it cannot be mistaken for a submission.
+state.typed = 0;       # something has been entered at this prompt
+state.verifying = 0;   # submitted, waiting to find out
+state.wait = 0;
+
 fun show_spinner() {
   spinner.on = 1;
   spinner.sprite.SetOpacity(1);
@@ -92,6 +103,18 @@ fun hide_spinner() {
 # call. Frame count and tick divisor together set the cycle length, and both
 # come from package.nix.
 fun refresh() {
+  # Held field after a submission: if nothing has asked us again by now, the
+  # passphrase was accepted and boot is carrying on.
+  if (state.verifying) {
+    state.wait = state.wait - 1;
+    if (state.wait <= 0) {
+      state.verifying = 0;
+      hide_field();
+      show_dots(0);
+      show_spinner();
+    }
+  }
+
   if (spinner.on) {
     spinner.tick = spinner.tick + 1;
     if (spinner.tick >= @SPINNER_TICKS@) {
@@ -105,6 +128,13 @@ fun refresh() {
   }
 }
 
+fun hide_field() {
+  field.sprite.SetOpacity(0);
+  lock.sprite.SetOpacity(0);
+  field.sprite.SetImage(field.image);
+  lock.sprite.SetImage(lock.image);
+}
+
 fun show_dots(n) {
   for (i = 0; i < bullet.max; i++) {
     if (i < n) {
@@ -115,10 +145,21 @@ fun show_dots(n) {
   }
 }
 
-# A wrong passphrase makes systemd re-prompt, which calls this again with a
-# count of 0 -- the dots simply clear and you start over. That is the only
-# failure feedback, and it is intentional.
 fun display_password(prompt, count) {
+  # Being asked again while a submission was in flight means it was rejected.
+  if (state.verifying) {
+    state.verifying = 0;
+    field.sprite.SetImage(field.error);
+    lock.sprite.SetImage(lock.error);
+  }
+
+  # Typing clears the rejection.
+  if (count > 0) {
+    field.sprite.SetImage(field.image);
+    lock.sprite.SetImage(lock.image);
+    state.typed = 1;
+  }
+
   hide_spinner();
   field.sprite.SetOpacity(1);
   lock.sprite.SetOpacity(1);
@@ -126,10 +167,20 @@ fun display_password(prompt, count) {
 }
 
 fun display_normal() {
-  field.sprite.SetOpacity(0);
-  lock.sprite.SetOpacity(0);
-  show_dots(0);
-  show_spinner();
+  if (state.typed) {
+    # A passphrase was just submitted. Hold the field, minus its dots, rather
+    # than cutting to the spinner: a rejection comes back within about a
+    # second, and a spinner that appears and vanishes reads as a glitch.
+    state.typed = 0;
+    state.verifying = 1;
+    state.wait = @VERIFY_GRACE@;
+    show_dots(0);
+  } else {
+    state.verifying = 0;
+    hide_field();
+    show_dots(0);
+    show_spinner();
+  }
 }
 
 Plymouth.SetRefreshFunction(refresh);
