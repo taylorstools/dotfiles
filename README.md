@@ -85,9 +85,11 @@ Every host encrypts its root with LUKS2. How you get past that at boot differs b
 | `livingroompc`, `bedroompc` | TPM2 auto-unlock (PCR 0+7) | HTPCs across the room; typing a passphrase on a media box is impractical |
 | `taylorpc` | Passphrase at a Plymouth prompt | A laptop that leaves the house, so the disk should not open itself |
 
-A fresh install always starts with auto-unlock **off**. The post-install script seeds `/etc/nixos/luks-tpm-autounlock.nix` in that state, because no TPM keyslot exists yet. On `taylorpc` that is the final state and there is nothing more to do — the graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`.
+A fresh install always starts with auto-unlock **off**. The post-install script seeds `/etc/nixos/luks-tpm-autounlock.nix` in that state, because no TPM keyslot exists yet. On `taylorpc` that is the final state and there is nothing more to do. The graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`.
 
 ### Enabling TPM auto-unlock
+
+This is for the HTPCs. Do not run `--enable` on `taylorpc`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. `--status` and `--disable` still apply there.
 
 Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot keys changes PCR 7, and a TPM keyslot bound to the old PCR 7 stops working the moment it does. The same applies later: firmware updates and any further key changes invalidate the enrolment, and you fall back to the passphrase until you re-run this.
 
@@ -97,7 +99,7 @@ Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot k
 
 Reboot when it finishes; the drive should unlock without a prompt.
 
-The script always changes the LUKS header and the NixOS config **together** — enrolling or wiping the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
+The script always changes the LUKS header and the NixOS config **together**: it enrols or wipes the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
 
 Other flags:
 
@@ -112,7 +114,7 @@ Other flags:
 
 `--status` is the first thing to run when auto-unlock stops behaving; it names the drift in either direction.
 
-The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change. Move those backups off the machine — a header file plus your passphrase decrypts the disk.
+The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change. Move those backups off the machine. A header file plus your passphrase decrypts the disk.
 
 ## Per-host configuration files
 
@@ -123,4 +125,4 @@ Four files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
 - `disko.nix`
 - `luks-tpm-autounlock.nix`
 
-The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive** — the next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`, or for the LUKS module through `luks-tpm-autounlock.sh`, which writes both.
+The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive.** The next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`, or for the LUKS module through `luks-tpm-autounlock.sh`, which writes both.
