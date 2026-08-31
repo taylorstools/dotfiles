@@ -19,6 +19,10 @@
   # Padlock height; width follows from the glyph's aspect. It sits inside the
   # field, so keep it comfortably under fieldHeight.
 , lockHeight ? 40
+  # Spinner shown while the rest of boot happens. 12 frames are pre-rotated at
+  # build time; the .script hard-codes that count, so change both together.
+, spinnerSize ? 40
+, spinnerFrames ? 12
 
 , foreground ? "#e6e6e6"
 , background ? "#000000"
@@ -69,6 +73,19 @@ let
     </svg>
   '';
 
+  # @ANGLE@ is substituted per frame in the builder.
+  spinnerSvg = builtins.toFile "spinner.svg" ''
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+      <g transform="rotate(@ANGLE@ 24 24)">
+        <circle cx="24" cy="24" r="19" fill="none" stroke="${foreground}"
+                stroke-opacity="0.18" stroke-width="4"/>
+        <circle cx="24" cy="24" r="19" fill="none" stroke="${foreground}"
+                stroke-width="4" stroke-linecap="round"
+                stroke-dasharray="33 87"/>
+      </g>
+    </svg>
+  '';
+
   bulletSvg = builtins.toFile "bullet.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
       <circle cx="8" cy="8" r="6" fill="${foreground}"/>
@@ -96,6 +113,16 @@ runCommand "plymouth-theme-${themeName}"
       ${lockSvg} -o "$dir/lock.png"
     rsvg-convert -w ${toString bulletSize} -h ${toString bulletSize} \
       ${bulletSvg} -o "$dir/bullet.png"
+
+    frames=${toString spinnerFrames}
+    i=0
+    while [ "$i" -lt "$frames" ]; do
+      angle=$(( i * 360 / frames ))
+      sed "s/@ANGLE@/$angle/" ${spinnerSvg} > frame.svg
+      rsvg-convert -w ${toString spinnerSize} -h ${toString spinnerSize} \
+        frame.svg -o "$dir/$(printf 'spinner-%02d' "$i").png"
+      i=$(( i + 1 ))
+    done
 
     cp ${./minimal.script} "$dir/${themeName}.script"
 
