@@ -4,28 +4,44 @@
 , gawk
 , themeName ? "minimal"
 
-  # Plymouth script themes get no HiDPI scaling, so these are raw pixels.
-  # The .script derives all of its layout from the rendered image dimensions,
-  # so changing them here is enough; the script itself never needs editing.
-  # Note the initrd often runs at a lower mode than the panel's native one,
-  # so these read larger at boot than they would on the desktop.
-, fieldWidth ? 420
-, fieldHeight ? 76
-  # Half the field height renders as a full pill. Written as a ratio rather
-  # than a literal so it stays a pill if fieldHeight ever changes; SVG clamps
-  # rx to half the (inset) height anyway, so anything larger looks identical.
+  # Every dimension below is in "design units". They are multiplied by uiScale
+  # and rasterised at exactly that size by rsvg-convert, which antialiases.
+  # Nothing is resized at runtime: Plymouth's Image.Scale() does not
+  # antialias, and putting a curved border through it is what made the pill's
+  # corners look jagged.
+  #
+  # uiScale is therefore the single knob for "the whole prompt is too big or
+  # too small", and it costs nothing: it changes the size rsvg rasterises at,
+  # not the size of a finished bitmap, so any value stays crisp.
+  #
+  # The defaults below are sized for taylorpc's initrd framebuffer, which is
+  # 1440x900 -- half the panel's native 2880x1800, since simpledrm comes up on
+  # the firmware's GOP mode rather than the one amdgpu later sets. Tune
+  # against a real boot, not a mockup.
+, uiScale ? 1.0
+
+, fieldWidth ? 230
+, fieldHeight ? 42
+  # Half the field height renders as a full pill. Written as a ratio so it
+  # stays a pill if fieldHeight changes; SVG clamps rx to half the (inset)
+  # height anyway, so anything larger looks identical.
 , cornerRadius ? fieldHeight / 2
-, borderWidth ? 3
-, bulletSize ? 14
+, borderWidth ? 2
+, bulletSize ? 8
   # Padlock height; width follows from the glyph's aspect. It sits inside the
   # field, so keep it comfortably under fieldHeight.
-, lockHeight ? 40
+, lockHeight ? 22
+
   # Spinner shown while the rest of boot happens: a row of dots that brighten
-  # and swell in sequence, echoing the passphrase dots. Frames are pre-rendered
-  # at build time; the .script hard-codes the count, so change both together.
+  # and swell in sequence, echoing the passphrase dots. spinnerWidth is the
+  # width of the whole row, not of one dot -- it wants to be a decent fraction
+  # of fieldWidth or the spinner reads as a speck on its own in the middle of
+  # a black screen. Frames are pre-rendered at build time and injected into
+  # the script, so the count here is the only place it is written down.
+  # Cycle length is spinnerFrames * spinnerTicks / 50 seconds.
   # spinnerPhase is the lag between adjacent dots in radians: 2*pi/dots reads
   # as one dot at a time, smaller values as a gentle travelling wave.
-, spinnerSize ? 40
+, spinnerWidth ? 74
 , spinnerFrames ? 18
 , spinnerTicks ? 4
 , spinnerDots ? 3
@@ -34,21 +50,14 @@
 , spinnerFadeMin ? 0.25
 , spinnerPhase ? 0.7
 
-  # How wide the field should be as a fraction of the screen, whatever mode
-  # the initrd comes up in. The sizes above are art dimensions, not final
-  # ones: the .script scales everything to hit this. Lower it if the prompt
-  # still reads large.
-, fieldScreenFraction ? 0.16
-
-  # Art is rendered this many times larger than nominal so the runtime scale
-  # is always a downscale, which resamples far better than blowing up.
-, supersample ? 2
-
 , foreground ? "#e6e6e6"
 , background ? "#000000"
 }:
 
 let
+  # Design units -> output pixels, rounded.
+  px = v: toString (builtins.floor (v * uiScale + 0.5));
+
   # SVG strokes straddle the path, so inset by half the border to keep the
   # outline inside the rendered bitmap.
   inset = borderWidth / 2.0;
@@ -114,11 +123,11 @@ runCommand "plymouth-theme-${themeName}"
     dir="$out/share/plymouth/themes/${themeName}"
     mkdir -p "$dir"
 
-    rsvg-convert -w ${toString (fieldWidth * supersample)} -h ${toString (fieldHeight * supersample)} \
+    rsvg-convert -w ${px fieldWidth} -h ${px fieldHeight} \
       ${fieldSvg} -o "$dir/field.png"
-    rsvg-convert -w ${toString (lockWidth * supersample)} -h ${toString (lockHeight * supersample)} \
+    rsvg-convert -w ${px lockWidth} -h ${px lockHeight} \
       ${lockSvg} -o "$dir/lock.png"
-    rsvg-convert -w ${toString (bulletSize * supersample)} -h ${toString (bulletSize * supersample)} \
+    rsvg-convert -w ${px bulletSize} -h ${px bulletSize} \
       ${bulletSvg} -o "$dir/bullet.png"
 
     # Dots are laid out on a 48x16 viewBox, centred as a row. Each frame is a
@@ -127,7 +136,7 @@ runCommand "plymouth-theme-${themeName}"
     : > spinner-lines.txt
     i=0
     while [ "$i" -lt "$frames" ]; do
-      printf 'spinner.raw[%d] = Image("spinner-%02d.png");\n' "$i" "$i" \
+      printf 'spinner.frames[%d] = Image("spinner-%02d.png");\n' "$i" "$i" \
         >> spinner-lines.txt
       awk -v i="$i" -v n="$frames" \
           -v dots=${toString spinnerDots} \
@@ -145,14 +154,12 @@ runCommand "plymouth-theme-${themeName}"
           }
           printf "</svg>";
         }' > frame.svg
-      rsvg-convert -w ${toString (spinnerSize * supersample)} \
-        -h ${toString (spinnerSize * supersample / 3)} \
+      rsvg-convert -w ${px spinnerWidth} -h ${px (spinnerWidth / 3)} \
         frame.svg -o "$dir/$(printf 'spinner-%02d' "$i").png"
       i=$(( i + 1 ))
     done
 
-    sed -e "s/@FIELD_FRACTION@/${toString fieldScreenFraction}/" \
-        -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/" \
+    sed -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/" \
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
