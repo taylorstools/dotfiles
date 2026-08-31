@@ -1,6 +1,5 @@
 # Minimal Plymouth theme: a bordered passphrase field with the nf-fa-lock
-# padlock glyph inset at its right edge, and a spinner once the passphrase
-# has been accepted.
+# padlock glyph inset at its right edge, and a spinner the rest of the time.
 #
 # The prompt string systemd-cryptsetup sends ("Please enter passphrase for
 # disk cryptroot...") arrives as the first argument to display_password and is
@@ -9,15 +8,12 @@
 #
 # Plymouth's script language has no drawing primitives -- it only composites
 # images -- so the field, padlock and spinner frames are pre-rendered PNGs.
-# Layout is derived from the image dimensions, so changing sizes in
-# package.nix is enough; nothing here needs editing.
 #
 # EVERY sprite is created at global scope, below, and shown or hidden with
 # SetOpacity afterwards. Nothing creates a sprite inside a callback. A sprite
 # assigned to a variable that only ever exists inside a function is local to
 # that call and is collected the moment the function returns, so it never
-# reaches the screen. That is precisely why the dots were invisible while the
-# field and padlock -- both built out here -- drew correctly.
+# reaches the screen.
 
 Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
 Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
@@ -25,9 +21,32 @@ Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
 screen.width = Window.GetWidth();
 screen.height = Window.GetHeight();
 
-field.image = Image("field.png");
-lock.image = Image("lock.png");
-bullet.image = Image("bullet.png");
+field.raw = Image("field.png");
+lock.raw = Image("lock.png");
+bullet.raw = Image("bullet.png");
+
+spinner.count = @SPINNER_COUNT@;
+@SPINNER_FRAMES@
+
+# Assets are rendered oversized at build time and scaled down to a fixed
+# fraction of the screen here. The initrd frequently comes up below the
+# panel's native resolution, so a fixed pixel size looks right in a mockup at
+# 2880 and comically large at boot. Scaling off the actual mode fixes it at
+# any resolution, and because the source art is supersampled this is always a
+# downscale.
+scale = (screen.width * @FIELD_FRACTION@) / field.raw.GetWidth();
+
+field.image = field.raw.Scale(field.raw.GetWidth() * scale,
+                              field.raw.GetHeight() * scale);
+lock.image = lock.raw.Scale(lock.raw.GetWidth() * scale,
+                            lock.raw.GetHeight() * scale);
+bullet.image = bullet.raw.Scale(bullet.raw.GetWidth() * scale,
+                                bullet.raw.GetHeight() * scale);
+
+for (i = 0; i < spinner.count; i++) {
+  spinner.frames[i] = spinner.raw[i].Scale(spinner.raw[i].GetWidth() * scale,
+                                           spinner.raw[i].GetHeight() * scale);
+}
 
 pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
 
@@ -63,23 +82,6 @@ for (i = 0; i < bullet.max; i++) {
   bullets[i].SetOpacity(0);
 }
 
-# Spinner frames are pre-rotated at build time rather than turned with
-# Image.Rotate() at runtime: rotating a bitmap grows its bounding box, which
-# makes a centred sprite wobble, and it re-rasterises on every tick.
-spinner.count = 12;
-spinner.frames[0]  = Image("spinner-00.png");
-spinner.frames[1]  = Image("spinner-01.png");
-spinner.frames[2]  = Image("spinner-02.png");
-spinner.frames[3]  = Image("spinner-03.png");
-spinner.frames[4]  = Image("spinner-04.png");
-spinner.frames[5]  = Image("spinner-05.png");
-spinner.frames[6]  = Image("spinner-06.png");
-spinner.frames[7]  = Image("spinner-07.png");
-spinner.frames[8]  = Image("spinner-08.png");
-spinner.frames[9]  = Image("spinner-09.png");
-spinner.frames[10] = Image("spinner-10.png");
-spinner.frames[11] = Image("spinner-11.png");
-
 spinner.sprite = Sprite(spinner.frames[0]);
 spinner.sprite.SetX((screen.width - spinner.frames[0].GetWidth()) / 2);
 spinner.sprite.SetY((screen.height - spinner.frames[0].GetHeight()) / 2);
@@ -100,12 +102,13 @@ fun hide_spinner() {
   spinner.sprite.SetOpacity(0);
 }
 
-# Called up to 50 times a second; advance a frame every 4th call, so one
-# revolution takes just under a second.
+# Called up to 50 times a second; advance one frame every @SPINNER_TICKS@th
+# call. Frame count and tick divisor together set the cycle length, and both
+# come from package.nix.
 fun refresh() {
   if (spinner.on) {
     spinner.tick = spinner.tick + 1;
-    if (spinner.tick >= 4) {
+    if (spinner.tick >= @SPINNER_TICKS@) {
       spinner.tick = 0;
       spinner.index = spinner.index + 1;
       if (spinner.index >= spinner.count) {
