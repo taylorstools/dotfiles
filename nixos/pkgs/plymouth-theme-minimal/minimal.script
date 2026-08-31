@@ -1,5 +1,6 @@
 # Minimal Plymouth theme: a bordered passphrase field with the nf-fa-lock
-# padlock glyph inset at its right edge, and a spinner the rest of the time.
+# padlock glyph inset at its right edge, and a pulsing spinner the rest of
+# the time.
 #
 # The prompt string systemd-cryptsetup sends ("Please enter passphrase for
 # disk cryptroot...") arrives as the first argument to display_password and is
@@ -8,6 +9,11 @@
 #
 # Plymouth's script language has no drawing primitives -- it only composites
 # images -- so the field, padlock and spinner frames are pre-rendered PNGs.
+# They are used at their natural size and never passed through Image.Scale():
+# Plymouth's resampler does not antialias, so scaling a curved 2px border at
+# runtime is what made the pill's corners look jagged. Every asset is instead
+# rasterised at its final size by rsvg-convert, which does antialias. Size the
+# theme through package.nix.
 #
 # EVERY sprite is created at global scope, below, and shown or hidden with
 # SetOpacity afterwards. Nothing creates a sprite inside a callback. A sprite
@@ -21,32 +27,9 @@ Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
 screen.width = Window.GetWidth();
 screen.height = Window.GetHeight();
 
-field.raw = Image("field.png");
-lock.raw = Image("lock.png");
-bullet.raw = Image("bullet.png");
-
-spinner.count = @SPINNER_COUNT@;
-@SPINNER_FRAMES@
-
-# Assets are rendered oversized at build time and scaled down to a fixed
-# fraction of the screen here. The initrd frequently comes up below the
-# panel's native resolution, so a fixed pixel size looks right in a mockup at
-# 2880 and comically large at boot. Scaling off the actual mode fixes it at
-# any resolution, and because the source art is supersampled this is always a
-# downscale.
-scale = (screen.width * @FIELD_FRACTION@) / field.raw.GetWidth();
-
-field.image = field.raw.Scale(field.raw.GetWidth() * scale,
-                              field.raw.GetHeight() * scale);
-lock.image = lock.raw.Scale(lock.raw.GetWidth() * scale,
-                            lock.raw.GetHeight() * scale);
-bullet.image = bullet.raw.Scale(bullet.raw.GetWidth() * scale,
-                                bullet.raw.GetHeight() * scale);
-
-for (i = 0; i < spinner.count; i++) {
-  spinner.frames[i] = spinner.raw[i].Scale(spinner.raw[i].GetWidth() * scale,
-                                           spinner.raw[i].GetHeight() * scale);
-}
+field.image = Image("field.png");
+lock.image = Image("lock.png");
+bullet.image = Image("bullet.png");
 
 pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
 
@@ -81,6 +64,9 @@ for (i = 0; i < bullet.max; i++) {
   bullets[i].SetZ(10);
   bullets[i].SetOpacity(0);
 }
+
+spinner.count = @SPINNER_COUNT@;
+@SPINNER_FRAMES@
 
 spinner.sprite = Sprite(spinner.frames[0]);
 spinner.sprite.SetX((screen.width - spinner.frames[0].GetWidth()) / 2);
