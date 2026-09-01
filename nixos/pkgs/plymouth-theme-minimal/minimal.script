@@ -80,14 +80,28 @@ spinner.on = 0;
 spinner.tick = 0;
 spinner.index = 0;
 
-# Plymouth gives no "wrong passphrase" callback, but the call sequence is
-# unambiguous: display_password (typing) -> display_normal (submitted) ->
-# display_password again only ever happens when the passphrase was rejected.
-# On success display_password never comes back. Backspacing to empty does not
-# trigger display_normal, so it cannot be mistaken for a submission.
-state.typed = 0;       # something has been entered at this prompt
-state.verifying = 0;   # submitted, waiting to find out
+# Plymouth gives no "wrong passphrase" callback, but its call sequence makes
+# one unnecessary. Measured on this machine with an instrumented build:
+# display_normal is called exactly once per submitted passphrase, and never at
+# splash start. So display_normal *is* the submit signal, and a display_password
+# that follows one can only be a re-prompt, which only happens on rejection.
+# Backspacing to empty does not call display_normal, so it cannot be mistaken
+# for a submission.
+#
+# Note the two flags are deliberately separate. state.submitted is cleared
+# only by typing, never by time, so the rejection is detected no matter how
+# long the check took. state.holding is the cosmetic part -- whether the field
+# is still up -- and it does expire. Tying the two together is what broke the
+# earlier versions: refresh() runs far faster here than the documented "up to
+# 50 times a second" (nearer 180), so the grace elapsed before the rejection
+# arrived and took the detection flag with it.
+state.prompted = 0;    # a prompt has been shown at least once
+state.submitted = 0;   # passphrase in flight; cleared by typing, not by time
+state.holding = 0;     # field still on screen after a submission
 state.wait = 0;
+state.dots = 0;        # how many dots are currently lit, so the pulse knows
+state.pulse = 0;       # triangle-wave counter driving the thinking pulse
+state.dir = 1;
 
 fun show_spinner() {
   spinner.on = 1;
@@ -105,10 +119,24 @@ fun hide_spinner() {
 fun refresh() {
   # Held field after a submission: if nothing has asked us again by now, the
   # passphrase was accepted and boot is carrying on.
-  if (state.verifying) {
+  if (state.holding) {
     state.wait = state.wait - 1;
+
+    # Triangle wave rather than a sine: no trig in this language, and a linear
+    # ramp is indistinguishable at this speed.
+    state.pulse = state.pulse + state.dir;
+    if (state.pulse >= @PULSE_STEPS@) {
+      state.pulse = @PULSE_STEPS@;
+      state.dir = 0 - 1;
+    }
+    if (state.pulse <= 0) {
+      state.pulse = 0;
+      state.dir = 1;
+    }
+    set_prompt_opacity(@PULSE_MIN@ + (1.0 - @PULSE_MIN@) * state.pulse / @PULSE_STEPS@);
+
     if (state.wait <= 0) {
-      state.verifying = 0;
+      state.holding = 0;
       hide_field();
       show_dots(0);
       show_spinner();
@@ -129,10 +157,23 @@ fun refresh() {
 }
 
 fun hide_field() {
+  state.dots = 0;
   field.sprite.SetOpacity(0);
   lock.sprite.SetOpacity(0);
   field.sprite.SetImage(field.image);
   lock.sprite.SetImage(lock.image);
+}
+
+# Fade the whole prompt together: border, padlock and the lit dots. Only the
+# dots that are actually shown are touched, so the unused ones stay hidden.
+fun set_prompt_opacity(o) {
+  field.sprite.SetOpacity(o);
+  lock.sprite.SetOpacity(o);
+  for (i = 0; i < bullet.max; i++) {
+    if (i < state.dots) {
+      bullets[i].SetOpacity(o);
+    }
+  }
 }
 
 fun show_dots(n) {
@@ -146,9 +187,13 @@ fun show_dots(n) {
 }
 
 fun display_password(prompt, count) {
+  hide_spinner();
+  state.prompted = 1;
+
   # Being asked again while a submission was in flight means it was rejected.
-  if (state.verifying) {
-    state.verifying = 0;
+  if (state.submitted) {
+    state.submitted = 0;
+    state.holding = 0;
     field.sprite.SetImage(field.error);
     lock.sprite.SetImage(lock.error);
   }
@@ -157,36 +202,33 @@ fun display_password(prompt, count) {
   if (count > 0) {
     field.sprite.SetImage(field.image);
     lock.sprite.SetImage(lock.image);
-    state.typed = 1;
   }
 
-  hide_spinner();
-  field.sprite.SetOpacity(1);
-  lock.sprite.SetOpacity(1);
+  state.dots = count;
   show_dots(count);
+  set_prompt_opacity(1);
 }
 
-# Plymouth calls this more than once per submission -- once to dismiss the
-# entry, again for the mode change. The whole body is therefore guarded on
-# not already verifying: without that, the second call falls through to the
-# else branch (state.typed having just been cleared), shows the spinner, and
-# clears state.verifying, which is the flag the rejection detection needs.
 fun display_normal() {
-  if (state.verifying == 0) {
-    if (state.typed) {
-      # A passphrase was just submitted. Hold the field, minus its dots,
-      # rather than cutting to the spinner: a rejection comes back within
-      # about a second, and a spinner that appears and vanishes reads as a
-      # glitch.
-      state.typed = 0;
-      state.verifying = 1;
-      state.wait = @VERIFY_GRACE@;
-      show_dots(0);
-    } else {
-      hide_field();
-      show_dots(0);
-      show_spinner();
-    }
+  if (state.prompted) {
+    # A passphrase was just submitted. Hold the field, minus its dots, rather
+    # than cutting to the spinner: a rejection comes back within about a
+    # second, and a spinner that appears and vanishes reads as a glitch. If no
+    # rejection arrives, refresh() gives up after the grace and shows the
+    # spinner, which is the accepted-passphrase path.
+    state.submitted = 1;
+    state.holding = 1;
+    state.wait = @VERIFY_GRACE@;
+
+    # Leave the dots exactly as typed. They stay until the answer arrives:
+    # cleared by the red on rejection, or hidden with the field on success.
+    state.pulse = @PULSE_STEPS@;
+    state.dir = 0 - 1;
+    set_prompt_opacity(1);
+  } else {
+    hide_field();
+    show_dots(0);
+    show_spinner();
   }
 }
 
