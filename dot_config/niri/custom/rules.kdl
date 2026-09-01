@@ -62,7 +62,9 @@ window-rule {
 window-rule {
     match app-id="com.gabm.satty"
     open-floating true
+    min-width 1200
     max-width 1200
+    min-height 750
     max-height 750
 }
 
