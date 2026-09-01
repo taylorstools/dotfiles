@@ -68,12 +68,25 @@
   # as you start typing again.
 , errorColour ? "#e05a52"
 
-  # Refresh ticks (50/sec) to hold the field on screen after a passphrase is
-  # submitted, before giving up and switching to the spinner. Plymouth calls
-  # display_normal on submit, so without this hold a rejected passphrase shows
-  # a full second of spinner before the field returns, which reads as a
-  # glitch. Needs to comfortably exceed the argon2id derivation time.
-, verifyGraceTicks ? 90
+  # Refresh ticks to hold the field on screen after a passphrase is submitted,
+  # before giving up and switching to the spinner. Purely cosmetic: rejection
+  # is detected by call sequence, not by this timer, so getting it wrong costs
+  # nothing but when the spinner appears on a correct passphrase.
+  #
+  # In ticks, not seconds, because the script has no clock. The pulse period
+  # is the honest way to measure the tick rate -- it is pure tick count -- and
+  # it puts refresh() at roughly the documented 50/sec. So 150 is about three
+  # seconds. (An earlier 500 here came from timing a spinner flash, which was
+  # really measuring how long the rejection took, not how long the grace ran.)
+, verifyGraceTicks ? 150
+
+  # While a passphrase is being checked, the whole prompt -- border, padlock
+  # and the dots you typed -- pulses. pulseSteps is the half-cycle in refresh
+  # ticks, so a full breath is 2 * pulseSteps / rate seconds. At ~50/sec, 32
+  # gives about 1.3 seconds. Halve it to double the speed. pulseMin is how far
+  # it dims.
+, pulseSteps ? 32
+, pulseMin ? 0.35
 }:
 
 let
@@ -197,10 +210,12 @@ runCommand "plymouth-theme-${themeName}"
       i=$(( i + 1 ))
     done
 
-    sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/" \
-        -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/" \
-        -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/" \
-        -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/" \
+    sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
+        -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
+        -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
+        -e "s/@PULSE_MIN@/${toString pulseMin}/g" \
+        -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/g" \
+        -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/g" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
         ${./minimal.script} > "$dir/${themeName}.script"
