@@ -31,8 +31,10 @@ while true; do
     echo "Running magick on wallpaper."
     magick "$WALLPAPER" -fill black -colorize 70% -blur 0x15 "$EFFECTSWALLPAPEROUTPUT"
 
-    # Set effects wallpaper as swaybg background (used in overview)
-    swaybg -m fill -i "$EFFECTSWALLPAPEROUTPUT" >/dev/null 2>&1 &
+    # Set effects wallpaper as swaybg background (used in overview).
+    # Via the helper, which replaces the running swaybg instead of adding
+    # another one to the pile.
+    "$HOME/scripts/niri_set-wallpaper.sh" "$EFFECTSWALLPAPEROUTPUT"
 
     # Run script to change the wlogout icons
     $HOME/scripts/wlogout_make-icons.sh

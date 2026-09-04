@@ -14,3 +14,11 @@ include "custom/layout.kdl"
 include "custom/misc.kdl"
 include "custom/rules.kdl"
 include "custom/startup.kdl"
+
+// Cursor override for the startup splash. Last on purpose: includes are
+// positional, and this has to override dms/cursor.kdl. niri-splash writes
+// the transparent theme into it at logout so the next login starts with no
+// visible cursor, and puts it back the moment the splash lifts. At rest the
+// file is a single comment. optional=true so a missing file is a warning,
+// not a broken config. See myOptions.niri-splash.blankCursorAtBoot.
+include "custom/cursor-startup.kdl" optional=true

@@ -10,8 +10,10 @@
 // hypridle
 spawn-sh-at-startup "pidof hypridle || hypridle &"
 
-// swaybg
-spawn-sh-at-startup "swaybg -m fill -i \"$HOME/.config/.EffectsWallpaper.png\" &"
+// swaybg, held until the startup splash is covering the screen so the
+// wallpaper is never seen being painted. No-ops where niri-splash is not
+// installed. See myOptions.niri-splash.
+spawn-sh-at-startup "$HOME/scripts/niri_set-wallpaper.sh --at-login &"
 
 // Script that makes background image for hyprlock and wlogout
 spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
