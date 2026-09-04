@@ -4,6 +4,18 @@
 , gawk
 , themeName ? "minimal"
 
+  # Optional logo drawn above the prompt and the spinner, e.g. a distro
+  # mark. An SVG; null draws nothing. Rasterised to logoWidth at build time
+  # by rsvg-convert, in design units like everything else, and never scaled
+  # at runtime for the same reason the field is not. logoGap is the space
+  # between the logo's bottom edge and the top of the prompt; logo, gap and
+  # prompt are then centred on the screen as one block (see minimal.script).
+  # niri-splash takes the same logo, width and gap so the logo does not move
+  # when the compositor takes over from Plymouth.
+, logo ? null
+, logoWidth ? 112
+, logoGap ? 60
+
   # Every dimension below is in "design units". They are multiplied by uiScale
   # and rasterised at exactly that size by rsvg-convert, which antialiases.
   # Nothing is resized at runtime: Plymouth's Image.Scale() does not
@@ -210,6 +222,27 @@ runCommand "plymouth-theme-${themeName}"
       i=$(( i + 1 ))
     done
 
+    # The logo block is injected only when there is a logo: Plymouth's script
+    # language does not fail loudly on Image() of a missing file, it just
+    # yields a sprite that draws nothing and a GetWidth() that misbehaves.
+    : > logo-lines.txt
+    ${lib.optionalString (logo != null) ''
+      rsvg-convert -w ${px logoWidth} ${logo} -o "$dir/logo.png"
+      cat > logo-lines.txt <<'LOGO'
+      logo.image = Image("logo.png");
+      logo.gap = ${px logoGap};
+      # Centre logo + gap + slot as one block, then hang everything off it.
+      group.height = logo.image.GetHeight() + logo.gap + slot.height;
+      group.top = (screen.height - group.height) / 2;
+      slot.y = group.top + logo.image.GetHeight() + logo.gap;
+      logo.sprite = Sprite(logo.image);
+      logo.sprite.SetX((screen.width - logo.image.GetWidth()) / 2);
+      logo.sprite.SetY(group.top);
+      logo.sprite.SetZ(5);
+      logo.sprite.SetOpacity(1);
+      LOGO
+    ''}
+
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
         -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
@@ -218,6 +251,8 @@ runCommand "plymouth-theme-${themeName}"
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/g" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
+        -e "/@LOGO@/r logo-lines.txt" \
+        -e "/@LOGO@/d" \
         ${./minimal.script} > "$dir/${themeName}.script"
 
     # NixOS copies the selected theme into the initrd and rewrites any

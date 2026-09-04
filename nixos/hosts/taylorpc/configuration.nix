@@ -20,13 +20,6 @@
     };
 
     davinci.enable = true;
-    plymouth = {
-      enable = true;
-      theme = "minimal";
-      themePackages = [
-        (pkgs.callPackage ../../pkgs/plymouth-theme-minimal/package.nix { })
-      ];
-    };
 
     roland.enable = true;
   };

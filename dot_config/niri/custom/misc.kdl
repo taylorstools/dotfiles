@@ -7,6 +7,14 @@ environment {
 }
 
 overview {
+    // Also what is on screen before swaybg has painted anything: with
+    // layout background-color "transparent" and the wallpaper placed within
+    // the backdrop, the backdrop is the bottom of the stack at all times,
+    // not only in the overview. niri's default here is a mid-grey, which is
+    // the grey flash at login. Black matches plymouth and the splash, and is
+    // invisible in the overview itself because the wallpaper covers it.
+    backdrop-color "#000000"
+
     workspace-shadow {
         off
     }

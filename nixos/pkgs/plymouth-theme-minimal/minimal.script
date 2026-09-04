@@ -35,8 +35,25 @@ bullet.image = Image("bullet.png");
 
 pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
 
+# Vertical layout. Everything -- field, padlock, dots, spinner -- is placed
+# relative to one "slot" the height of the field, so the spinner (shorter)
+# sits where the field's centre was and nothing else moves when one replaces
+# the other. Without a logo the slot is centred on the screen. With one, the
+# logo, a gap and the slot are centred on the screen as a single block; the
+# @LOGO@ block below recomputes slot.y for that case. niri-splash lays its
+# spinner out with the same slot height and gap, so the handoff holds still.
+slot.height = field.image.GetHeight();
+slot.y = (screen.height - slot.height) / 2;
+
+# Optional logo above the prompt, injected by package.nix when one is
+# configured. Static: it neither pulses with the prompt nor changes on a
+# rejected passphrase.
+@LOGO@
+
+slot.cy = slot.y + slot.height / 2;
+
 field.x = (screen.width - field.image.GetWidth()) / 2;
-field.y = (screen.height - field.image.GetHeight()) / 2;
+field.y = slot.y;
 
 field.sprite = Sprite(field.image);
 field.sprite.SetX(field.x);
@@ -46,13 +63,13 @@ field.sprite.SetOpacity(0);
 
 lock.sprite = Sprite(lock.image);
 lock.sprite.SetX(field.x + field.image.GetWidth() - pad - lock.image.GetWidth());
-lock.sprite.SetY((screen.height - lock.image.GetHeight()) / 2);
+lock.sprite.SetY(slot.cy - lock.image.GetHeight() / 2);
 lock.sprite.SetZ(10);
 lock.sprite.SetOpacity(0);
 
 bullet.spacing = bullet.image.GetWidth() * @BULLET_SPACING@;
 bullet.x = field.x + pad;
-bullet.y = (screen.height - bullet.image.GetHeight()) / 2;
+bullet.y = slot.cy - bullet.image.GetHeight() / 2;
 
 # Room for dots is the field minus: left padding, a gap before the padlock,
 # the padlock itself, and its right padding.
@@ -72,7 +89,7 @@ spinner.count = @SPINNER_COUNT@;
 
 spinner.sprite = Sprite(spinner.frames[0]);
 spinner.sprite.SetX((screen.width - spinner.frames[0].GetWidth()) / 2);
-spinner.sprite.SetY((screen.height - spinner.frames[0].GetHeight()) / 2);
+spinner.sprite.SetY(slot.cy - spinner.frames[0].GetHeight() / 2);
 spinner.sprite.SetZ(5);
 spinner.sprite.SetOpacity(0);
 
