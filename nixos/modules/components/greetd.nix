@@ -27,7 +27,9 @@ in
       };
 
       default_session = {
-        command = "NIRI_LOCK_AT_STARTUP=1 niri-session";
+        # greetd runs the command as `exec <command>`, so the variable has
+        # to be set by env(1) rather than as an assignment prefix.
+        command = "env NIRI_LOCK_AT_STARTUP=1 niri-session";
         user = username;
       };
     };
