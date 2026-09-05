@@ -11,6 +11,16 @@ in
   services.greetd = {
     enable = true;
 
+    # niri-session is not a real greeter: it runs a desktop and exits rather
+    # than creating a session over greetd's IPC socket, so greetd calls that
+    # "greeter exited without creating a session" and terminates. Without a
+    # restart that leaves nothing driving the display - a black screen on the
+    # second logout of any boot. The module defaults this to false whenever
+    # initial_session is set; greetd's runfile in /run is what stops the
+    # autologin repeating, and it outlives a service restart, so a restarted
+    # greetd goes to default_session and the session comes up locked.
+    restart = true;
+
     settings = {
       terminal = {
         vt = lib.mkForce 8;
