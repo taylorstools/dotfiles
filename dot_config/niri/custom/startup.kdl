@@ -1,8 +1,7 @@
-// NO LONGER NEEDED. Startup now autologins into
-// niri after prompting for LUKS password
-
-// hyprlock
-//spawn-sh-at-startup "(pidof hyprlock || hyprlock -q) || niri msg action quit --skip-confirmation"
+// hyprlock, on a re-login only. A cold boot is already authenticated by the
+// Plymouth LUKS prompt and goes straight to the desktop; a logout quits niri,
+// greetd starts the next session, and that one comes up locked.
+spawn-sh-at-startup "$HOME/scripts/niri_lock-at-startup.sh"
 
 // hyprlock first key press fix
 //spawn-sh-at-startup "$HOME/scripts/send-keypress-at-startup.sh"

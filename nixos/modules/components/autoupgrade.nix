@@ -8,6 +8,12 @@ let
   statusDir = "/var/lib/nixos-upgrade";
   statusFile = "${statusDir}/last-status";
 
+  # The niri splash covers the screen for the first few seconds of the
+  # session and sits on the overlay layer, above notification popups. The
+  # notification daemon claims its D-Bus name well before it is drawing, so
+  # winning the name race is not enough — settle a little past it.
+  settleSeconds = 8;
+
   preUpgrade = pkgs.writeShellScript "nixos-upgrade-pre" ''
     set -euo pipefail
     ${pkgs.util-linux}/bin/runuser -u ${username} -- ${pkgs.bash}/bin/bash -c '
@@ -54,7 +60,7 @@ let
   '';
 
   # Runs after every nixos-upgrade run (including ExecStartPre failures) and
-  # records systemd's verdict so the next boot can report on it.
+  # records systemd's verdict so the session can report on it.
   recordStatus = pkgs.writeShellScript "nixos-upgrade-record-status" ''
     set -euo pipefail
     ${pkgs.coreutils}/bin/install -d -m 0755 ${statusDir}
@@ -63,6 +69,7 @@ let
       echo "exit-status=''${EXIT_STATUS:-}"
       echo "finished=$(${pkgs.coreutils}/bin/date --iso-8601=seconds)"
     } > ${statusFile}
+    ${pkgs.coreutils}/bin/chmod 0644 ${statusFile}
   '';
 
   notifyFailure = pkgs.writeShellApplication {
@@ -72,27 +79,31 @@ let
       StatusFile="${statusFile}"
       StampFile="$XDG_RUNTIME_DIR/upgrade-failure-notified"
 
-      # Only nag once per boot, not once per session start.
-      if [ -e "$StampFile" ]; then
-        echo "Already notified this boot; nothing to do."
+      if [ ! -r "$StatusFile" ]; then
+        echo "No upgrade status recorded yet at $StatusFile."
         exit 0
       fi
 
-      if [ ! -r "$StatusFile" ]; then
-        echo "No upgrade status recorded yet at $StatusFile."
+      # Stamp on the contents, not merely on the boot. Every recorded run
+      # carries its own finish timestamp, so a fresh failure re-notifies
+      # while a re-run against the same result stays quiet.
+      StatusHash="$(sha256sum "$StatusFile" | cut -d" " -f1)"
+      if [ -e "$StampFile" ] && [ "$(cat "$StampFile")" = "$StatusHash" ]; then
+        echo "Already notified about this result; nothing to do."
         exit 0
       fi
 
       Result="$(grep -m1 '^result=' "$StatusFile" | cut -d= -f2- || true)"
       if [ "$Result" = "success" ]; then
         echo "Last automatic upgrade succeeded."
+        printf '%s\n' "$StatusHash" > "$StampFile"
         exit 0
       fi
 
       echo "Last automatic upgrade result: ''${Result:-unknown}"
 
-      # The session bus exists before the notification daemon claims its name,
-      # so wait for an owner rather than firing into the void.
+      # The session bus exists before the notification daemon claims its
+      # name, so wait for an owner rather than firing into the void.
       Waited=0
       until busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
               org.freedesktop.DBus NameHasOwner s org.freedesktop.Notifications \
@@ -105,6 +116,10 @@ let
         Waited=$((Waited + 2))
       done
 
+      # Owning the name is not the same as being ready to draw; let the shell
+      # finish coming up and the splash get out of the way.
+      sleep ${toString settleSeconds}
+
       notify-send \
         --app-name="NixOS Upgrade" \
         --urgency=critical \
@@ -112,7 +127,7 @@ let
         "Last automatic upgrade failed" \
         "${logFile}"
 
-      : > "$StampFile"
+      printf '%s\n' "$StatusHash" > "$StampFile"
     '';
   };
 in
@@ -128,6 +143,12 @@ in
     allowReboot = false;
   };
 
+  # The .path unit below needs somewhere to watch before the first upgrade
+  # has ever recorded a result.
+  systemd.tmpfiles.rules = [
+    "d ${statusDir} 0755 root root -"
+  ];
+
   systemd.services.nixos-upgrade.serviceConfig = {
     StandardOutput = "append:${logFile}";
     ExecStartPre = [
@@ -138,15 +159,31 @@ in
     ExecStopPost = [ "${recordStatus}" ];
   };
 
+  # Bound to the graphical session rather than default.target: the previous
+  # wiring started this alongside the user manager, so the After= on
+  # graphical-session.target ordered against a unit that was not in the
+  # transaction and did nothing. It fired into the splash and was never seen.
   systemd.user.services.upgrade-failure-notify = {
     description = "Notify if the last automatic NixOS upgrade failed";
+    partOf = [ "graphical-session.target" ];
     after = [ "graphical-session.target" ];
-    wantedBy = [ "default.target" ];
-    unitConfig.ConditionUser = username;
+    wantedBy = [ "graphical-session.target" ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = lib.getExe notifyFailure;
       TimeoutStartSec = "120s";
+    };
+  };
+
+  # Catches a failure that lands while the session is already up; without it
+  # a mid-afternoon failure waits for the next login to be reported.
+  systemd.user.paths.upgrade-failure-notify = {
+    description = "Watch for a newly recorded NixOS upgrade result";
+    partOf = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    pathConfig = {
+      PathChanged = statusFile;
+      Unit = "upgrade-failure-notify.service";
     };
   };
 
