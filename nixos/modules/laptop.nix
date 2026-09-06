@@ -33,7 +33,7 @@ in
   myOptions = {
     claude-desktop.enable = true;
 
-    dms.source = "git";
+    dms.source = "stable";
 
     quickshell.source = "stable";
 
