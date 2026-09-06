@@ -8,8 +8,8 @@ file:///home/taylor/.dotfiles/nixos
 file:///home/taylor/.config
 file:///home/taylor/.config/niri
 file:///home/taylor/scripts
-smb://192.168.0.63/taylornas/ TaylorNAS
-smb://192.168.0.63/taylornas/jellyfin jellyfin
+smb://tower.lan/taylornas/ TaylorNAS
+smb://tower.lan/taylornas/jellyfin jellyfin
 file:/// /
 sftp://livingroompc/home/taylor livingroompc
 sftp://bedroompc/home/taylor bedroompc
