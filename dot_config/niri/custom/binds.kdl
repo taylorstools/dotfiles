@@ -55,7 +55,9 @@ binds {
     Mod+R   { spawn "sh" "-c" "exec kitty --title Runner $HOME/scripts/runner.sh"; }
 
     // Lock screen
-    Mod+L   { spawn "sh" "-c" "pidof hyprlock || hyprlock -q"; }
+    // --force: a keybind can only reach niri while the session is unlocked, so
+    // any hyprlock still alive here is a leftover that failed to exit.
+    Mod+L   { spawn "sh" "-c" "$HOME/scripts/hypridle/lock-session.sh --force"; }
 
     // Toggle keep awake on/off
     Mod+K   { spawn "sh" "-c" "$HOME/scripts/hypridle/toggle-hypridle.sh"; }
