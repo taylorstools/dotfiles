@@ -6,6 +6,7 @@
   ];
 
   hardware.xone.enable = true;
+  hardware.xpadneo.enable = true;
 
   services.udev.extraRules = ''
     KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
