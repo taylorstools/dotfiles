@@ -1,6 +1,6 @@
 {
     "label" : "lock",
-    "action" : "pidof hyprlock || hyprlock -q",
+    "action" : "$HOME/scripts/hypridle/lock-session.sh --force",
     "text" : "Lock",
     "keybind" : "l"
 }
@@ -12,7 +12,7 @@
 }
 {
     "label" : "sleep",
-    "action" : "pidof hyprlock || (hyprlock -q & sleep 1) && systemctl suspend",
+    "action" : "$HOME/scripts/hypridle/lock-session.sh & sleep 1; systemctl suspend",
     "text" : "Sleep",
     "keybind" : "z"
 }

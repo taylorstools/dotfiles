@@ -47,6 +47,9 @@ in
     environment.systemPackages = with pkgs; [
       accountsservice
       adw-gtk3
+      # Also installs hypridle.service into /etc/systemd/user, which is
+      # WantedBy=graphical-session.target. That unit is what runs hypridle -
+      # nothing spawns it from niri. See dot_config/niri/custom/startup.kdl.
       hypridle
       swaybg
     ];

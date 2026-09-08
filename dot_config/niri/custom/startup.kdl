@@ -6,9 +6,6 @@ spawn-sh-at-startup "$HOME/scripts/niri_lock-at-startup.sh"
 // hyprlock first key press fix
 //spawn-sh-at-startup "$HOME/scripts/send-keypress-at-startup.sh"
 
-// hypridle
-spawn-sh-at-startup "pidof hypridle || hypridle &"
-
 // swaybg, held until the startup splash is covering the screen so the
 // wallpaper is never seen being painted. No-ops where niri-splash is not
 // installed. See myOptions.niri-splash.

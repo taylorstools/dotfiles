@@ -26,11 +26,7 @@ if [[ "${NIRI_LOCK_AT_STARTUP:-0}" != 1 ]] && (( UPTIME < COLDBOOTGRACE )); then
     exit 0
 fi
 
-if pgrep -x hyprlock >/dev/null; then
-    exit 0
-fi
-
-hyprlock -q
+"$HOME/scripts/hypridle/lock-session.sh"
 STATUS=$?
 
 if (( STATUS == 0 )); then
