@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788585477,
-        "narHash": "sha256-KOhojUB8bb/4rnPlb6/UGJNcg3w7AKjVoJJ6yoqtGVc=",
+        "lastModified": 1788736050,
+        "narHash": "sha256-JFU5qhmglsx9BbvLFaZn8QEVVOO8l36REw9XPwmWT7c=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "30e0e730e5e2c2fb8760aad8a5cb1152aebff230",
+        "rev": "7337f1e5e26551686c9f28d50cf767136f6ef880",
         "type": "github"
       },
       "original": {
@@ -121,11 +121,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788671322,
-        "narHash": "sha256-FfGlNMbcHzP/+CpP/RFvtRNEK+ZEXhu/igztPN852mI=",
+        "lastModified": 1788750500,
+        "narHash": "sha256-Mu+GOCCN1kOczAiCi3Nku8N/XXOuBjc/5ho+szhlRWE=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "f3d9d73db12c7639609495b1219911910428b9ac",
+        "rev": "d0f47bb316a9392c7422b2731fd71c9a76af42cb",
         "type": "github"
       },
       "original": {
