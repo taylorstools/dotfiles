@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./xone-idle-shutoff.nix
+    ./xpadneo-idle-shutoff.nix
   ];
 
   #hardware.xone.enable = true;
