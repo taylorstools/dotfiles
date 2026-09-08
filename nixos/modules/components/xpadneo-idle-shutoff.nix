@@ -21,8 +21,7 @@
 
 let
   # Idle seconds before the controller is disconnected.
-  # TEMPORARY: dropped to 30 for testing - restore to 600 (10 min).
-  idleTimeout = 30;
+  idleTimeout = 600;
 
   # Seconds a controller that reconnected on its own gets to show real input
   # before being dropped again.
