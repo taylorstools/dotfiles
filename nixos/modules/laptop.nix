@@ -16,6 +16,7 @@ in
     ./components/davinci-resolve.nix
     ./components/dms.nix
     ./components/greetd.nix
+    ./components/howdy.nix
     ./components/niri.nix
     ./components/niri-splash
     ./components/power-management.nix
