@@ -11,6 +11,7 @@
     ./components/gpu-amd.nix
     ./components/gpu-intel.nix
     ./components/gpu-nvidia.nix
+    ./components/linux-kernel.nix
     ./components/mission-center.nix
     ./components/plymouth.nix
     ./components/printing.nix
@@ -34,6 +35,8 @@
 
   boot.zfs.forceImportRoot = false;
   services.zfs.autoScrub.enable = true;
+
+  myOptions.linuxKernel.variant = "latest-zfs";
 
   time.timeZone = "America/Phoenix";
 
