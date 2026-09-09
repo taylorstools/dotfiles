@@ -9,7 +9,7 @@ let
       && (builtins.tryEval kernelPackages).success
       && (
         let
-          usable = builtins.tryEval (!kernelPackages.${zfsModuleAttribute}.meta.broken);
+          usable = builtins.tryEval (!kernelPackages.zfs.meta.broken);
         in
         usable.success && usable.value
       ))
@@ -23,9 +23,8 @@ let
     if candidates == [ ]
     then throw ''
       myOptions.linuxKernel: no linux_X_Y kernel in this nixpkgs has a usable
-      ${zfsModuleAttribute} module. This normally means nixpkgs moved ahead of
-      OpenZFS; switch myOptions.linuxKernel.variant back to "lts" until it
-      catches up.
+      zfs module. This normally means nixpkgs moved ahead of OpenZFS; switch
+      myOptions.linuxKernel.variant back to "lts" until it catches up.
     ''
     else lib.last candidates;
 
@@ -47,17 +46,24 @@ in
       boot.kernelPackages set at all, so it is the do-nothing option: fewest
       surprises, longest support window, and ZFS support is never in question.
 
-      "latest-zfs" walks every linux_X_Y attribute in nixpkgs, drops the ones
-      whose OpenZFS module is marked broken, and takes the highest version left
-      -- the newest mainline kernel that ZFS can actually build against.
-      Everything it selects is a stock nixpkgs kernel, so it comes from the
+      "latest-zfs" walks every linux_X_Y attribute in nixpkgs, keeps the ones
+      whose stable OpenZFS module is not marked broken, and takes the highest
+      version left -- the newest mainline kernel that ZFS can actually build
+      against. tryEval guards attributes that throw when forced, so a kernel
+      past end-of-life or unsupported on this platform cannot fail evaluation.
+      Everything selected is a stock nixpkgs kernel, so it comes from the
       binary cache rather than compiling locally, and it moves forward on its
-      own whenever the nixpkgs input is bumped. Worth it for new hardware or a
-      driver fix that has not reached longterm yet; it also means more frequent
-      kernel rebuilds and a shorter tested trail.
+      own whenever the nixpkgs input is bumped.
 
-      Both options stay on the stable OpenZFS release. zfs_unstable is
-      deliberately not offered, which is what caps how far "latest-zfs" can go.
+      zfs_unstable is deliberately not offered, so the stable OpenZFS release
+      is what caps how far "latest-zfs" can climb.
+
+      The value is applied with mkDefault, so a host can override
+      boot.kernelPackages directly without mkForce. Note that "latest-zfs" can
+      outrun the proprietary Nvidia driver: on a host with
+      myOptions.nvidia.mode = "proprietary" or "open", a build failure in the
+      Nvidia module usually means switching hardware.nvidia.package to .beta
+      or .production.
     '';
   };
 
