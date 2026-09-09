@@ -9,7 +9,9 @@ let
       && (builtins.tryEval kernelPackages).success
       && (
         let
-          usable = builtins.tryEval (!kernelPackages.zfs.meta.broken);
+          usable = builtins.tryEval (
+            !kernelPackages.${config.boot.zfs.package.kernelModuleAttribute}.meta.broken
+          );
         in
         usable.success && usable.value
       ))
@@ -23,8 +25,10 @@ let
     if candidates == [ ]
     then throw ''
       myOptions.linuxKernel: no linux_X_Y kernel in this nixpkgs has a usable
-      zfs module. This normally means nixpkgs moved ahead of OpenZFS; switch
-      myOptions.linuxKernel.variant back to "lts" until it catches up.
+      OpenZFS module (looking for the attribute named by
+      config.boot.zfs.package.kernelModuleAttribute). This normally means
+      nixpkgs moved ahead of OpenZFS; switch myOptions.linuxKernel.variant
+      back to "lts" until it catches up.
     ''
     else lib.last candidates;
 
@@ -47,16 +51,21 @@ in
       surprises, longest support window, and ZFS support is never in question.
 
       "latest-zfs" walks every linux_X_Y attribute in nixpkgs, keeps the ones
-      whose stable OpenZFS module is not marked broken, and takes the highest
-      version left -- the newest mainline kernel that ZFS can actually build
-      against. tryEval guards attributes that throw when forced, so a kernel
-      past end-of-life or unsupported on this platform cannot fail evaluation.
+      whose OpenZFS module is not marked broken, and takes the highest version
+      left -- the newest mainline kernel that ZFS can actually build against.
+      tryEval guards attributes that throw when forced, so a kernel past
+      end-of-life or unsupported on this platform cannot fail evaluation.
       Everything selected is a stock nixpkgs kernel, so it comes from the
       binary cache rather than compiling locally, and it moves forward on its
       own whenever the nixpkgs input is bumped.
 
-      zfs_unstable is deliberately not offered, so the stable OpenZFS release
-      is what caps how far "latest-zfs" can climb.
+      The ZFS module attribute inside each kernel package set is looked up via
+      config.boot.zfs.package.kernelModuleAttribute (currently "zfs_2_3" or
+      similar). Do not hardcode "zfs" here: linuxPackages.zfs was removed from
+      nixpkgs and is now an alias that throws, which silently filters out every
+      kernel and makes the list come back empty. Since boot.zfs.package is left
+      at its default, the stable OpenZFS release is what caps how far
+      "latest-zfs" can climb; zfs_unstable is deliberately not offered.
 
       The value is applied with mkDefault, so a host can override
       boot.kernelPackages directly without mkForce. Note that "latest-zfs" can
