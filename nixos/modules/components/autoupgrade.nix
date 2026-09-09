@@ -8,11 +8,29 @@ let
   statusDir = "/var/lib/nixos-upgrade";
   statusFile = "${statusDir}/last-status";
 
-  # The niri splash covers the screen for the first few seconds of the
-  # session and sits on the overlay layer, above notification popups. The
-  # notification daemon claims its D-Bus name well before it is drawing, so
-  # winning the name race is not enough — settle a little past it.
   settleSeconds = 8;
+
+  networkWaitSeconds = 600;
+  networkPollSeconds = 10;
+
+  waitForNetwork = pkgs.writeShellScript "nixos-upgrade-wait-network" ''
+    set -euo pipefail
+
+    Waited=0
+    until ${pkgs.curl}/bin/curl --silent --head --max-time 10 \
+            --output /dev/null https://github.com; do
+      if [ "$Waited" -ge ${toString networkWaitSeconds} ]; then
+        echo "github.com still unreachable after ''${Waited}s; giving up." >&2
+        exit 1
+      fi
+      sleep ${toString networkPollSeconds}
+      Waited=$((Waited + ${toString networkPollSeconds}))
+    done
+
+    if [ "$Waited" -gt 0 ]; then
+      echo "Waited ''${Waited}s for github.com to become reachable."
+    fi
+  '';
 
   preUpgrade = pkgs.writeShellScript "nixos-upgrade-pre" ''
     set -euo pipefail
@@ -154,6 +172,7 @@ in
     ExecStartPre = [
       "${pkgs.coreutils}/bin/truncate -s 0 ${logFile}"
       "${pkgs.coreutils}/bin/chown ${username}:users ${logFile}"
+      "${waitForNetwork}"
       "${preUpgrade}"
     ];
     ExecStopPost = [ "${recordStatus}" ];
