@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 
-DEVICE="leds:asus::kbd_backlight"
+# The LED name is not the same on every machine -- asus::kbd_backlight on the
+# PX13, tpacpi::kbd_backlight on ThinkPads that have one -- and some machines
+# have no backlit keyboard at all. Find whatever is there rather than naming it,
+# and treat "nothing is there" as a no-op so the lid and Fn-key paths that call
+# this on a machine without one do not fail.
+find_device() {
+    local led
+    for led in /sys/class/leds/*kbd_backlight*; do
+        [[ -e "$led/brightness" ]] || continue
+        printf 'leds:%s\n' "$(basename "$led")"
+        return 0
+    done
+    return 1
+}
+
+DEVICE="$(find_device || true)"
 
 # Parse arguments
 NEXT=""
@@ -20,11 +35,16 @@ while [[ $# -gt 0 ]]; do
             ACTION="get"
             shift
             ;;
+        -has-device)
+            ACTION="has-device"
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $(basename "$0") [-set VALUE | -get]"
-            echo "  No args: cycle through 0/34/67/100"
-            echo "  -set N : set brightness to N (0-100)"
-            echo "  -get   : print current brightness percentage"
+            echo "Usage: $(basename "$0") [-set VALUE | -get | -has-device]"
+            echo "  No args     : cycle through 0/34/67/100"
+            echo "  -set N      : set brightness to N (0-100)"
+            echo "  -get        : print current brightness percentage"
+            echo "  -has-device : exit 0 if this machine has a keyboard backlight"
             exit 0
             ;;
         *)
@@ -33,6 +53,19 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Handle -has-device: a probe for callers, so they can skip their own work
+if [[ "$ACTION" == "has-device" ]]; then
+    [[ -n "$DEVICE" ]]
+    exit
+fi
+
+# No backlit keyboard on this machine. -get prints nothing and fails so callers
+# can tell it apart from a real 0%; the rest quietly do nothing.
+if [[ -z "$DEVICE" ]]; then
+    [[ "$ACTION" == "get" ]] && exit 1
+    exit 0
+fi
 
 # Handle -get: just print and exit
 if [[ "$ACTION" == "get" ]]; then

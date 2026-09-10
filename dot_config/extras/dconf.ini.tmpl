@@ -1,4 +1,4 @@
-{{ if eq .chezmoi.hostname "taylorpc" -}}
+{{ if has .chezmoi.hostname (list "taylorpc" "taylorthinkpad") -}}
 [org/gnome/desktop/interface]
 accent-color='slate'
 color-scheme='prefer-dark'

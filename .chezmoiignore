@@ -5,7 +5,7 @@ README.md
 refind{,/**}
 Wallpapers{,/**}
 
-# Files to ignore on taylorpc
+# Files to ignore on the niri laptops
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
   .config/antimicrox{,/**}
   .config/autostart{,/**}
@@ -90,7 +90,7 @@ Wallpapers{,/**}
 {{- end }}
 
 # Files to ignore on htpcs
-{{- if ne .chezmoi.hostname "taylorpc" }}
+{{- if not (has .chezmoi.hostname (list "taylorpc" "taylorthinkpad")) }}
   .config/DankMaterialShell{,/**}
   .config/dconf{,/**}
   .config/environment.d{,/**}
