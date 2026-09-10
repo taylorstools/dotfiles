@@ -19,8 +19,8 @@ TRACKED = [
 # The sidebar title is just the peer hostname (no user@ / no path shown).
 HOSTNAME = socket.gethostname()
 SFTP_PEERS = {
-    "livingroompc": ["taylorpc", "bedroompc"],
-    "bedroompc":    ["taylorpc", "livingroompc"],
+    "livingroompc": ["taylorpc", "taylorthinkpad", "bedroompc"],
+    "bedroompc":    ["taylorpc", "taylorthinkpad", "livingroompc"],
 }
 TRACKED += [
     {"href": f"sftp://{peer}/home/taylor", "title": peer, "icon": "network-server"}

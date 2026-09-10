@@ -65,12 +65,12 @@ fi
 HOSTNAME=$(printf "%s\n" "${HOSTS[@]}" | gum choose --header "Select host:")
 [ -z "$HOSTNAME" ] && { gum log --level error "No host selected."; exit 1; }
 
-# Disk strategy (taylorpc only)
+# Disk strategy (laptops only)
 LUKS_SIZE="100%"
 WIPE=true
 DISKO_MODE="disko"
 
-if [[ "$HOSTNAME" == "taylorpc" ]]; then
+if [[ "$HOSTNAME" == "taylorpc" || "$HOSTNAME" == "taylorthinkpad" ]]; then
   echo
   if gum confirm "Plan on dual-booting Windows on this drive?"; then
     STRATEGY=$(gum choose --header "How should NixOS be placed?" \
