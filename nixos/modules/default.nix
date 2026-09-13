@@ -26,11 +26,27 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  nix.settings.experimental-features = [ "flakes" "nix-command" ];
+  nix.settings = {
+    experimental-features = [ "flakes" "nix-command" ];
+    # Build parallelism. Left at "auto" this is one job per logical core.
+    max-jobs = 4;
+    cores = 6;
+  };
 
   boot.loader = {
     efi.canTouchEfiVariables = true;
     timeout = 1;
+  };
+
+  # Cap the ZFS ARC at 8 GiB. Set on the kernel command line so it also
+  # applies to the module loaded in the initrd.
+  boot.kernelParams = [ "zfs.zfs_arc_max=8589934592" ];
+
+  # Compressed swap in RAM, so the kernel can reclaim anonymous memory
+  # instead of OOM-killing under pressure.
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
   };
 
   boot.zfs.forceImportRoot = false;
