@@ -40,7 +40,6 @@ let
       ETC_NIXOS="/etc/nixos"
       HOSTNAME="$(${pkgs.nettools}/bin/hostname)"
       HOST_DIR="$DOTFILES/nixos/hosts/$HOSTNAME"
-      LOCKFILE="$DOTFILES/nixos/flake.lock"
 
       SYNC_FILES=(
         hardware-configuration.nix
@@ -54,10 +53,8 @@ let
         exit 1
       fi
 
-      if [ -f "$LOCKFILE" ]; then
-        rm -f "$LOCKFILE"
-        ${pkgs.git}/bin/git -C "$DOTFILES" rm nixos/flake.lock --ignore-unmatch
-      fi
+      # Discard local lock churn so the pull is always clean.
+      ${pkgs.git}/bin/git -C "$DOTFILES" checkout HEAD -- nixos/flake.lock || true
 
       ${pkgs.git}/bin/git -C "$DOTFILES" pull --rebase --autostash
 
