@@ -11,7 +11,6 @@ let
       HOST="$(hostname)"
       HOST_DIR="$DOTFILES/nixos/hosts/$HOST"
       ETC_NIXOS="/etc/nixos"
-      LOCKFILE="$DOTFILES/nixos/flake.lock"
 
       # Per-host source-of-truth files synced from /etc/nixos before rebuild.
       SYNC_FILES=(
@@ -26,11 +25,8 @@ let
         exit 1
       fi
 
-      if [ -f "$LOCKFILE" ]; then
-        gum log --level info "Removing flake.lock file..."
-        rm -f "$LOCKFILE"
-        git -C "$DOTFILES" rm nixos/flake.lock --ignore-unmatch
-      fi
+      # Discard local lock churn so the pull is always clean.
+      git -C "$DOTFILES" checkout HEAD -- nixos/flake.lock || true
 
       gum log --level info "Pulling latest dotfiles..."
       git -C "$DOTFILES" pull --rebase --autostash
