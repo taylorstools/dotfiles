@@ -30,6 +30,45 @@ in
       '';
     };
 
+    timeout = lib.mkOption {
+      type = lib.types.int;
+      default = 4;
+      description = ''
+        Seconds to keep grabbing frames before giving up and handing the prompt
+        back to pam_unix. Upstream's 4 is tight for a sensor that needs a moment
+        to settle its exposure; 8 costs nothing when the match lands early,
+        because Howdy returns on the first frame that matches.
+      '';
+    };
+
+    debug = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Turn on Howdy's own diagnostics: a notice while it looks, an end-of-run
+        report, and a request to save a frame from every attempt. The notice is
+        the useful part on NixOS: Howdy writes snapshots into its own install
+        directory, which is a read-only /nix/store path here, so those silently
+        never appear. To see what the sensor is actually handing OpenCV, grab
+        frames yourself rather than trusting this to produce them.
+      '';
+    };
+
+    extraSettings = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.attrsOf lib.types.anything);
+      default = { };
+      example = {
+        core.use_cnn = true;
+        video.exposure = 5;
+      };
+      description = ''
+        Merged over everything this module computes, so it can reach any key in
+        Howdy's config.ini without the module having to grow an option per
+        knob. Useful during tuning, when which setting matters is exactly the
+        thing in question.
+      '';
+    };
+
     services = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ "hyprlock" ];
@@ -46,7 +85,9 @@ in
 
         sudo is not in the default list because security.sudo.wheelNeedsPassword
         is false in users.nix: wheel never authenticates, so pam_howdy would
-        never run.
+        never run. Adding "su" here temporarily is worth remembering as a debug
+        trick: hyprlock swallows everything pam_howdy prints, while `su - taylor`
+        authenticates through PAM with the output attached to your terminal.
       '';
     };
   };
@@ -55,10 +96,23 @@ in
     services.howdy = {
       enable = true;
 
-      settings.video = {
-        device_path = cfg.devicePath;
-        certainty = cfg.certainty;
-      };
+      # extraSettings goes on last so a hand-set key during tuning beats the
+      # one this module computed for it.
+      settings = lib.recursiveUpdate
+        ({
+          video = {
+            device_path = cfg.devicePath;
+            certainty = cfg.certainty;
+            timeout = cfg.timeout;
+          };
+        }
+        // lib.optionalAttrs cfg.debug {
+          core.detection_notice = true;
+          debug.end_report = true;
+          snapshots.save_failed = true;
+          snapshots.save_successful = true;
+        })
+        cfg.extraSettings;
     };
 
     security.pam.howdy.enable = false;
