@@ -4,8 +4,17 @@ let
   cfg = config.myOptions.claude-desktop;
   system = pkgs.stdenv.hostPlatform.system;
 
+  # niri exports ELECTRON_OZONE_PLATFORM_HINT=auto for the whole session, which
+  # lands this app on Wayland no matter what the option below says. Chromium
+  # >= 146 asserts zwp_idle_inhibit_manager_v1 on any open window, with no
+  # video, audio or Wake Lock API in play; niri honours it and stops emitting
+  # ext-idle-notify, so hypridle never learns the session went idle and nothing
+  # dims, locks or blanks. Pin the hint per-app so the option decides.
+  ozonePlatform = if cfg.wayland then "wayland" else "x11";
+
   wrapperArgs =
     [ "--add-flags" "--password-store=${cfg.passwordStore}" ]
+    ++ [ "--set" "ELECTRON_OZONE_PLATFORM_HINT" ozonePlatform ]
     ++ lib.optionals cfg.wayland [ "--set-default" "CLAUDE_USE_WAYLAND" "1" ];
 
   wrapped = pkgs.symlinkJoin {
@@ -57,6 +66,11 @@ in
       default = false;
       description = ''
         Run Electron natively on Wayland rather than through XWayland.
+
+        Leave this off unless the rendering is worth it: on Wayland the app
+        holds an idle inhibitor open the entire time its window is, which
+        stops hypridle from ever dimming, locking or blanking the screen.
+        See the ELECTRON_OZONE_PLATFORM_HINT note at the top of this file.
       '';
     };
   };

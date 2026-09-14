@@ -53,5 +53,22 @@ in
       hypridle
       swaybg
     ];
+
+    # That packaged unit pins Environment=PATH to hypridle's own closure and
+    # nothing else: hyprland, hyprlock, procps, coreutils, findutils, gnugrep,
+    # gnused, systemd. Every script under ~/scripts/hypridle is
+    # #!/usr/bin/env bash, and bash is not on that list, so all of them die
+    # with `env: 'bash': No such file or directory` before their first line -
+    # silently, since hypridle only logs that the process was created. niri,
+    # dms and brightnessctl are missing from it too, so the dim and lock paths
+    # would fail on their first real command even with a shell. Put the system
+    # profile back: a drop-in is parsed after the unit, and the later
+    # assignment of a variable wins.
+    systemd.user.services.hypridle = {
+      overrideStrategy = "asDropin";
+      serviceConfig.Environment = [
+        "PATH=/run/wrappers/bin:/run/current-system/sw/bin"
+      ];
+    };
   };
 }
