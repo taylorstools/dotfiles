@@ -1,7 +1,7 @@
 { lib
 , stdenvNoCC
 , python3
-, xorg
+, xcursorgen
 , gtk4
 , gtk4-layer-shell
 , gobject-introspection
@@ -42,7 +42,7 @@ stdenvNoCC.mkDerivation {
   dontConfigure = true;
   dontBuild     = true;
 
-  nativeBuildInputs = [ xorg.xcursorgen ];
+  nativeBuildInputs = [ xcursorgen ];
 
   installPhase = ''
     runHook preInstall

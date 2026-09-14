@@ -152,6 +152,8 @@ in
 
   system.autoUpgrade = {
     enable = true;
+    # --upgrade is a no-op for flakes and triggers a pointless nix-channel fetch.
+    upgrade = false;
     dates = "daily";
     persistent = true;
     flake = "${userHome}/.dotfiles/nixos";
