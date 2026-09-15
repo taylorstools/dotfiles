@@ -53,8 +53,11 @@ let
         exit 1
       fi
 
-      # Discard local lock churn so the pull is always clean.
-      ${pkgs.git}/bin/git -C "$DOTFILES" checkout HEAD -- nixos/flake.lock || true
+      # Discard local lock churn so the pull is always clean; drop the file
+      # entirely when it is not in HEAD, so an incoming add applies.
+      ${pkgs.git}/bin/git -C "$DOTFILES" reset -q -- nixos/flake.lock || true
+      ${pkgs.git}/bin/git -C "$DOTFILES" checkout HEAD -- nixos/flake.lock 2>/dev/null \
+        || rm -f "$DOTFILES/nixos/flake.lock"
 
       ${pkgs.git}/bin/git -C "$DOTFILES" pull --rebase --autostash
 
