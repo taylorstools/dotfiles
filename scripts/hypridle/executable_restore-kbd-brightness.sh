@@ -15,7 +15,11 @@ if [ -f "$PIDFILE" ]; then
 fi
 
 KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
-KBD_STATE="/tmp/dms-kbdbacklight"
+KBD_STATE="$XDG_RUNTIME_DIR/dms-kbdbacklight"
+KBD_HOLD="/run/asus-kbd-backlight-shim/hold"
+
+# Lift the hold first, so the level restored below counts as a real one.
+rm -f "$KBD_HOLD"
 
 # Restore keyboard backlight
 if [[ -f "$KBD_STATE" ]]; then

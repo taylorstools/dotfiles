@@ -3,7 +3,12 @@
 set -euo pipefail
 
 KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
-KBD_STATE="/tmp/dms-kbdbacklight"
+# Per-session runtime dir, not /tmp: /tmp survives reboots here, and a stale
+# file would make the next dim skip saving the real level.
+KBD_STATE="$XDG_RUNTIME_DIR/dms-kbdbacklight"
+
+# Tells the PX13 backlight shim not to persist the dim (absent elsewhere).
+KBD_HOLD="/run/asus-kbd-backlight-shim/hold"
 
 # Nothing to dim on a machine with no backlit keyboard. Checked before the
 # pidfile so the restore side has nothing to clean up either.
@@ -25,5 +30,8 @@ if [[ ! -f "$KBD_STATE" ]]; then
     "$KBD_SCRIPT" -get > "$KBD_STATE"
 fi
 
-# Turn off keyboard backlight
+# Turn off keyboard backlight, flagged as temporary
+if [[ -d "${KBD_HOLD%/*}" ]]; then
+    touch "$KBD_HOLD"
+fi
 "$KBD_SCRIPT" -set 0
