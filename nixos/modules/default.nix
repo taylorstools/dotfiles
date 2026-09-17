@@ -35,7 +35,7 @@
 
   boot.loader = {
     efi.canTouchEfiVariables = true;
-    timeout = 1;
+    timeout = 0;
   };
 
   # Cap the ZFS ARC at 8 GiB. Set on the kernel command line so it also
