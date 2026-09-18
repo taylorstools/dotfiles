@@ -52,6 +52,12 @@
   boot.zfs.forceImportRoot = false;
   services.zfs.autoScrub.enable = true;
 
+  # No timeout on LUKS prompt
+  boot.initrd.systemd.services."zfs-import-zroot" = {
+    after = [ "systemd-cryptsetup@cryptroot.service" ];
+    requires = [ "systemd-cryptsetup@cryptroot.service" ];
+  };
+
   myOptions.linuxKernel.variant = "latest-zfs";
 
   time.timeZone = "America/Phoenix";
