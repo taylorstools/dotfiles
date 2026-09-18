@@ -1,15 +1,16 @@
 {
     "id": "BetterRunningApps",
     "name": "Better Running Apps",
-    "description": "Better Running Apps",
-    "version": "1.0",
-    "compositors": ["niri"],
+    "description": "Windows-style running apps list with labelled rectangular entries and a focus underline.",
+    "version": "1.0.0",
+    "type": "widget",
     "author": "Taylor",
     "icon": "widgets",
-    "firstParty": false,
+    "capabilities": [
+        "dankbar-widget"
+    ],
     "component": "./BetterRunningApps.qml",
     "settings": "./BetterRunningAppsSettings.qml",
-    "capabilities": ["dankbar-widget"],
     "permissions": [
         "settings_read",
         "settings_write"
