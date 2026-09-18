@@ -15,11 +15,13 @@ Item {
     implicitHeight: layoutLoader.item ? layoutLoader.item.implicitHeight : 0
 
     property var widgetData: null
-    property string pluginId: "betterRunningApps"
+    property var pluginService: null
+    property string pluginId: "BetterRunningApps"
 
-    // Read this plugin's saved settings straight from SettingsData. Binding to
-    // SettingsData.pluginSettings (reassigned on every save) makes it update live,
-    // without depending on pluginService being injected into a raw-Item widget.
+    // pluginData is only maintained automatically for PluginComponent-based plugins;
+    // this one has a raw-Item root, so read the settings from SettingsData directly.
+    // Binding to SettingsData.pluginSettings (reassigned on every save) keeps it live.
+    // pluginId above is overwritten by WidgetHost with the manifest id.
     readonly property var pluginData: {
         SettingsData.pluginSettings; // dependency: re-evaluate whenever any plugin setting is saved
         return (SettingsData && SettingsData.getPluginSettingsForPlugin) ? (SettingsData.getPluginSettingsForPlugin(pluginId) || ({})) : ({});
@@ -89,7 +91,7 @@ Item {
         if (!toplevels || toplevels.length === 0)
             return [];
 
-        if (SettingsData.runningAppsCurrentWorkspace) {
+        if (currentWorkspaceOnly) {
             return CompositorService.filterCurrentWorkspace(toplevels, parentScreen?.name) || [];
         }
         return toplevels;
@@ -117,7 +119,7 @@ Item {
     }
 
     readonly property var groupedWindows: {
-        if (!SettingsData.runningAppsGroupByApp) {
+        if (!groupByApp) {
             return [];
         }
         try {
@@ -146,7 +148,33 @@ Item {
             return [];
         }
     }
-    readonly property int windowCount: SettingsData.runningAppsGroupByApp ? (groupedWindows?.length || 0) : (sortedToplevels?.length || 0)
+    readonly property string focusedAppId: {
+        if (!sortedToplevels || sortedToplevels.length === 0) {
+            return "";
+        }
+        for (let i = 0; i < sortedToplevels.length; i++) {
+            if (sortedToplevels[i].activated) {
+                return sortedToplevels[i].appId || "";
+            }
+        }
+        return "";
+    }
+
+    readonly property int windowCount: groupByApp ? (groupedWindows?.length || 0) : (sortedToplevels?.length || 0)
+
+    readonly property string windowModelKey: {
+        if (groupByApp) {
+            return "appId";
+        }
+        switch (CompositorService.compositor) {
+        case "niri":
+            return "niriWindowId";
+        case "mango":
+            return "mangoWindowId";
+        default:
+            return "address";
+        }
+    }
 
     // --- Adaptive width ---
     // Each app always shows its label; the title area shrinks (and elides) when
@@ -164,12 +192,18 @@ Item {
         return fallback;
     }
 
+    readonly property real appIconSize: Theme.barIconSize(root.barThickness, undefined, settingValue("largeIcons", true), root.barConfig?.iconScale)
+
+    readonly property bool groupByApp: settingValue("groupByApp", false)
+    readonly property bool currentWorkspaceOnly: settingValue("currentWorkspaceOnly", false)
+
     property real fullTitleWidth: settingValue("fullTitleWidth", 120)       // title area width when there is plenty of room
     property real minTitleWidth: settingValue("minTitleWidth", 48)          // below this label width, pills drop to icon-only instead of a tiny slice
     property real maxRunningAppsWidth: settingValue("maxRunningAppsWidth", 0) > 0 ? settingValue("maxRunningAppsWidth", 0) : -1  // hard cap (px); <= 0 falls back to maxWidthFraction
     property real maxWidthFraction: settingValue("maxWidthPercent", 60) / 100  // fraction of the screen width running apps may occupy before shrinking
     property real reservedBarWidth: settingValue("reservedBarWidth", 0)     // additional px to subtract from the budget (e.g. for content left of this widget)
 
+    readonly property real itemSpacing: 3
     readonly property real iconAreaWidth: 24 + Theme.spacingXS
     readonly property real iconOnlyWidth: 24
 
@@ -192,7 +226,7 @@ Item {
         if (isVertical || availableWidth <= 0) {
             return fullTitleWidth;
         }
-        const fixed = (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2;
+        const fixed = (windowCount - 1) * itemSpacing + horizontalPadding * 2;
         return (availableWidth - fixed) / windowCount - iconAreaWidth;
     }
 
@@ -207,7 +241,7 @@ Item {
         if (windowCount === 0) {
             return 0;
         }
-        return Math.round(windowCount * perAppWidth + (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2);
+        return Math.round(windowCount * perAppWidth + (windowCount - 1) * itemSpacing + horizontalPadding * 2);
     }
 
     width: windowCount > 0 ? (isVertical ? barThickness : calculatedSize) : 0
@@ -294,7 +328,7 @@ Item {
             const deltaY = wheel.angleDelta.y;
             const isMouseWheel = Math.abs(deltaY) >= 120 && (Math.abs(deltaY) % 120) === 0;
 
-            const windows = root.sortedToplevels;
+            const windows = root.sortedToplevels.filter(w => !w.skipSwitcher);
             if (windows.length < 2) {
                 return;
             }
@@ -380,22 +414,22 @@ Item {
     Component {
         id: rowLayout
         Row {
-            spacing: 3
+            spacing: root.itemSpacing
 
             Repeater {
                 id: windowRepeater
                 model: ScriptModel {
-                    values: SettingsData.runningAppsGroupByApp ? groupedWindows : sortedToplevels
-                    objectProp: SettingsData.runningAppsGroupByApp ? "appId" : "address"
+                    values: root.groupByApp ? root.groupedWindows : root.sortedToplevels
+                    objectProp: root.windowModelKey
                 }
 
                 delegate: Item {
                     id: delegateItem
 
-                    property bool isGrouped: SettingsData.runningAppsGroupByApp
+                    property bool isGrouped: root.groupByApp
                     property var groupData: isGrouped ? modelData : null
                     property var toplevelData: isGrouped ? (modelData.windows.length > 0 ? modelData.windows[0].toplevel : null) : modelData
-                    property bool isFocused: toplevelData ? toplevelData.activated : false
+                    property bool isFocused: isGrouped ? (root.focusedAppId === appId) : (toplevelData ? toplevelData.activated : false)
                     property string appId: isGrouped ? modelData.appId : (modelData.appId || "")
                     property string windowTitle: toplevelData ? (toplevelData.title || "(Unnamed)") : "(Unnamed)"
                     property var toplevelObject: toplevelData
@@ -447,8 +481,8 @@ Item {
                             anchors.left: parent.left
                             anchors.leftMargin: root.labelsVisible ? Theme.spacingXS : Math.max(0, (delegateItem.visualWidth - width) / 2)
                             anchors.verticalCenter: parent.verticalCenter
-                            width: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
-                            height: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
+                            width: root.appIconSize
+                            height: root.appIconSize
                             source: {
                                 root._desktopEntriesUpdateTrigger;
                                 root._appIdSubstitutionsTrigger;
@@ -476,7 +510,7 @@ Item {
                             anchors.left: parent.left
                             anchors.leftMargin: root.labelsVisible ? Theme.spacingXS : Math.max(0, (delegateItem.visualWidth - size) / 2)
                             anchors.verticalCenter: parent.verticalCenter
-                            size: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
+                            size: root.appIconSize
                             name: "sports_esports"
                             color: Theme.widgetTextColor
                             visible: !iconImg.visible && Paths.isSteamApp(appId)
@@ -502,7 +536,7 @@ Item {
                         Rectangle {
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
-                            anchors.rightMargin: (widgetData?.runningAppsCompactMode !== undefined ? widgetData.runningAppsCompactMode : SettingsData.runningAppsCompactMode) ? -2 : 2
+                            anchors.rightMargin: -2
                             anchors.bottomMargin: -2
                             width: 14
                             height: 14
@@ -639,22 +673,22 @@ Item {
     Component {
         id: columnLayout
         Column {
-            spacing: Theme.spacingXS
+            spacing: root.itemSpacing
 
             Repeater {
                 id: windowRepeater
                 model: ScriptModel {
-                    values: SettingsData.runningAppsGroupByApp ? groupedWindows : sortedToplevels
-                    objectProp: SettingsData.runningAppsGroupByApp ? "appId" : "address"
+                    values: root.groupByApp ? root.groupedWindows : root.sortedToplevels
+                    objectProp: root.windowModelKey
                 }
 
                 delegate: Item {
                     id: delegateItem
 
-                    property bool isGrouped: SettingsData.runningAppsGroupByApp
+                    property bool isGrouped: root.groupByApp
                     property var groupData: isGrouped ? modelData : null
                     property var toplevelData: isGrouped ? (modelData.windows.length > 0 ? modelData.windows[0].toplevel : null) : modelData
-                    property bool isFocused: toplevelData ? toplevelData.activated : false
+                    property bool isFocused: isGrouped ? (root.focusedAppId === appId) : (toplevelData ? toplevelData.activated : false)
                     property string appId: isGrouped ? modelData.appId : (modelData.appId || "")
                     property string windowTitle: toplevelData ? (toplevelData.title || "(Unnamed)") : "(Unnamed)"
                     property var toplevelObject: toplevelData
@@ -705,8 +739,8 @@ Item {
                             anchors.left: parent.left
                             anchors.leftMargin: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
-                            width: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
-                            height: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
+                            width: root.appIconSize
+                            height: root.appIconSize
                             source: {
                                 root._desktopEntriesUpdateTrigger;
                                 root._appIdSubstitutionsTrigger;
@@ -734,7 +768,7 @@ Item {
                             anchors.left: parent.left
                             anchors.leftMargin: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
-                            size: Theme.barIconSize(root.barThickness, undefined, root.barConfig?.noBackground)
+                            size: root.appIconSize
                             name: "sports_esports"
                             color: Theme.widgetTextColor
                             visible: !iconImg.visible && Paths.isSteamApp(appId)
@@ -797,7 +831,7 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                         onClicked: mouse => {
                             if (mouse.button === Qt.LeftButton) {
                                 if (isGrouped && windowCount > 1) {
@@ -844,6 +878,12 @@ Item {
                                         const isBottom = root.axis?.edge === "bottom";
                                         const yPos = isBottom ? (screenHeight - root.barThickness - root.barSpacing - 32 - Theme.spacingXS) : (root.barThickness + root.barSpacing + Theme.spacingXS);
                                         windowContextMenuLoader.item.showAt(relativeX, yPos, false, root.axis?.edge);
+                                    }
+                                }
+                            } else if (mouse.button === Qt.MiddleButton) {
+                                if (toplevelObject) {
+                                    if (typeof toplevelObject.close === "function") {
+                                        toplevelObject.close();
                                     }
                                 }
                             }

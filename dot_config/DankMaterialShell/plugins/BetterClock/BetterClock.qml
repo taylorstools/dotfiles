@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import qs.Common
 import qs.Modules.Plugins
+import qs.Services
 import qs.Widgets
 
 BasePill {
@@ -10,6 +10,7 @@ BasePill {
 
     property var widgetData: null
     property bool compactMode: false
+    property var popoutService: null
     signal clockClicked
 
     content: Component {
@@ -318,22 +319,54 @@ BasePill {
                 id: systemClock
                 precision: SettingsData.showSeconds ? SystemClock.Seconds : SystemClock.Minutes
             }
+
+            Connections {
+                target: SessionService
+                function onSessionResumed() {
+                    systemClock.enabled = false;
+                    systemClock.enabled = true;
+                }
+            }
         }
     }
 
-    Process {
-        id: dashToggle
-        command: ["dms", "ipc", "call", "dash", "toggle", ""]
-    }
-
-    MouseArea {
-        x: -root.leftMargin
-        y: -root.topMargin
-        width: root.width + root.leftMargin + root.rightMargin
-        height: root.height + root.topMargin + root.bottomMargin
-        cursorShape: Qt.PointingHandCursor
-        onPressed: {
-            dashToggle.running = true
+    // Toggle the dash anchored to THIS widget. The old `dms ipc call dash toggle`
+    // route resolves its anchor via getPreferredBar("clockButtonRef"), which is why a
+    // hidden first-party Clock widget used to be required on the bar.
+    //
+    // Position the popout directly rather than via PopoutService.toggleDankDash():
+    // that helper forwards only (x, y, width, section, screen) to setTriggerPosition,
+    // so barPosition arrives undefined and falls back to 0 (Top) -- the dash then lays
+    // itself out as if the bar were on the top edge and runs to the bottom of the
+    // screen. The 10-argument form carries the real edge, thickness, spacing and
+    // config, which is what the first-party Clock ends up doing via BarPill.
+    onClicked: {
+        const loader = root.popoutService?.dankDashPopoutLoader;
+        if (!loader) {
+            return;
         }
+
+        loader.active = true; // the shell declares this Loader asynchronous: false
+        const dash = loader.item ?? root.popoutService.dankDashPopout;
+        if (!dash) {
+            root.popoutService.toggleDankDash("overview");
+            root.clockClicked();
+            return;
+        }
+
+        if (dash.dashVisible) {
+            dash.dashVisible = false;
+            root.clockClicked();
+            return;
+        }
+
+        const globalPos = root.visualContent.mapToItem(null, 0, 0);
+        const screen = root.parentScreen ?? Screen;
+        const barPosition = root.axis?.edge === "left" ? 2 : (root.axis?.edge === "right" ? 3 : (root.axis?.edge === "top" ? 0 : 1));
+        const pos = SettingsData.getPopupTriggerPosition(globalPos, screen, root.barThickness, root.visualWidth, root.barSpacing, barPosition, root.barConfig);
+        dash.setTriggerPosition(pos.x, pos.y, pos.width, root.section, screen, barPosition, root.barThickness, root.barSpacing, root.barConfig, root);
+        dash.requestTab("overview");
+        dash.dashVisible = true;
+        root.clockClicked();
     }
 }

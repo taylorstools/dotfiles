@@ -5,7 +5,7 @@ import qs.Widgets
 
 PluginSettings {
     id: root
-    pluginId: "betterRunningApps"
+    pluginId: "BetterRunningApps"
 
     StyledText {
         width: parent.width
@@ -21,6 +21,27 @@ PluginSettings {
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         wrapMode: Text.WordWrap
+    }
+
+    ToggleSetting {
+        settingKey: "largeIcons"
+        label: "Larger app icons"
+        description: "Use the large bar icon size. On by default because that is what this widget has always rendered."
+        defaultValue: true
+    }
+
+    ToggleSetting {
+        settingKey: "currentWorkspaceOnly"
+        label: "Current workspace only"
+        description: "Show only windows on the workspace you are looking at. Off, matching the DMS global this replaces."
+        defaultValue: false
+    }
+
+    ToggleSetting {
+        settingKey: "groupByApp"
+        label: "Group windows by app"
+        description: "Collapse each app's windows into one entry with a count badge."
+        defaultValue: false
     }
 
     SliderSetting {

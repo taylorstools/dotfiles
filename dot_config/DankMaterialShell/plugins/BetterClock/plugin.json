@@ -1,12 +1,14 @@
 {
     "id": "BetterClock",
     "name": "Better Clock",
-    "description": "Better Clock",
-    "version": "1.0",
-    "compositors": ["niri"],
+    "description": "Stacked time-over-date clock for the DankBar, right aligned, opening the dash in place.",
+    "version": "1.0.0",
+    "type": "widget",
     "author": "Taylor",
     "icon": "widgets",
-    "firstParty": false,
+    "capabilities": [
+        "dankbar-widget"
+    ],
     "component": "./BetterClock.qml",
     "permissions": [
         "settings_read",

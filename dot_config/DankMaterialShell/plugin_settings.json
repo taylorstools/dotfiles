@@ -61,11 +61,11 @@
   },
   "BetterRunningApps": {
     "enabled": true,
-    "maxWidthPercent": 78
-  },
-  "betterRunningApps": {
-    "minTitleWidth": 32,
     "maxWidthPercent": 100,
-    "maxRunningAppsWidth": 1250
+    "minTitleWidth": 32,
+    "maxRunningAppsWidth": 1250,
+    "currentWorkspaceOnly": false,
+    "groupByApp": false,
+    "largeIcons": true
   }
 }
