@@ -41,6 +41,12 @@ menu:
   - key: "w"
     desc: Change Wallpaper
     cmd: $HOME/scripts/dms_change-wallpaper.sh
+  - key: "d"
+    desc: Change Refresh Rate
+    cmd: $HOME/scripts/niri_change-refresh-rate.sh
+  - key: "y"
+    desc: Toggle Voice-to-Text
+    cmd: dms ipc call hyprvoice toggle
   - key: "p"
     desc: Power
     cmd: pkill wlogout || wlogout --buttons-per-row 6
