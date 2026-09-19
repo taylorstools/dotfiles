@@ -431,6 +431,12 @@ Item {
                     property var toplevelData: isGrouped ? (modelData.windows.length > 0 ? modelData.windows[0].toplevel : null) : modelData
                     property bool isFocused: isGrouped ? (root.focusedAppId === appId) : (toplevelData ? toplevelData.activated : false)
                     property string appId: isGrouped ? modelData.appId : (modelData.appId || "")
+                    // DMS renamed its own toplevels from org.quickshell to
+                    // com.danklinux.dms in 1.5.0 (shell.qml's `pragma AppId`).
+                    // Which one shows up depends on the installed version, and
+                    // the stock DankBar widgets treat the two interchangeably,
+                    // so match both rather than pinning either.
+                    readonly property bool isDmsWindow: appId === "org.quickshell" || appId === "com.danklinux.dms"
                     property string windowTitle: toplevelData ? (toplevelData.title || "(Unnamed)") : "(Unnamed)"
                     property var toplevelObject: toplevelData
                     property int windowCount: isGrouped ? modelData.windows.length : 1
@@ -496,7 +502,7 @@ Item {
                             mipmap: true
                             asynchronous: true
                             visible: status === Image.Ready
-                            layer.enabled: appId === "org.quickshell"
+                            layer.enabled: delegateItem.isDmsWindow
                             layer.smooth: true
                             layer.mipmap: true
                             layer.effect: MultiEffect {
@@ -517,7 +523,13 @@ Item {
                         }
 
                         Text {
-                            anchors.centerIn: parent
+                            // Centre on the icon slot, not the whole pill: the
+                            // pill spans the title too, so centerIn: parent
+                            // draws this letter on top of windowTitle. iconImg
+                            // keeps its geometry while invisible, so anchoring
+                            // to it works in both labelled and icon-only modes.
+                            anchors.horizontalCenter: iconImg.horizontalCenter
+                            anchors.verticalCenter: iconImg.verticalCenter
                             visible: !iconImg.visible && !Paths.isSteamApp(appId)
                             text: {
                                 root._desktopEntriesUpdateTrigger;
@@ -690,6 +702,12 @@ Item {
                     property var toplevelData: isGrouped ? (modelData.windows.length > 0 ? modelData.windows[0].toplevel : null) : modelData
                     property bool isFocused: isGrouped ? (root.focusedAppId === appId) : (toplevelData ? toplevelData.activated : false)
                     property string appId: isGrouped ? modelData.appId : (modelData.appId || "")
+                    // DMS renamed its own toplevels from org.quickshell to
+                    // com.danklinux.dms in 1.5.0 (shell.qml's `pragma AppId`).
+                    // Which one shows up depends on the installed version, and
+                    // the stock DankBar widgets treat the two interchangeably,
+                    // so match both rather than pinning either.
+                    readonly property bool isDmsWindow: appId === "org.quickshell" || appId === "com.danklinux.dms"
                     property string windowTitle: toplevelData ? (toplevelData.title || "(Unnamed)") : "(Unnamed)"
                     property var toplevelObject: toplevelData
                     property int windowCount: isGrouped ? modelData.windows.length : 1
@@ -754,7 +772,7 @@ Item {
                             mipmap: true
                             asynchronous: true
                             visible: status === Image.Ready
-                            layer.enabled: appId === "org.quickshell"
+                            layer.enabled: delegateItem.isDmsWindow
                             layer.smooth: true
                             layer.mipmap: true
                             layer.effect: MultiEffect {
@@ -775,7 +793,13 @@ Item {
                         }
 
                         Text {
-                            anchors.centerIn: parent
+                            // Centre on the icon slot, not the whole pill: the
+                            // pill spans the title too, so centerIn: parent
+                            // draws this letter on top of windowTitle. iconImg
+                            // keeps its geometry while invisible, so anchoring
+                            // to it works in both labelled and icon-only modes.
+                            anchors.horizontalCenter: iconImg.horizontalCenter
+                            anchors.verticalCenter: iconImg.verticalCenter
                             visible: !iconImg.visible && !Paths.isSteamApp(appId)
                             text: {
                                 root._desktopEntriesUpdateTrigger;

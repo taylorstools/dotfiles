@@ -13,6 +13,54 @@ let
     if cfg.quickshell.source == "git"
     then inputs.quickshell.packages.${system}.default
     else pkgs.quickshell;
+
+  # nixpkgs' dms-shell installs the app icon to
+  # $out/share/hicolor/scalable/apps/danklogo.svg. That path is missing its
+  # `icons/` component, so it lands outside every XDG icon search path, and
+  # the name doesn't match the `Icon=com.danklinux.dms` key in the desktop
+  # entry the same derivation installs. Upstream's own flake installs
+  # assets/com.danklinux.dms.svg to share/icons/hicolor/scalable/apps/ and
+  # gets both right - it is the only packaging difference between the two
+  # derivations that changes runtime behaviour. Everything resolving an icon
+  # through DesktopEntries -> Paths.getAppIcon() comes up empty for DMS's own
+  # windows as a result, including the DankBar running-apps widget, which then
+  # falls back to drawing the first letter of the app name. The dock is
+  # unaffected because it maps DMS windows to built-in "core apps" by title
+  # and uses their bundled icons instead.
+  #
+  # Shipped as its own package rather than an overrideAttrs on dms-shell: an
+  # override changes the derivation hash and costs a full local Go rebuild on
+  # every nixpkgs bump, for the sake of one 13KB file.
+  #
+  # assets/com.danklinux.dms.svg only exists on master; it is byte-identical
+  # to quickshell/assets/danklogo2.svg, which every release carries, so try
+  # the canonical name first and fall back to the one that is always there.
+  #
+  # Self-disabling: if nixpkgs ever fixes the install path, this produces an
+  # empty output instead of colliding with dms-shell over the same file.
+  dmsIconFix = pkgs.runCommand "dms-shell-icon-fix" { } ''
+    mkdir -p "$out"
+
+    if [ -e "${dmsPkg}/share/icons/hicolor/scalable/apps/com.danklinux.dms.svg" ]; then
+      echo "dms-shell already installs the icon correctly; nothing to do."
+      exit 0
+    fi
+
+    for candidate in \
+      "${dmsPkg.src}/assets/com.danklinux.dms.svg" \
+      "${dmsPkg.src}/quickshell/assets/danklogo2.svg"
+    do
+      if [ -f "$candidate" ]; then
+        install -Dm444 "$candidate" \
+          "$out/share/icons/hicolor/scalable/apps/com.danklinux.dms.svg"
+        exit 0
+      fi
+    done
+
+    # Warn rather than fail: a moved asset should not take a nixos-rebuild
+    # down over a missing icon.
+    echo "dms-shell-icon-fix: no icon source under ${dmsPkg.src}; skipping." >&2
+  '';
 in
 {
   options.myOptions = {
@@ -52,7 +100,9 @@ in
       # nothing spawns it from niri. See dot_config/niri/custom/startup.kdl.
       hypridle
       swaybg
-    ];
+    ]
+    # Only the nixpkgs derivation is missing the icon; the flake gets it right.
+    ++ lib.optional (cfg.dms.source == "stable") dmsIconFix;
 
     # That packaged unit pins Environment=PATH to hypridle's own closure and
     # nothing else: hyprland, hyprlock, procps, coreutils, findutils, gnugrep,
