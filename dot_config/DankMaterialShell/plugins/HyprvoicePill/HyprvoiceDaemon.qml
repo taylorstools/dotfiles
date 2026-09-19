@@ -29,8 +29,13 @@ PluginComponent {
 
     // Must match the bars= in hyprvoice-pill-cava (components/hyprvoice.nix).
     readonly property int barCount: 12
-    readonly property bool recording: phase === "recording"
-    readonly property bool busy: phase === "transcribing" || phase === "processing" || phase === "injecting"
+    // hyprvoice's status names describe its pipeline, not what you are doing:
+    // it sets "transcribing" as soon as the recorder starts streaming frames,
+    // and "injecting" the moment you stop - before whisper has run a single
+    // token. So listening is recording+transcribing, and the wait after you
+    // stop talking is what this pill calls transcribing.
+    readonly property bool listening: phase === "recording" || phase === "transcribing"
+    readonly property bool busy: phase === "processing" || phase === "injecting"
 
     function zeroLevels() {
         var a = [];
@@ -139,7 +144,7 @@ PluginComponent {
     Timer {
         id: ticker
 
-        running: root.recording
+        running: root.listening
         interval: 100
         repeat: true
         onTriggered: root.elapsedMs = Date.now() - root.startedAt
@@ -151,13 +156,13 @@ PluginComponent {
     Process {
         id: cava
 
-        running: root.recording
+        running: root.listening
         command: ["hyprvoice-pill-cava"]
 
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: data => {
-                if (!root.recording || data.length === 0)
+                if (!root.listening || data.length === 0)
                     return;
                 var parts = data.split(";");
                 if (parts.length < root.barCount)
@@ -203,7 +208,7 @@ PluginComponent {
                 radius: height / 2
                 color: Theme.surfaceContainer
                 border.width: 1
-                border.color: root.recording ? Theme.primary : Theme.outline
+                border.color: root.listening ? Theme.primary : Theme.outline
                 opacity: 0
 
                 Component.onCompleted: opacity = 1
@@ -236,13 +241,13 @@ PluginComponent {
                         Rectangle {
                             anchors.centerIn: parent
                             visible: !(root.phase === "done")
-                            width: root.recording ? Theme.fontSizeLarge * 0.7 : Theme.fontSizeLarge * 0.5
+                            width: root.listening ? Theme.fontSizeLarge * 0.7 : Theme.fontSizeLarge * 0.5
                             height: width
                             radius: width / 2
-                            color: root.recording ? Theme.error : Theme.primary
+                            color: root.listening ? Theme.error : Theme.primary
 
                             SequentialAnimation on opacity {
-                                running: root.recording
+                                running: root.listening
                                 loops: Animation.Infinite
                                 NumberAnimation {
                                     to: 0.35
@@ -282,11 +287,11 @@ PluginComponent {
                             case "recording":
                                 return "Recording...";
                             case "transcribing":
-                                return "Transcribing...";
+                                return "Recording...";
                             case "processing":
                                 return "Polishing...";
                             case "injecting":
-                                return "Typing...";
+                                return "Transcribing...";
                             case "done":
                                 return "Done";
                             }
@@ -300,7 +305,7 @@ PluginComponent {
                     // keeps its shape between words instead of collapsing.
                     Row {
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: root.recording
+                        visible: root.listening
                         spacing: 3
 
                         Repeater {
@@ -330,7 +335,7 @@ PluginComponent {
 
                     StyledText {
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: root.recording
+                        visible: root.listening
                         text: root.elapsedText()
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceText

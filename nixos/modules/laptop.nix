@@ -45,6 +45,14 @@ in
     hyprvoice = {
       enable = true;
 
+      # nixpkgs' whisper-cpp is CPU-only by default, which on medium.en costs
+      # ~20s of silence after you stop talking. The 890M runs the same RADV
+      # Vulkan backend Handy picked for itself. Costs a local whisper-cpp
+      # build on every nixpkgs bump that touches it.
+      package = pkgs.callPackage ../pkgs/hyprvoice/package.nix {
+        whisper-cpp = pkgs.whisper-cpp.override { vulkanSupport = true; };
+      };
+
       # The ggml file's own hash: `nix hash file --sri
       # ~/.local/share/hyprvoice/models/whisper/ggml-medium.en.bin` reads it
       # off the copy onboarding already downloaded. config.toml is chezmoi's.
