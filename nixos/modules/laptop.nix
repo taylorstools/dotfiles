@@ -17,6 +17,7 @@ in
     ./components/dms.nix
     ./components/greetd.nix
     ./components/howdy.nix
+    ./components/hyprvoice.nix
     ./components/niri.nix
     ./components/niri-splash
     ./components/power-management.nix
@@ -34,19 +35,21 @@ in
   myOptions = {
     claude-desktop = {
       enable = true;
-
-      # Chromium's os_crypt autodetect reads XDG_CURRENT_DESKTOP to pick a
-      # keyring backend. niri is neither GNOME nor KDE, so it falls through to
-      # the plaintext "basic" store, safeStorage.isEncryptionAvailable() goes
-      # false, and the app warns that the sign-in will not be saved. Name the
-      # backend: services.gnome.gnome-keyring.enable in components/niri.nix
-      # provides the secret service this points at.
       passwordStore = "gnome-libsecret";
     };
 
     dms.source = "stable";
 
     quickshell.source = "stable";
+
+    hyprvoice = {
+      enable = true;
+
+      # The ggml file's own hash: `nix hash file --sri
+      # ~/.local/share/hyprvoice/models/whisper/ggml-medium.en.bin` reads it
+      # off the copy onboarding already downloaded. config.toml is chezmoi's.
+      models."medium.en" = "sha256-zDfpNHgzjsdwAoGnrDChASiSnrj0J92i6GX6qPbaQ1Y=";
+    };
 
     niri-splash = {
       enable = true;
