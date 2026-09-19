@@ -20,6 +20,51 @@ let
       }
     }"
   ) cfg.models;
+
+  # The pill's waveform (dot_config/DankMaterialShell/plugins/HyprvoicePill):
+  # a second capture of the same source hyprvoice is recording from. cava needs
+  # a config file and a named source, and a QML plugin has no business writing
+  # either - bars here must match barCount in HyprvoiceDaemon.qml.
+  cavaHelper = pkgs.writeShellApplication {
+    name = "hyprvoice-pill-cava";
+    runtimeInputs = with pkgs; [
+      cava
+      pulseaudio
+      coreutils
+    ];
+    text = ''
+      conf="''${XDG_RUNTIME_DIR:-/tmp}/hyprvoice-pill-cava.conf"
+
+      # cava's own `source = auto` resolves to the default SINK monitor, which
+      # would draw whatever is playing instead of your voice.
+      source_name="$(pactl get-default-source 2>/dev/null || true)"
+      [ -n "$source_name" ] || source_name="auto"
+
+      cat > "$conf" <<CONF
+      [general]
+      framerate = 30
+      bars = 12
+      autosens = 1
+
+      [input]
+      method = pulse
+      source = $source_name
+
+      [output]
+      method = raw
+      raw_target = /dev/stdout
+      data_format = ascii
+      ascii_max_range = 100
+      channels = mono
+      mono_option = average
+
+      [smoothing]
+      noise_reduction = 30
+      CONF
+
+      exec cava -p "$conf"
+    '';
+  };
 in
 {
   options.myOptions.hyprvoice = {
@@ -68,7 +113,7 @@ in
     # One binary for everything: `hyprvoice toggle` from a niri bind,
     # `hyprvoice configure` to change settings, `hyprvoice status` to debug.
     # The subcommands talk to the daemon over ~/.cache/hyprvoice/control.sock.
-    environment.systemPackages = [ cfg.package ];
+    environment.systemPackages = [ cfg.package cavaHelper ];
 
     systemd.user.tmpfiles.users.${cfg.user}.rules = [
       "d %h/.local/share/hyprvoice 0755 - - -"

@@ -1,0 +1,21 @@
+{
+    "id": "hyprvoicePill",
+    "name": "Hyprvoice Pill",
+    "description": "Floating recording/transcribing status pill for hyprvoice dictation, with a live mic waveform and elapsed time.",
+    "version": "1.0.0",
+    "type": "daemon",
+    "author": "Taylor",
+    "icon": "mic",
+    "capabilities": [
+        "daemon"
+    ],
+    "component": "./HyprvoiceDaemon.qml",
+    "requires_dms": ">=1.5.0",
+    "dependencies": [
+        "hyprvoice",
+        "cava"
+    ],
+    "permissions": [
+        "process"
+    ]
+}
