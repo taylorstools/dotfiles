@@ -68,5 +68,8 @@
     "groupByApp": false,
     "largeIcons": true,
     "reservedBarWidth": 275
+  },
+  "hyprvoicePill": {
+    "enabled": true
   }
 }
