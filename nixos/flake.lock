@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789713394,
-        "narHash": "sha256-2VPpnaysroxhBdkX0qq80TXLsZHrxsicqfy4vh5XJww=",
+        "lastModified": 1789780874,
+        "narHash": "sha256-wXt9tmjTYVJ7NkvuSucZ3MUqJWQkkrgIbPkZ06FBOfI=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "6a7d9e428bcc15c5b294aed315a41392ad66b0f2",
+        "rev": "9479fcc17baff523f78738a0aac563f225f40a1a",
         "type": "github"
       },
       "original": {
