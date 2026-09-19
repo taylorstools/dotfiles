@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import qs.Common
+import qs.Services
 import qs.Modules.Plugins
 import qs.Widgets
 
@@ -200,15 +201,30 @@ PluginComponent {
             implicitWidth: card.implicitWidth
             implicitHeight: card.implicitHeight
 
+            // The same blur path DMS uses for its own popouts: a
+            // BackgroundEffect region published to the compositor, gated on
+            // BlurService, so it follows the shell's blur setting and
+            // compositor support rather than inventing a second one.
+            WindowBlur {
+                targetWindow: pill
+                blurWidth: card.implicitWidth
+                blurHeight: card.implicitHeight
+                blurRadius: card.implicitHeight / 2
+            }
+
             Rectangle {
                 id: card
 
                 implicitWidth: layout.implicitWidth + Theme.spacingL * 2
                 implicitHeight: Math.round(Theme.fontSizeLarge * 2.6)
                 radius: height / 2
-                color: Theme.surfaceContainer
-                border.width: 1
-                border.color: root.listening ? Theme.primary : Theme.outline
+                // hostSurface at popupTransparency is what DMS popouts paint,
+                // so this tracks the surface opacity slider.
+                color: Theme.readableSurface
+                border.width: BlurService.borderWidth
+                // Off unless the blur border setting is on, and then its color,
+                // role and opacity - the same outline as every other DMS layer.
+                border.color: BlurService.borderColor
                 opacity: 0
 
                 Component.onCompleted: opacity = 1
