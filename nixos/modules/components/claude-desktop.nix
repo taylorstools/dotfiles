@@ -68,8 +68,14 @@ in
         That is what upstream settled on in #763 ("no default launcher flag
         may shadow an official code path"): the autodetect deliberately
         declines weak persistence on sessions that cannot do better, rather
-        than storing tokens unsafely. Set this only as an escape hatch, when
-        sign-ins do not survive a restart.
+        than storing tokens unsafely.
+
+        The autodetect keys on XDG_CURRENT_DESKTOP, so it only resolves on a
+        session it recognises. Under niri - or sway, Hyprland, any other
+        wlroots compositor - it falls through to the plaintext "basic" store
+        and the app warns that the sign-in will not be saved; name the backend
+        here on those hosts. gnome-libsecret needs a secret service running and
+        unlocked, which services.gnome.gnome-keyring.enable provides.
       '';
     };
 
