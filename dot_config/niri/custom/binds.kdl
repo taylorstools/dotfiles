@@ -12,6 +12,11 @@ binds {
     // Screenshot
     Print   { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
 
+    // Dictation - via the DMS plugin, not `hyprvoice toggle` directly,
+    // so the status pill knows a session started.
+    Mod+Y       { spawn "sh" "-c" "dms ipc call hyprvoice toggle"; }
+    Mod+Shift+Y { spawn "sh" "-c" "dms ipc call hyprvoice cancel"; }
+
     // Niri related
     Mod+Q       { close-window; }
     Mod+Up      { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action maximize-window-to-edges"; }
