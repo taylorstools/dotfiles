@@ -18,7 +18,6 @@ while true; do
         [[ "$(cat "$STATE")" == "$WALLPAPER" ]] &&
         [[ -f "$EFFECTSWALLPAPEROUTPUT" ]]
     }; then
-        echo "No wallpaper change."
         sleep 1
         continue
     fi
