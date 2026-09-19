@@ -32,7 +32,17 @@ in
   };
 
   myOptions = {
-    claude-desktop.enable = true;
+    claude-desktop = {
+      enable = true;
+
+      # Chromium's os_crypt autodetect reads XDG_CURRENT_DESKTOP to pick a
+      # keyring backend. niri is neither GNOME nor KDE, so it falls through to
+      # the plaintext "basic" store, safeStorage.isEncryptionAvailable() goes
+      # false, and the app warns that the sign-in will not be saved. Name the
+      # backend: services.gnome.gnome-keyring.enable in components/niri.nix
+      # provides the secret service this points at.
+      passwordStore = "gnome-libsecret";
+    };
 
     dms.source = "stable";
 
