@@ -5,6 +5,15 @@ README.md
 refind{,/**}
 Wallpapers{,/**}
 
+# Never managed anywhere: secret stores, clipboard history and activity
+# databases. These are per-machine state, and a bulk `chezmoi add` of
+# ~/.local/share swept them into a public repo once already. Ignored
+# globally so nothing re-adds them and no host has them applied.
+.local/share/keyrings{,/**}
+.local/share/kwalletd{,/**}
+.local/share/klipper{,/**}
+.local/share/kactivitymanagerd{,/**}
+
 # Files to ignore on the niri laptops
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
   .config/antimicrox{,/**}
@@ -68,17 +77,13 @@ Wallpapers{,/**}
   .local/share/color-schemes{,/**}
   .local/share/dim-overlay{,/**}
   .local/share/dolphin{,/**}
-  .local/share/kactivitymanagerd{,/**}
   .local/share/kate{,/**}
   .local/share/kded6{,/**}
-  .local/share/keyrings{,/**}
-  .local/share/klipper{,/**}
   .local/share/knewstuff3{,/**}
   .local/share/konsole{,/**}
   .local/share/kpeoplevcard{,/**}
   .local/share/kplymouththemeinstaller{,/**}
   .local/share/krunnerstaterc
-  .local/share/kwalletd{,/**}
   .local/share/kxmlgui5{,/**}
   .local/share/plasma-systemmonitor{,/**}
   .local/share/plasma{,/**}
