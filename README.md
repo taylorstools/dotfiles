@@ -91,7 +91,7 @@ A fresh install always starts with auto-unlock **off**. The post-install script 
 
 This is for the HTPCs. Do not run `--enable` on `taylorpc` or `taylorthinkpad`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. `--status` and `--disable` still apply there.
 
-Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot keys changes PCR 7, and a TPM keyslot bound to the old PCR 7 stops working the moment it does. The same applies later: firmware updates and any further key changes invalidate the enrolment, and you fall back to the passphrase until you re-run this.
+Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot keys changes PCR 7, and a TPM keyslot bound to the old PCR 7 stops working the moment it does. The same applies later: firmware updates and any further key changes invalidate the enrollment, and you fall back to the passphrase until you re-run this.
 
 ```sh
 "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$(hostname)" --enable
@@ -99,7 +99,7 @@ Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot k
 
 Reboot when it finishes; the drive should unlock without a prompt.
 
-The script always changes the LUKS header and the NixOS config **together**: it enrols or wipes the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
+The script always changes the LUKS header and the NixOS config **together**: it enrolls or wipes the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
 
 Other flags:
 
@@ -118,9 +118,9 @@ The script refuses to leave a disk that only the TPM can open, and backs the LUK
 
 ## Manual Post-Install Steps
 
-What is left once the system is otherwise finished — Secure Boot keys enrolled, and on the HTPCs TPM auto-unlock on. Each of these is state no rebuild can produce: enrolment data, credentials and pairings that live outside both the Nix store and chezmoi, so a reinstall starts with none of it.
+What is left once the system is otherwise finished, meaning Secure Boot keys enrolled and, on the HTPCs, TPM auto-unlock on. Each of these is state no rebuild can produce: enrollment data, credentials and pairings that live outside both the Nix store and chezmoi, so a reinstall starts with none of it.
 
-### Howdy face enrolment
+### Howdy face enrollment
 
 `taylorpc` and `taylorthinkpad` only.
 
@@ -135,14 +135,14 @@ sudo howdy -U taylor test       # live view; a detected face gets boxed
 
 If it moved, point `myOptions.howdy.devicePath` at the matching `/dev/v4l/by-path/...` path rather than chasing the new number.
 
-Then enrol, three or four times:
+Then enroll, three or four times:
 
 ```sh
 sudo howdy -U taylor add        # repeat: straight on, angled, closer, further back
 sudo howdy -U taylor list
 ```
 
-One model is not enough. Howdy matches against the smallest distance across every enrolled model, and a single model from a grayscale IR sensor sits close enough to the threshold that ordinary variation — head turned, sitting further back — is rejected. Adding models is the fix for that. Raising `certainty` is letting other faces in to solve a problem only your own face has.
+One model is not enough. Howdy matches against the smallest distance across every enrolled model, and a single model from a grayscale IR sensor sits close enough to the threshold that ordinary variation (head turned, sitting further back) is rejected. Adding models is the fix for that. Raising `certainty` is letting other faces in to solve a problem only your own face has.
 
 Failure is quiet by design: `pam_howdy`'s output goes to hyprlock, which swallows it, and "Failure, timeout reached" covers both "never saw a face" and "saw one that never matched". To watch an attempt with its output attached to a terminal, add `"su"` to `myOptions.howdy.services`, rebuild, and run `su - taylor`.
 
@@ -150,7 +150,7 @@ Failure is quiet by design: `pam_howdy`'s output goes to hyprlock, which swallow
 
 `taylorpc` and `taylorthinkpad` only. The HTPCs authenticate against KWallet under Plasma, and gnome-keyring is not enabled there at all.
 
-`services.gnome.gnome-keyring.enable` in `niri.nix` also turns on `security.pam.services.login.enableGnomeKeyring`, and `login` is the *console* PAM service. The graphical session comes up through greetd, whose stack has no `pam_gnome_keyring` in it, so nothing hands the daemon a password at login. Any keyring that has a password is therefore a prompt you answer by hand, every session, forever — and a single TTY login as `taylor` is enough to create one holding the account password.
+`services.gnome.gnome-keyring.enable` in `niri.nix` also turns on `security.pam.services.login.enableGnomeKeyring`, and `login` is the *console* PAM service. The graphical session comes up through greetd, whose stack has no `pam_gnome_keyring` in it, so nothing hands the daemon a password at login. Any keyring that has a password is therefore a prompt you answer by hand, every session, forever. A single TTY login as `taylor` is enough to create one holding the account password.
 
 The fix is a login keyring with an empty password, which the daemon opens by itself:
 
@@ -159,7 +159,7 @@ ls ~/.local/share/keyrings/
 rm -f ~/.local/share/keyrings/login.keyring ~/.local/share/keyrings/user.keystore
 ```
 
-Log out and back in. The next application to ask for the secret service — Claude Desktop, which `myOptions.claude-desktop.passwordStore` puts on `gnome-libsecret` — triggers a prompt to create the keyring. Leave both password fields blank and confirm the unsafe-storage warning.
+Log out and back in. The next application to ask for the secret service triggers a prompt to create the keyring; on these hosts that is Claude Desktop, which `myOptions.claude-desktop.passwordStore` puts on `gnome-libsecret`. Leave both password fields blank and confirm the unsafe-storage warning.
 
 To reset an existing keyring instead of deleting it:
 
@@ -173,9 +173,9 @@ The trade is real but small here: an empty password means the keyring is encrypt
 
 `livingroompc` and `bedroompc` only. There is no gnome login keyring on those hosts; `kdewallet` is the secret store Chrome, NetworkManager and the portals use.
 
-Same structural problem as above with a different daemon. `services.desktopManager.plasma6.enable` wires `pam_kwallet` into the `login` and `kde` PAM services — the console login and the screen locker. Neither runs when SDDM logs you in automatically, and no password is typed for PAM to pass on, so nothing unlocks the wallet at session start.
+Same structural problem as above with a different daemon. `services.desktopManager.plasma6.enable` wires `pam_kwallet` into the `login` and `kde` PAM services, the console login and the screen locker. Neither runs when SDDM logs you in automatically, and no password is typed for PAM to pass on, so nothing unlocks the wallet at session start.
 
-On a fresh install the first thing to touch the wallet — Chrome storing its Safe Storage key, NetworkManager saving a PSK — raises the KWallet wizard. Take the **no password** option. A wallet with a password means a prompt at every boot on a machine driven by a remote from the couch, and no way to answer it from there.
+On a fresh install the first thing to touch the wallet raises the KWallet wizard, whether that is Chrome storing its Safe Storage key or NetworkManager saving a PSK. Take the **no password** option. A wallet with a password means a prompt at every boot on a machine driven by a remote from the couch, and no way to answer it from there.
 
 If a wallet already exists holding your account password, which one TTY login or one screen unlock is enough for `pam_kwallet` to have created, start it over:
 
@@ -214,7 +214,7 @@ sunshine --creds <username> <password>
 systemctl --user restart sunshine
 ```
 
-Then pair each client: add the host in Moonlight, and enter the PIN it shows on the web UI's PIN tab. Pairing is per client and per install, so every one has to be redone — including the laptops' own `moonlight-qt` against each HTPC, which is the direction that is easy to forget.
+Then pair each client: add the host in Moonlight, and enter the PIN it shows on the web UI's PIN tab. Pairing is per client and per install, so every one has to be redone, including the laptops' own `moonlight-qt` against each HTPC, which is the direction that is easy to forget.
 
 ## Per-host configuration files
 
