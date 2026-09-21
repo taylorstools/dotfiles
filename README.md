@@ -116,6 +116,106 @@ Other flags:
 
 The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change. Move those backups off the machine. A header file plus your passphrase decrypts the disk.
 
+## Manual Post-Install Steps
+
+What is left once the system is otherwise finished — Secure Boot keys enrolled, and on the HTPCs TPM auto-unlock on. Each of these is state no rebuild can produce: enrolment data, credentials and pairings that live outside both the Nix store and chezmoi, so a reinstall starts with none of it.
+
+### Howdy face enrolment
+
+`taylorpc` and `taylorthinkpad` only.
+
+`myOptions.howdy` sets up the daemon, the PAM opt-in for hyprlock and camera group access. It cannot supply your face. Enrolled models live in `/var/lib/howdy/models/<user>.dat`, which a reinstall takes with it.
+
+Confirm the IR sensor first. `devicePath` names a bare `/dev/videoN` node, and those are handed out in probe order, so the number can move on a fresh install:
+
+```sh
+ls -l /dev/v4l/by-path/         # the IR sensor, not the RGB one
+sudo howdy -U taylor test       # live view; a detected face gets boxed
+```
+
+If it moved, point `myOptions.howdy.devicePath` at the matching `/dev/v4l/by-path/...` path rather than chasing the new number.
+
+Then enrol, three or four times:
+
+```sh
+sudo howdy -U taylor add        # repeat: straight on, angled, closer, further back
+sudo howdy -U taylor list
+```
+
+One model is not enough. Howdy matches against the smallest distance across every enrolled model, and a single model from a grayscale IR sensor sits close enough to the threshold that ordinary variation — head turned, sitting further back — is rejected. Adding models is the fix for that. Raising `certainty` is letting other faces in to solve a problem only your own face has.
+
+Failure is quiet by design: `pam_howdy`'s output goes to hyprlock, which swallows it, and "Failure, timeout reached" covers both "never saw a face" and "saw one that never matched". To watch an attempt with its output attached to a terminal, add `"su"` to `myOptions.howdy.services`, rebuild, and run `su - taylor`.
+
+### Login keyring
+
+`taylorpc` and `taylorthinkpad` only. The HTPCs authenticate against KWallet under Plasma, and gnome-keyring is not enabled there at all.
+
+`services.gnome.gnome-keyring.enable` in `niri.nix` also turns on `security.pam.services.login.enableGnomeKeyring`, and `login` is the *console* PAM service. The graphical session comes up through greetd, whose stack has no `pam_gnome_keyring` in it, so nothing hands the daemon a password at login. Any keyring that has a password is therefore a prompt you answer by hand, every session, forever — and a single TTY login as `taylor` is enough to create one holding the account password.
+
+The fix is a login keyring with an empty password, which the daemon opens by itself:
+
+```sh
+ls ~/.local/share/keyrings/
+rm -f ~/.local/share/keyrings/login.keyring ~/.local/share/keyrings/user.keystore
+```
+
+Log out and back in. The next application to ask for the secret service — Claude Desktop, which `myOptions.claude-desktop.passwordStore` puts on `gnome-libsecret` — triggers a prompt to create the keyring. Leave both password fields blank and confirm the unsafe-storage warning.
+
+To reset an existing keyring instead of deleting it:
+
+```sh
+nix run nixpkgs#seahorse     # right-click Login > Change Password, leave the new one blank
+```
+
+The trade is real but small here: an empty password means the keyring is encrypted with nothing, so anything that can read your home directory can read your tokens. That is the bargain autologin already struck. On these hosts the LUKS passphrase at boot is the authentication boundary, and hyprlock is what guards the session after it.
+
+### KWallet
+
+`livingroompc` and `bedroompc` only. There is no gnome login keyring on those hosts; `kdewallet` is the secret store Chrome, NetworkManager and the portals use.
+
+Same structural problem as above with a different daemon. `services.desktopManager.plasma6.enable` wires `pam_kwallet` into the `login` and `kde` PAM services — the console login and the screen locker. Neither runs when SDDM logs you in automatically, and no password is typed for PAM to pass on, so nothing unlocks the wallet at session start.
+
+On a fresh install the first thing to touch the wallet — Chrome storing its Safe Storage key, NetworkManager saving a PSK — raises the KWallet wizard. Take the **no password** option. A wallet with a password means a prompt at every boot on a machine driven by a remote from the couch, and no way to answer it from there.
+
+If a wallet already exists holding your account password, which one TTY login or one screen unlock is enough for `pam_kwallet` to have created, start it over:
+
+```sh
+rm ~/.local/share/kwalletd/kdewallet.kwl ~/.local/share/kwalletd/kdewallet.salt
+```
+
+Log out and back in, then let the wizard run and leave the password empty.
+
+To check which state a wallet is in, force it shut and reopen it from a terminal on the machine itself:
+
+```sh
+QD=$(command -v qdbus6 || command -v qdbus)
+"$QD" org.kde.kwalletd6 /modules/kwalletd6 org.kde.KWallet.close kdewallet true
+"$QD" org.kde.kwalletd6 /modules/kwalletd6 org.kde.KWallet.open kdewallet 0 test
+```
+
+A handle straight back means no password. A dialog means there is one.
+
+Be clear about what blank buys and costs here. These two hosts TPM-auto-unlock at boot and then autologin, so a wallet that opens itself is the last of three doors already standing open: anyone who powers the machine on reaches the saved browser keys and the Wi-Fi PSK, not just a desktop. That is the same concession the TPM keyslot makes, taken to its conclusion, and it is the right call for a media box. It is not the right call on the laptops, which is exactly why they keep the passphrase at boot.
+
+### Sunshine
+
+All hosts.
+
+`services.sunshine` starts the daemon with the session and opens the firewall, but the web UI credentials, the TLS certificate and every client pairing live in `~/.config/sunshine/`, which chezmoi does not manage. A reinstall has none of them, and the new certificate invalidates the old pairings anyway.
+
+```sh
+systemctl --user status sunshine
+```
+
+Open <https://localhost:47990>, accept the self-signed certificate warning, and set the web UI username and password on the first-run screen. Without a browser:
+
+```sh
+sunshine --creds <username> <password>
+systemctl --user restart sunshine
+```
+
+Then pair each client: add the host in Moonlight, and enter the PIN it shows on the web UI's PIN tab. Pairing is per client and per install, so every one has to be redone — including the laptops' own `moonlight-qt` against each HTPC, which is the direction that is easy to forget.
+
 ## Per-host configuration files
 
 Four files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
