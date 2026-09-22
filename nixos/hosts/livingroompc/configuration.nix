@@ -15,10 +15,12 @@
   myOptions.nvidia.mode = "proprietary";
 
   #region network-bound LUKS unlock
-  # Clevis has to reach the Tang server from the initrd, so the onboard Intel
-  # NIC's driver has to be there too. Set here rather than in
-  # hardware-configuration.nix, which nixos-generate-config overwrites.
-  boot.initrd.availableKernelModules = [ "e1000e" ];
+  # Clevis has to reach the Tang server from the initrd, so the NIC driver has
+  # to be there too. The cable is in the ASIX USB adapter (enp0s20f0u7), not
+  # the onboard eno1; e1000e is kept in case the cable ever moves. Set here
+  # rather than in hardware-configuration.nix, which nixos-generate-config
+  # overwrites.
+  boot.initrd.availableKernelModules = [ "ax88179_178a" "e1000e" ];
 
   myOptions.clevisTang.enable = true;
   #endregion
