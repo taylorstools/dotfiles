@@ -29,6 +29,16 @@ in
       networkConfig.DHCP = "ipv4";
       linkConfig.RequiredForOnline = "routable";
     };
+
+    # wait-online blocks on every managed link by default, and the onboard
+    # eno1 matches the glob above without ever having a cable in it - so it
+    # sat out its full 120s timeout before clevis got a turn. One online
+    # interface is enough, and a shorter timeout means a genuinely offline
+    # boot reaches the passphrase prompt sooner.
+    boot.initrd.systemd.network.wait-online = {
+      anyInterface = true;
+      timeout = 45;
+    };
     #endregion
 
     #region clevis
