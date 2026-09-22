@@ -9,7 +9,7 @@ in
 
     interface = lib.mkOption {
       type = lib.types.str;
-      default = "en*";
+      default = "en* eth*";
       description = ''
         systemd-networkd Name= match for the NIC that has to come up in the
         initrd. The driver for it must also be in
