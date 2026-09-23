@@ -1,9 +1,20 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   splashLogo = import ./components/assets/splash-logo.nix;
 in
 {
+  options.myOptions.htpc.splashScale = lib.mkOption {
+    type = lib.types.either lib.types.int lib.types.float;
+    default = 3.0;
+    description = ''
+      uiScale handed to the minimal Plymouth theme on this host. It depends
+      entirely on the framebuffer the firmware hands the initrd, which is not
+      necessarily the panel's native mode, so it is set per host rather than
+      guessed from the display.
+    '';
+  };
+
   imports = [
     ./components/dim-overlay
     ./components/kde-plasma.nix
@@ -16,22 +27,14 @@ in
   # The same minimal theme taylorpc uses, from the same logo definition, so
   # the HTPCs look like the rest of the fleet on the way up.
   #
-  # uiScale is the one knob that has to differ per machine. The theme's
-  # defaults are design units against taylorpc's 1440x900 initrd
-  # framebuffer, where the 230-unit field is 16% of the screen width. These
-  # boxes get a 4K framebuffer and are read from a couch rather than from
-  # 60cm, so bare parity (~2.7) is the floor rather than the target: 3.0
-  # puts the field at ~18% of a 3840px screen. Halve it if the firmware
-  # turns out to hand the initrd 1080p -- check the early-boot framebuffer
-  # line, not /sys/class/graphics/fb0, which is whatever the GPU driver set
-  # later.
+  # The scale is per host: see myOptions.htpc.splashScale above.
   myOptions.plymouth = {
     enable = true;
     theme = "minimal";
     themePackages = [
       (pkgs.callPackage ../pkgs/plymouth-theme-minimal/package.nix
         (splashLogo // {
-          uiScale = 3.0;
+          uiScale = config.myOptions.htpc.splashScale;
 
           # ~15s at the ~50 ticks/sec refresh() actually runs at. Long enough
           # that a clevis unlock (~12s, most of it wait-online) answers the

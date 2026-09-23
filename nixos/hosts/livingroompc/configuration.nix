@@ -14,7 +14,6 @@
 
   myOptions.nvidia.mode = "proprietary";
 
-  #region network-bound LUKS unlock
   # Clevis has to reach the Tang server from the initrd, so the NIC driver has
   # to be there too. The cable is in the ASIX USB adapter (enp0s20f0u7), not
   # the onboard eno1; e1000e is kept in case the cable ever moves. Set here
@@ -23,5 +22,8 @@
   boot.initrd.availableKernelModules = [ "ax88179_178a" "e1000e" ];
 
   myOptions.clevisTang.enable = true;
-  #endregion
+
+  # The firmware hands the initrd a framebuffer that takes the theme's design
+  # units as-is here, so no scaling.
+  myOptions.htpc.splashScale = 1.0;
 }
