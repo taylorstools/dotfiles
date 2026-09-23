@@ -132,6 +132,15 @@ state.dots = 0;        # how many dots are currently lit, so the pulse knows
 state.pulse = 0;       # triangle-wave counter driving the thinking pulse
 state.dir = 1;
 
+# The logo starts hidden when spinnerBeforeUnlock is off, so that the screen
+# is genuinely dark until the disk resolves rather than dark-with-a-logo.
+# Both paths out of that state -- the unlock, and the hold-back expiring --
+# bring it back through here. The body is injected by package.nix and is
+# empty when the theme was built without a logo.
+fun reveal_logo() {
+@LOGO_REVEAL@
+}
+
 fun show_spinner() {
   spinner.on = 1;
   spinner.sprite.SetOpacity(1);
@@ -155,6 +164,7 @@ fun refresh() {
       if (state.reveal <= 0) {
         state.revealed = 1;
         hide_spinner();
+        reveal_logo();
         show_dots(state.dots);
         set_prompt_opacity(1);
       }
@@ -314,6 +324,7 @@ fun unlock_observed() {
     state.pending = 0;
     hide_field();
     show_dots(0);
+    reveal_logo();
     show_spinner();
   }
 }
