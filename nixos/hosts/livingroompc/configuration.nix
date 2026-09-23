@@ -22,8 +22,4 @@
   boot.initrd.availableKernelModules = [ "ax88179_178a" "e1000e" ];
 
   myOptions.clevisTang.enable = true;
-
-  # The firmware hands the initrd a framebuffer that takes the theme's design
-  # units as-is here, so no scaling.
-  myOptions.htpc.splashScale = 2.0;
 }

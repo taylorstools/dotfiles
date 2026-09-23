@@ -14,7 +14,7 @@ in
 
   options.myOptions.htpc.splashScale = lib.mkOption {
     type = lib.types.either lib.types.int lib.types.float;
-    default = 3.0;
+    default = 1.0;
     description = ''
       uiScale handed to the minimal Plymouth theme on this host. It depends
       entirely on the framebuffer the firmware hands the initrd, which is not
