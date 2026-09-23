@@ -270,8 +270,8 @@ runCommand "plymouth-theme-${themeName}"
       logo.sprite.SetOpacity(${if spinnerBeforeUnlock then "1" else "0"});
       LOGO
       cat > logo-reveal.txt <<'LOGOREVEAL'
-  logo.sprite.SetOpacity(1);
-LOGOREVEAL
+        logo.sprite.SetOpacity(1);
+      LOGOREVEAL
     ''}
 
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
