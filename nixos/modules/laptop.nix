@@ -3,12 +3,9 @@
 let
   # One set of numbers for both the Plymouth theme and the niri splash: the
   # logo sits in the same place in each, so the handoff between them does
-  # not move it. Change them here, not in either package.
-  splashLogo = {
-    logo = ./components/assets/nixos-logo.svg;
-    logoWidth = 112;
-    logoGap = 60;
-  };
+  # not move it. Change them in the shared file, not in either package --
+  # htpc.nix draws the same mark from it.
+  splashLogo = import ./components/assets/splash-logo.nix;
 in
 {
   imports = [

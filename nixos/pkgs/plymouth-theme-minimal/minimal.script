@@ -113,6 +113,18 @@ spinner.index = 0;
 # 50 times a second" (nearer 180), so the grace elapsed before the rejection
 # arrived and took the detection flag with it.
 state.prompted = 0;    # a prompt has been shown at least once
+# revealed/pending/reveal implement the hold-back below. The field is not
+# drawn the moment a passphrase is asked for: on a machine that unlocks over
+# the network (see modules/components/clevis-tang.nix) the request is
+# answered from the other side a few seconds later, and a prompt that appears
+# and vanishes on every boot reads as a fault. So the spinner keeps running
+# and the field is drawn only once the reveal counter runs out -- or at once
+# if a key is pressed, so the delay can never stop someone just typing.
+# Once revealed it stays revealed for the rest of the boot, so a rejection
+# re-prompt is immediate.
+state.revealed = 0;    # field has been drawn; latches for the boot
+state.pending = 0;     # a passphrase request is outstanding right now
+state.reveal = @REVEAL_TICKS@;
 state.submitted = 0;   # passphrase in flight; cleared by typing, not by time
 state.holding = 0;     # field still on screen after a submission
 state.wait = 0;
@@ -134,6 +146,21 @@ fun hide_spinner() {
 # call. Frame count and tick divisor together set the cycle length, and both
 # come from package.nix.
 fun refresh() {
+  # Hold-back countdown. Runs only while a request is actually outstanding,
+  # so an unlock from elsewhere stops it (display_normal clears pending)
+  # rather than revealing an empty field seconds after boot moved on.
+  if (state.pending) {
+    if (state.revealed == 0) {
+      state.reveal = state.reveal - 1;
+      if (state.reveal <= 0) {
+        state.revealed = 1;
+        hide_spinner();
+        show_dots(state.dots);
+        set_prompt_opacity(1);
+      }
+    }
+  }
+
   # Held field after a submission: if nothing has asked us again by now, the
   # passphrase was accepted and boot is carrying on.
   if (state.holding) {
@@ -204,48 +231,75 @@ fun show_dots(n) {
 }
 
 fun display_password(prompt, count) {
-  hide_spinner();
   state.prompted = 1;
+  state.pending = 1;
 
-  # Being asked again while a submission was in flight means it was rejected.
-  if (state.submitted) {
-    state.submitted = 0;
-    state.holding = 0;
-    field.sprite.SetImage(field.error);
-    lock.sprite.SetImage(lock.error);
+  # Typing always wins over the hold-back.
+  if (state.revealed == 0) {
+    if (count > 0) {
+      state.revealed = 1;
+    }
   }
 
-  # Typing clears the rejection.
-  if (count > 0) {
-    field.sprite.SetImage(field.image);
-    lock.sprite.SetImage(lock.image);
-  }
+  if (state.revealed == 0) {
+    # Still held: remember what was typed, draw nothing, keep spinning.
+    state.dots = count;
+  } else {
+    hide_spinner();
 
-  state.dots = count;
-  show_dots(count);
-  set_prompt_opacity(1);
+    # Being asked again while a submission was in flight means it was
+    # rejected.
+    if (state.submitted) {
+      state.submitted = 0;
+      state.holding = 0;
+      field.sprite.SetImage(field.error);
+      lock.sprite.SetImage(lock.error);
+    }
+
+    # Typing clears the rejection.
+    if (count > 0) {
+      field.sprite.SetImage(field.image);
+      lock.sprite.SetImage(lock.image);
+    }
+
+    state.dots = count;
+    show_dots(count);
+    set_prompt_opacity(1);
+  }
 }
 
 fun display_normal() {
-  if (state.prompted) {
-    # A passphrase was just submitted. Hold the field, minus its dots, rather
-    # than cutting to the spinner: a rejection comes back within about a
-    # second, and a spinner that appears and vanishes reads as a glitch. If no
-    # rejection arrives, refresh() gives up after the grace and shows the
-    # spinner, which is the accepted-passphrase path.
-    state.submitted = 1;
-    state.holding = 1;
-    state.wait = @VERIFY_GRACE@;
+  state.pending = 0;
 
-    # Leave the dots exactly as typed. They stay until the answer arrives:
-    # cleared by the red on rejection, or hidden with the field on success.
-    state.pulse = @PULSE_STEPS@;
-    state.dir = 0 - 1;
-    set_prompt_opacity(1);
-  } else {
+  if (state.revealed == 0) {
+    # Answered from elsewhere before the field was ever drawn -- nothing to
+    # hold and nothing to fade. Carry on spinning. Clearing pending above
+    # also stops the reveal countdown, so the field cannot surface after
+    # boot has moved on.
     hide_field();
     show_dots(0);
     show_spinner();
+  } else {
+    if (state.prompted) {
+      # A passphrase was just submitted. Hold the field, minus its dots,
+      # rather than cutting to the spinner: a rejection comes back within
+      # about a second, and a spinner that appears and vanishes reads as a
+      # glitch. If no rejection arrives, refresh() gives up after the grace
+      # and shows the spinner, which is the accepted-passphrase path.
+      state.submitted = 1;
+      state.holding = 1;
+      state.wait = @VERIFY_GRACE@;
+
+      # Leave the dots exactly as typed. They stay until the answer arrives:
+      # cleared by the red on rejection, or hidden with the field on success.
+      state.pulse = @PULSE_STEPS@;
+      state.dir = 0 - 1;
+      set_prompt_opacity(1);
+    } else {
+      hide_field();
+      show_dots(0);
+      show_spinner();
+    }
   }
 }
 

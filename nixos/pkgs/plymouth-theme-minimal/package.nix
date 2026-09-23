@@ -99,6 +99,24 @@
   # it dims.
 , pulseSteps ? 32
 , pulseMin ? 0.35
+
+  # Refresh ticks to keep the passphrase field hidden -- spinner only -- after
+  # the first request for it. For a machine that unlocks over the network the
+  # request is answered from the other side seconds later, and a prompt that
+  # flashes up and disappears on every boot reads as a fault; hold it back
+  # past that and it is only ever seen when the network unlock did not
+  # happen. Typing reveals it immediately, so this can never stop someone
+  # entering the passphrase, and once revealed it stays up for the rest of
+  # the boot so a rejection re-prompt is instant.
+  #
+  # 0 draws the field as soon as it is asked for, which is what a machine
+  # with no network unlock wants.
+  #
+  # In ticks, for the same reason as verifyGraceTicks: the script has no
+  # clock. Measured against the pulse period, refresh() runs at roughly the
+  # documented 50/sec, so 750 is about fifteen seconds -- but measure it on
+  # the machine rather than trusting that, since the rate is not guaranteed.
+, passwordRevealTicks ? 0
 }:
 
 let
@@ -244,6 +262,7 @@ runCommand "plymouth-theme-${themeName}"
     ''}
 
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
+        -e "s/@REVEAL_TICKS@/${toString passwordRevealTicks}/g" \
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
         -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
         -e "s/@PULSE_MIN@/${toString pulseMin}/g" \
