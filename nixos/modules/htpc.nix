@@ -16,18 +16,22 @@ in
   # The same minimal theme taylorpc uses, from the same logo definition, so
   # the HTPCs look like the rest of the fleet on the way up.
   #
-  # uiScale is the one knob that has to differ per machine: the theme's
-  # defaults are sized for taylorpc's 1440x900 initrd framebuffer, and these
-  # boxes hand off to a TV. Check what the initrd actually gets with
-  # `cat /sys/class/graphics/fb0/modes` and tune against a real boot -- 2.0
-  # is the starting guess for a 4K mode, 1.0 if the firmware hands over 1080p.
+  # uiScale is the one knob that has to differ per machine. The theme's
+  # defaults are design units against taylorpc's 1440x900 initrd
+  # framebuffer, where the 230-unit field is 16% of the screen width. These
+  # boxes get a 4K framebuffer and are read from a couch rather than from
+  # 60cm, so bare parity (~2.7) is the floor rather than the target: 3.0
+  # puts the field at ~18% of a 3840px screen. Halve it if the firmware
+  # turns out to hand the initrd 1080p -- check the early-boot framebuffer
+  # line, not /sys/class/graphics/fb0, which is whatever the GPU driver set
+  # later.
   myOptions.plymouth = {
     enable = true;
     theme = "minimal";
     themePackages = [
       (pkgs.callPackage ../pkgs/plymouth-theme-minimal/package.nix
         (splashLogo // {
-          uiScale = 2.0;
+          uiScale = 3.0;
 
           # ~15s at the ~50 ticks/sec refresh() actually runs at. Long enough
           # that a clevis unlock (~12s, most of it wait-online) answers the
