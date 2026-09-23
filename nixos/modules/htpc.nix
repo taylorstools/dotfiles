@@ -46,6 +46,10 @@ in
             # the network unlock did not happen. Typing reveals it
             # immediately regardless.
             passwordRevealTicks = 750;
+
+            # Nothing but the logo until the disk resolves one way or the
+            # other -- see spinnerBeforeUnlock in package.nix.
+            spinnerBeforeUnlock = false;
           }))
       ];
     };

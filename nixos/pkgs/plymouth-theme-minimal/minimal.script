@@ -310,4 +310,14 @@ Plymouth.SetDisplayQuestionFunction(fun (prompt, entry) { display_normal(); });
 Plymouth.SetMessageFunction(fun (text) { });
 
 # Spin from the moment the splash comes up, not just after the passphrase.
-show_spinner();
+#
+# Machines that unlock over the network turn this off (spinnerBeforeUnlock).
+# Until the unlock resolves there is nothing to report, and a spinner during
+# that wait is indistinguishable from a spinner during the rest of boot --
+# which makes the passphrase field, when it does appear, read as something
+# going wrong rather than as the expected offline path. With it off the
+# screen holds on the logo alone until either the disk unlocks (display_normal
+# starts the spinner) or the hold-back expires and the field appears.
+if (@SPIN_AT_START@ > 0) {
+  show_spinner();
+}

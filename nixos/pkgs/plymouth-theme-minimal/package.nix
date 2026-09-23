@@ -117,6 +117,15 @@
   # documented 50/sec, so 750 is about fifteen seconds -- but measure it on
   # the machine rather than trusting that, since the rate is not guaranteed.
 , passwordRevealTicks ? 0
+
+  # Whether the spinner runs from the moment the splash appears. True is the
+  # right answer for a machine whose disk unlocks immediately, where the
+  # spinner is an honest "boot is progressing". Set it false alongside
+  # passwordRevealTicks on a machine that unlocks over the network: there the
+  # first several seconds are spent waiting on something that may or may not
+  # answer, and a spinner claims progress that has not happened. Off, the
+  # screen shows the logo alone until the disk unlocks or the field appears.
+, spinnerBeforeUnlock ? true
 }:
 
 let
@@ -263,6 +272,7 @@ runCommand "plymouth-theme-${themeName}"
 
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
         -e "s/@REVEAL_TICKS@/${toString passwordRevealTicks}/g" \
+        -e "s/@SPIN_AT_START@/${if spinnerBeforeUnlock then "1" else "0"}/g" \
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
         -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
         -e "s/@PULSE_MIN@/${toString pulseMin}/g" \
