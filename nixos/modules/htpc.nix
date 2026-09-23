@@ -39,13 +39,13 @@ in
           (splashLogo // {
             uiScale = config.myOptions.htpc.splashScale;
 
-            # ~15s at the ~50 ticks/sec refresh() actually runs at. Long
-            # enough that a clevis unlock (~12s, most of it wait-online)
-            # answers the request before the field is ever drawn, so a normal
-            # boot shows only the spinner and the prompt appears solely when
-            # the network unlock did not happen. Typing reveals it
-            # immediately regardless.
-            passwordRevealTicks = 750;
+            # ~15s. Measured on livingroompc rather than assumed: 750 was
+            # sized for the documented 50 ticks/sec and expired in about 10,
+            # so refresh() runs nearer 75/sec here. The margin matters --
+            # a clevis unlock lands around 12s, so a hold-back that expires
+            # at 10 would flash the field up two seconds before the disk
+            # opened, which is the exact thing it exists to prevent.
+            passwordRevealTicks = 1125;
 
             # Nothing but the logo until the disk resolves one way or the
             # other -- see spinnerBeforeUnlock in package.nix.

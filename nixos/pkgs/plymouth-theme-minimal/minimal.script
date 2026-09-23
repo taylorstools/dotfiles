@@ -303,6 +303,23 @@ fun display_normal() {
   }
 }
 
+# Plymouth has no "the passphrase was answered by something else" callback,
+# and display_normal measurably does not fire on that path: when clevis
+# unlocks the disk over the network the password callbacks simply stop. So
+# the unlock is inferred from boot getting further instead. Root being
+# mounted cannot happen until the volume is open, which makes it a sound
+# signal even if it is a slightly late one.
+fun unlock_observed() {
+  if (state.revealed == 0) {
+    state.pending = 0;
+    hide_field();
+    show_dots(0);
+    show_spinner();
+  }
+}
+
+Plymouth.SetRootMountedFunction(unlock_observed);
+
 Plymouth.SetRefreshFunction(refresh);
 Plymouth.SetDisplayPasswordFunction(display_password);
 Plymouth.SetDisplayNormalFunction(display_normal);
@@ -316,8 +333,9 @@ Plymouth.SetMessageFunction(fun (text) { });
 # that wait is indistinguishable from a spinner during the rest of boot --
 # which makes the passphrase field, when it does appear, read as something
 # going wrong rather than as the expected offline path. With it off the
-# screen holds on the logo alone until either the disk unlocks (display_normal
-# starts the spinner) or the hold-back expires and the field appears.
+# screen holds on the logo alone until either the disk unlocks (root being
+# mounted starts the spinner, see unlock_observed) or the hold-back expires
+# and the field appears.
 if (@SPIN_AT_START@ > 0) {
   show_spinner();
 }
