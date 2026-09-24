@@ -10,9 +10,11 @@
 #   Backspace       on an empty field, go up one folder
 #   typing /, ~, .. jump there directly (paste a full path and it works too)
 #   Enter           open the highlighted item (folders in Thunar, files with
-#                   xdg-open). With nothing highlighted, open what you typed as
-#                   a path or URL, or run it as a command
-#   Alt+Enter       run what you typed as a command
+#                   xdg-open, so a script opens in your editor). With nothing
+#                   highlighted, open what you typed as a path or URL, or run
+#                   it as a command
+#   Alt+Enter       run: the highlighted item if it's an executable file (a
+#                   script, say), otherwise what you typed, as a command
 #   Ctrl+F          search recursively below this folder (press again to go back)
 #   Ctrl+A          clear the field (back to / with nothing typed)
 #   Ctrl+C          copy the highlighted path (or what you typed) and close
@@ -38,6 +40,11 @@ spawn() {
     # Fallback: ignore SIGHUP (inherited through fork/exec, like nohup) so the
     # child survives kitty closing the pty.
     (trap '' HUP; setsid -f "$@" </dev/null >/dev/null 2>&1)
+}
+
+# Run a shell command line from folder $1, detached.
+run_in() {
+    spawn sh -c 'cd -- "$1" || exit; exec sh -c "$2"' sh "$1" "$2"
 }
 
 open_path() {
@@ -187,7 +194,7 @@ on_enter() {
     elif [[ -e $target ]]; then
         open_path "$target"
     elif command -v -- "${q%% *}" >/dev/null; then
-        spawn sh -c "$q"
+        run_in "$(cur_dir)" "$q"
     else
         act change-border-label " Nothing matches: $q "
         return
@@ -195,9 +202,17 @@ on_enter() {
     printf 'abort'
 }
 
+# Alt+Enter: run the highlighted executable file from its own folder, or
+# else run the typed text as a command from the current folder.
 on_run() {
-    [[ -n $FZF_QUERY ]] || return
-    spawn sh -c "$FZF_QUERY"
+    local path=${1-}
+    if [[ -n $path && -f $path && -x $path ]]; then
+        spawn sh -c 'cd -- "$(dirname -- "$1")" && exec "$1"' sh "$path"
+    elif [[ -n $FZF_QUERY ]]; then
+        run_in "$(cur_dir)" "$FZF_QUERY"
+    else
+        return
+    fi
     printf 'abort'
 }
 
@@ -229,7 +244,7 @@ run_ui() {
         done <"$ColorsFile"
     fi
 
-    export -f spawn open_path copy_text act in_search cur_dir resolve is_url \
+    export -f spawn run_in open_path copy_text act in_search cur_dir resolve is_url \
         list_dir search_dir nav on_change on_complete on_back \
         on_search_toggle on_enter on_run on_copy
 
@@ -250,7 +265,7 @@ run_ui() {
                 --bind 'backward-eof:transform:on_back' \
                 --bind 'ctrl-f:transform:on_search_toggle' \
                 --bind 'enter:transform:on_enter' \
-                --bind 'alt-enter:transform:on_run' \
+                --bind 'alt-enter:transform:on_run {1}' \
                 --bind 'ctrl-a:transform:nav /' \
                 --bind 'ctrl-c:transform:on_copy {1}' \
                 --color "
@@ -273,7 +288,8 @@ toggle() {
         kill -- "-$pid" 2>/dev/null || kill "$pid"
         exit 0
     fi
-    exec kitty --title Runner "$Self" --ui
+    # Your kitty.conf maps ctrl+c to copy; in this window pass it to fzf.
+    exec kitty --title Runner -o "map ctrl+c no_op" "$Self" --ui
 }
 
 if [[ ${1-} == --ui ]]; then
