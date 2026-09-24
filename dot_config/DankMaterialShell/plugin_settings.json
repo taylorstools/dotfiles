@@ -67,7 +67,10 @@
     "currentWorkspaceOnly": false,
     "groupByApp": false,
     "largeIcons": true,
-    "reservedBarWidth": 275
+    "reservedBarWidth": 300
+  },
+  "hyprvoicePill": {
+    "enabled": true
   },
   "whisrsPill": {
     "enabled": true

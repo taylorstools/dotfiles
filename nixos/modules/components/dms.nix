@@ -12,14 +12,38 @@ let
   # Windows-style tray: treat every tray item as "hidden" so nothing sits on
   # the bar and everything lives behind the chevron popout. isHiddenTrayId()
   # is only consumed by SystemTrayBar.qml, so this has no other side effects.
+  #
+  # Two packaging layouts to handle:
+  #   - nixpkgs (>= 1.6): QML is embedded in the Go binary via `make sync-shell`
+  #     in preBuild, so patch the source tree in postPatch.
+  #   - DMS flake: QML is copied to $out/share/quickshell/dms in postInstall,
+  #     so patch the installed copy.
+  # Fails the build if neither location had the file, so an upstream layout
+  # change can't silently drop the patch.
+  trayFind = "return trayId && hiddenTrayIds.indexOf(trayId) !== -1;";
+  trayRepl = "return !!trayId;";
+
   dmsPkg =
     if cfg.dms.collapseTray
     then dmsBasePkg.overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''
+        trayQml=../quickshell/Common/SessionData.qml
+        if [ -f "$trayQml" ]; then
+          chmod u+w "$(dirname "$trayQml")" "$trayQml"
+          substituteInPlace "$trayQml" --replace-fail '${trayFind}' '${trayRepl}'
+          touch "$NIX_BUILD_TOP/.dms-tray-patched"
+        fi
+      '';
       postInstall = (old.postInstall or "") + ''
-        substituteInPlace $out/share/quickshell/dms/Common/SessionData.qml \
-          --replace-fail \
-            'return trayId && hiddenTrayIds.indexOf(trayId) !== -1;' \
-            'return !!trayId;'
+        trayQml=$out/share/quickshell/dms/Common/SessionData.qml
+        if [ -f "$trayQml" ]; then
+          substituteInPlace "$trayQml" --replace-fail '${trayFind}' '${trayRepl}'
+          touch "$NIX_BUILD_TOP/.dms-tray-patched"
+        fi
+        if [ ! -e "$NIX_BUILD_TOP/.dms-tray-patched" ]; then
+          echo "dms.collapseTray: SessionData.qml not found; tray patch not applied" >&2
+          exit 1
+        fi
       '';
     })
     else dmsBasePkg;
