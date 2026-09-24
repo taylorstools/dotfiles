@@ -71,5 +71,8 @@
   },
   "hyprvoicePill": {
     "enabled": true
+  },
+  "whisrsPill": {
+    "enabled": true
   }
 }

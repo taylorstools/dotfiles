@@ -9,34 +9,35 @@ import qs.Services
 import qs.Modules.Plugins
 import qs.Widgets
 
-// A status pill for hyprvoice dictation, in the spirit of OpenHyprWhisper's.
+// A status pill for whisrs dictation, drawn with the DMS surface, blur and
+// outline instead of whisrs's own overlay (overlay = false in its config).
 //
-// hyprvoice has no event stream - its socket answers one command per
-// connection - so nothing here polls while you are not dictating. The niri
-// bind calls `dms ipc call hyprvoice toggle` instead of `hyprvoice toggle`
-// directly, which both starts the dictation and wakes the poller. Toggling
-// from a terminal still dictates; it just does not draw the pill.
+// whisrs fires its [hooks] on_record_start / on_record_stop on every recording
+// state change, whatever caused it - its own evdev hotkey, a niri bind, the
+// CLI or the tray. The hooks call `dms ipc call whisrs started|stopped`, so the
+// pill appears the instant recording starts and nothing here polls while you
+// are not dictating. The status poll only runs from a start until whisrs is
+// idle again, to see the transcribing tail that the hooks do not report.
 PluginComponent {
     id: root
 
-    // hyprvoice's own pipeline states, plus "done", which is ours: the daemon
-    // drops straight back to idle after injecting and the pill wants a beat to
-    // say so before it leaves.
+    // whisrs's own states, plus "done", which is ours: the daemon drops
+    // straight back to idle once the text is typed and the pill wants a beat
+    // to say so before it leaves.
     property string phase: "idle"
     property bool watching: false
     property double startedAt: 0
     property int elapsedMs: 0
     property var levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    // Must match the bars= in hyprvoice-pill-cava (components/hyprvoice.nix).
+    // Must match the bars= in whisrs-pill-cava (components/whisrs.nix).
     readonly property int barCount: 12
-    // hyprvoice's status names describe its pipeline, not what you are doing:
-    // it sets "transcribing" as soon as the recorder starts streaming frames,
-    // and "injecting" the moment you stop - before whisper has run a single
-    // token. So listening is recording+transcribing, and the wait after you
-    // stop talking is what this pill calls transcribing.
-    readonly property bool listening: phase === "recording" || phase === "transcribing"
-    readonly property bool busy: phase === "processing" || phase === "injecting"
+
+    // Unlike hyprvoice, whisrs's state names mean what they say: "recording"
+    // is you talking, "transcribing" is the flush after you stop. local-whisper
+    // streams, so most of the text has already been typed by then.
+    readonly property bool listening: phase === "recording"
+    readonly property bool busy: phase === "transcribing"
 
     function zeroLevels() {
         var a = [];
@@ -45,28 +46,42 @@ PluginComponent {
         return a;
     }
 
+    function beginSession() {
+        if (root.phase !== "recording") {
+            root.startedAt = Date.now();
+            root.elapsedMs = 0;
+        }
+        doneTimer.stop();
+        root.phase = "recording";
+        root.watching = true;
+    }
+
     function applyStatus(line) {
-        var m = /status=([a-z]+)/.exec(line);
+        var m = /\b(idle|recording|transcribing|synthesizing|speaking)\b/.exec(line);
         if (!m)
             return;
         var next = m[1];
+
+        // Read-aloud is whisrs talking, not you dictating: no pill for it.
+        if (next === "synthesizing" || next === "speaking")
+            next = "idle";
         if (next === root.phase)
             return;
 
         if (next === "idle") {
-            // Only a session that actually ran earns the "Done" beat; the first
-            // poll after a toggle can legitimately still read idle.
-            if (root.phase !== "idle" && root.phase !== "done") {
+            // Only a session that actually ran earns the "Done" beat.
+            if (root.phase === "recording" || root.phase === "transcribing") {
                 root.phase = "done";
                 doneTimer.restart();
             }
             return;
         }
 
-        if (root.phase === "idle" || root.phase === "done") {
-            root.startedAt = Date.now();
-            root.elapsedMs = 0;
+        if (next === "recording") {
+            root.beginSession();
+            return;
         }
+
         doneTimer.stop();
         root.phase = next;
     }
@@ -78,34 +93,24 @@ PluginComponent {
         return mins + ":" + (secs < 10 ? "0" : "") + secs;
     }
 
-    // ---- control ----
+    // ---- hooks ----
     IpcHandler {
-        target: "hyprvoice"
+        target: "whisrs"
 
-        function toggle(): string {
-            toggleProc.running = true;
+        // on_record_start
+        function started(): string {
+            root.beginSession();
+            return "ok";
+        }
+
+        // on_record_stop: fires at the first non-recording state, so flip to
+        // transcribing straight away instead of waiting a poll for it.
+        function stopped(): string {
+            if (root.phase === "recording")
+                root.phase = "transcribing";
             root.watching = true;
             return "ok";
         }
-
-        function cancel(): string {
-            cancelProc.running = true;
-            return "ok";
-        }
-    }
-
-    Process {
-        id: toggleProc
-
-        command: ["hyprvoice", "toggle"]
-        running: false
-    }
-
-    Process {
-        id: cancelProc
-
-        command: ["hyprvoice", "cancel"]
-        running: false
     }
 
     // ---- state ----
@@ -113,7 +118,8 @@ PluginComponent {
         id: statusPoll
 
         running: root.watching
-        command: ["sh", "-c", "while :; do hyprvoice status 2>/dev/null || echo 'STATUS status=idle'; sleep 0.1; done"]
+        // `whisrs status` prints a bare state word when stdout is not a TTY.
+        command: ["sh", "-c", "while :; do whisrs status 2>/dev/null || echo idle; sleep 0.1; done"]
 
         stdout: SplitParser {
             splitMarker: "\n"
@@ -132,8 +138,8 @@ PluginComponent {
         }
     }
 
-    // A toggle that never produces a session - daemon down, mic missing - would
-    // otherwise leave the poller running forever.
+    // A stop hook with no session behind it - daemon restarted mid-recording,
+    // say - would otherwise leave the poller running forever.
     Timer {
         id: watchdog
 
@@ -152,13 +158,14 @@ PluginComponent {
     }
 
     // ---- waveform ----
-    // A second PipeWire capture of the same source hyprvoice is recording from.
-    // Two readers on one mic is fine; this one only exists while recording.
+    // A second PipeWire capture of the same default source whisrs records
+    // from. Two readers on one mic is fine; this one only exists while
+    // recording.
     Process {
         id: cava
 
         running: root.listening
-        command: ["hyprvoice-pill-cava"]
+        command: ["whisrs-pill-cava"]
 
         stdout: SplitParser {
             splitMarker: "\n"
@@ -191,7 +198,7 @@ PluginComponent {
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.namespace: "dms:plugins:hyprvoice-pill"
+            WlrLayershell.namespace: "dms:plugins:whisrs-pill"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
             anchors.bottom: true
@@ -248,7 +255,8 @@ PluginComponent {
                     anchors.centerIn: parent
                     spacing: Theme.spacingM
 
-                    // Recording dot, pulsing; a check when the text lands.
+                    // Recording dot, pulsing; a spinner while transcribing;
+                    // a check when the text lands.
                     Item {
                         width: Theme.fontSizeLarge
                         height: Theme.fontSizeLarge
@@ -256,7 +264,7 @@ PluginComponent {
 
                         Rectangle {
                             anchors.centerIn: parent
-                            visible: !(root.phase === "done")
+                            visible: root.phase !== "done"
                             width: root.listening ? Theme.fontSizeLarge * 0.7 : Theme.fontSizeLarge * 0.5
                             height: width
                             radius: width / 2
@@ -277,7 +285,6 @@ PluginComponent {
                                 }
                             }
 
-                            // A spinner while hyprvoice is off doing the work.
                             RotationAnimation on rotation {
                                 running: root.busy
                                 loops: Animation.Infinite
@@ -303,10 +310,6 @@ PluginComponent {
                             case "recording":
                                 return "Recording...";
                             case "transcribing":
-                                return "Recording...";
-                            case "processing":
-                                return "Polishing...";
-                            case "injecting":
                                 return "Transcribing...";
                             case "done":
                                 return "Done";

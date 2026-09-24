@@ -1,0 +1,21 @@
+{
+    "id": "whisrsPill",
+    "name": "Whisrs Pill",
+    "description": "Floating recording/transcribing status pill for whisrs dictation, with a live mic waveform and elapsed time, drawn with the DMS surface, blur and outline.",
+    "version": "2.0.0",
+    "type": "daemon",
+    "author": "Taylor",
+    "icon": "mic",
+    "capabilities": [
+        "daemon"
+    ],
+    "component": "./WhisrsDaemon.qml",
+    "requires_dms": ">=1.5.0",
+    "dependencies": [
+        "whisrs",
+        "cava"
+    ],
+    "permissions": [
+        "process"
+    ]
+}

@@ -12,10 +12,10 @@ binds {
     // Screenshot
     Print   { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
 
-    // Dictation - via the DMS plugin, not `hyprvoice toggle` directly,
-    // so the status pill knows a session started.
-    Mod+Y       { spawn "sh" "-c" "dms ipc call hyprvoice toggle"; }
-    Mod+Shift+Y { spawn "sh" "-c" "dms ipc call hyprvoice cancel"; }
+    // Dictation. whisrs fires its own hook into the DMS pill, so these call
+    // it directly - and Super+Shift+V from its [hotkeys] does the same.
+    Mod+Y       { spawn "whisrs" "toggle"; }
+    Mod+Shift+Y { spawn "whisrs" "cancel"; }
 
     // Niri related
     Mod+Q       { close-window; }

@@ -1,0 +1,52 @@
+llm_commands = []
+
+[general]
+backend = "local-whisper"
+language = "en"
+silence_timeout_ms = 2000
+notify = true
+remove_filler_words = true
+filler_words = []
+audio_feedback = true
+audio_feedback_volume = 0.5
+vocabulary = []
+tray = true
+# Off in favour of the WhisrsPill DMS plugin, which draws with the shell's
+# surface, blur and outline. Turning this back on gives you both.
+overlay = false
+llm_post_process = false
+llm_instruction = "Fix punctuation, capitalization and obvious transcription errors in the following text. Keep the wording and the meaning unchanged. Return only the corrected text, with no explanations and no quotes."
+
+[audio]
+device = "default"
+
+[input]
+key_delay_ms = 2
+backend = "auto"
+paste = false
+clipboard_fallback = false
+clipboard_only = false
+terminal_classes = []
+
+[local-whisper]
+model_path = "/home/taylor/.local/share/whisrs/models/ggml-small.en.bin"
+segmentation = "silence"
+phrase_silence_ms = 400
+
+[overlay]
+theme = "carbon"
+width = 100
+height = 40
+
+[hotkeys]
+toggle = "Super+Shift+V"
+cancel = "Super+Shift+C"
+
+# The pill's event source. These fire on every recording state change,
+# whatever triggered it - hotkey, niri bind, CLI or tray - so the pill never
+# has to poll while you are not dictating. dms resolves because the user
+# unit's PATH includes the system profile (components/whisrs.nix).
+[hooks]
+on_record_start = "dms ipc call whisrs started"
+on_record_stop = "dms ipc call whisrs stopped"
+# media_auto_pause = true   # pause playing MPRIS media while dictating, resume it after
