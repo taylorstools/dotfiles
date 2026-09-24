@@ -170,6 +170,36 @@ fun hide_spinner() {
 # with -- so the honest response is to leave the screen rather than sit there
 # looking broken. It latches: the display manager is a second or two behind
 # the mode change, and a black gap there reads as nothing at all.
+fun reveal_now() {
+  state.revealed = 1;
+  hide_spinner();
+  set_logo_opacity(1);
+  show_dots(state.dots);
+  set_prompt_opacity(1);
+}
+
+# The hold-back is measured in seconds, not in refresh() calls. refresh() is
+# called at whatever rate Plymouth feels like: measured at ~75/sec on
+# livingroompc while the spinner was animating and ~37/sec once it was not,
+# so a tick count is not a unit of time and cannot be tuned into one.
+# SetBootProgressFunction hands over the elapsed seconds since boot began,
+# which is an actual clock.
+#
+# The tick counter in refresh() survives as a backstop for the case where
+# boot progress never arrives at all -- without it, a theme that only reveals
+# on a callback that never fires would leave someone at a black screen with
+# no way to know a passphrase was wanted. Set it far longer than the seconds
+# threshold so it only ever fires when the clock did not.
+fun boot_progress(duration, progress) {
+  if (state.pending) {
+    if (state.revealed == 0) {
+      if (duration >= @REVEAL_SECONDS@) {
+        reveal_now();
+      }
+    }
+  }
+}
+
 fun blank_all() {
   state.blanked = 1;
   hide_spinner();
@@ -196,11 +226,7 @@ fun refresh() {
     if (state.revealed == 0) {
       state.reveal = state.reveal - 1;
       if (state.reveal <= 0) {
-        state.revealed = 1;
-        hide_spinner();
-        set_logo_opacity(1);
-        show_dots(state.dots);
-        set_prompt_opacity(1);
+        reveal_now();
       }
     }
   }
@@ -366,6 +392,7 @@ fun unlock_observed() {
 }
 
 Plymouth.SetRootMountedFunction(unlock_observed);
+Plymouth.SetBootProgressFunction(boot_progress);
 
 Plymouth.SetRefreshFunction(refresh);
 Plymouth.SetDisplayPasswordFunction(display_password);

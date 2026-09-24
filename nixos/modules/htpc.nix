@@ -39,13 +39,13 @@ in
           (splashLogo // {
             uiScale = config.myOptions.htpc.splashScale;
 
-            # ~15s. Measured on livingroompc rather than assumed: 750 was
-            # sized for the documented 50 ticks/sec and expired in about 10,
-            # so refresh() runs nearer 75/sec here. The margin matters --
-            # a clevis unlock lands around 12s, so a hold-back that expires
-            # at 10 would flash the field up two seconds before the disk
-            # opened, which is the exact thing it exists to prevent.
-            passwordRevealTicks = 1125;
+            # A clevis unlock lands around 12s, most of it wait-online, so
+            # 15 leaves a little margin without leaving someone staring at a
+            # black screen when the network genuinely is not there. The tick
+            # backstop is deliberately far longer: it is only meant to fire
+            # if Plymouth never reports boot progress at all.
+            passwordRevealSeconds = 15;
+            passwordRevealTicks = 4000;
 
             # Nothing but the logo until the disk resolves one way or the
             # other -- see spinnerBeforeUnlock in package.nix.

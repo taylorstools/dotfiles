@@ -100,28 +100,37 @@
 , pulseSteps ? 32
 , pulseMin ? 0.35
 
-  # Refresh ticks to keep the passphrase field hidden -- spinner only -- after
-  # the first request for it. For a machine that unlocks over the network the
-  # request is answered from the other side seconds later, and a prompt that
-  # flashes up and disappears on every boot reads as a fault; hold it back
-  # past that and it is only ever seen when the network unlock did not
-  # happen. Typing reveals it immediately, so this can never stop someone
-  # entering the passphrase, and once revealed it stays up for the rest of
-  # the boot so a rejection re-prompt is instant.
+  # Seconds to keep the passphrase field hidden after it is first asked for.
+  # On a machine that unlocks over the network the request is answered from
+  # the other side several seconds later, and a prompt that flashes up and
+  # disappears on every boot reads as a fault; hold it back past that and it
+  # is only ever seen when the network unlock did not happen. Typing reveals
+  # it immediately, so this can never stop someone entering the passphrase,
+  # and once revealed it stays up for the rest of the boot so a rejection
+  # re-prompt is instant.
+  #
+  # Unlike verifyGraceTicks this is real seconds, taken from the elapsed time
+  # Plymouth passes to SetBootProgressFunction. An earlier version counted
+  # refresh() calls and could not be made to mean anything: the rate measured
+  # 75/sec with the spinner animating and 37/sec without it, so the same
+  # count was 10 seconds in one configuration and 30 in another.
   #
   # 0 draws the field as soon as it is asked for, which is what a machine
   # with no network unlock wants.
-  #
-  # In ticks, for the same reason as verifyGraceTicks: the script has no
-  # clock. Measured against the pulse period, refresh() runs at roughly the
-  # documented 50/sec, so 750 is about fifteen seconds -- but measure it on
-  # the machine rather than trusting that, since the rate is not guaranteed.
+, passwordRevealSeconds ? 0
+
+  # Backstop for passwordRevealSeconds, in refresh() ticks, for the case
+  # where Plymouth never delivers boot progress. Make it comfortably longer
+  # than the seconds threshold at any plausible tick rate -- observed between
+  # 37 and 95 per second on this fleet -- so it only fires when the clock
+  # never arrived. 0 reveals on the first refresh, which is what a machine
+  # with no network unlock wants.
 , passwordRevealTicks ? 0
 
   # Whether the spinner runs from the moment the splash appears. True is the
   # right answer for a machine whose disk unlocks immediately, where the
   # spinner is an honest "boot is progressing". Set it false alongside
-  # passwordRevealTicks on a machine that unlocks over the network: there the
+  # passwordRevealSeconds on a machine that unlocks over the network: there the
   # first several seconds are spent waiting on something that may or may not
   # answer, and a spinner claims progress that has not happened. Off, the
   # screen shows the logo alone until the disk unlocks or the field appears.
@@ -276,6 +285,7 @@ runCommand "plymouth-theme-${themeName}"
 
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
         -e "s/@REVEAL_TICKS@/${toString passwordRevealTicks}/g" \
+        -e "s/@REVEAL_SECONDS@/${toString passwordRevealSeconds}/g" \
         -e "s/@SPIN_AT_START@/${if spinnerBeforeUnlock then "1" else "0"}/g" \
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
         -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
