@@ -10,11 +10,11 @@ in
     capSysAdmin = true;
     openFirewall = true;
 
-    package = pkgs.sunshine.overrideAttrs (old: {
-      cmakeFlags = (old.cmakeFlags or [ ]) ++ [
-        (lib.cmakeBool "SUNSHINE_ENABLE_TRAY" false)
-      ];
-    });
+    #package = pkgs.sunshine.overrideAttrs (old: {
+    #  cmakeFlags = (old.cmakeFlags or [ ]) ++ [
+    #    (lib.cmakeBool "SUNSHINE_ENABLE_TRAY" false)
+    #  ];
+    #});
   };
 
   hardware.uinput.enable = true;
