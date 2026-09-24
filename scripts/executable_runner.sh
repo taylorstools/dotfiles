@@ -14,7 +14,8 @@
 #                   a path or URL, or run it as a command
 #   Alt+Enter       run what you typed as a command
 #   Ctrl+F          search recursively below this folder (press again to go back)
-#   Ctrl+A          copy the highlighted path (or what you typed) and close
+#   Ctrl+A          clear the field (back to / with nothing typed)
+#   Ctrl+C          copy the highlighted path (or what you typed) and close
 #   Esc             close
 #
 # Run it with no arguments and it toggles: it opens the window, or closes it if
@@ -232,7 +233,7 @@ run_ui() {
         list_dir search_dir nav on_change on_complete on_back \
         on_search_toggle on_enter on_run on_copy
 
-    local hint=" → enter folder · ⌫ up · ^F search · alt-⏎ run · ^A copy "
+    local hint=" → enter folder · ⌫ up · ^F search · alt-⏎ run · ^A clear · ^C copy "
     local selected
     selected=$(
         list_dir "$HOME/" |
@@ -250,7 +251,8 @@ run_ui() {
                 --bind 'ctrl-f:transform:on_search_toggle' \
                 --bind 'enter:transform:on_enter' \
                 --bind 'alt-enter:transform:on_run' \
-                --bind 'ctrl-a:transform:on_copy {1}' \
+                --bind 'ctrl-a:transform:nav /' \
+                --bind 'ctrl-c:transform:on_copy {1}' \
                 --color "
                     fg:#ffffff, query:#ffffff,
                     fg+:$lighter, prompt:$lighter, hl:$lighter, hl+:#ffffff,
