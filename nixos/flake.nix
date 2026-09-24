@@ -33,6 +33,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    whisrs = {
+      url = "github:y0sif/whisrs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     claude-desktop = {
       url = "github:aaddrick/claude-desktop-debian";
       inputs.nixpkgs.follows = "nixpkgs";

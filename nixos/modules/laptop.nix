@@ -20,6 +20,7 @@ in
     ./components/power-management.nix
     ./components/roland.nix
     ./components/thunar.nix
+    ./components/whisrs.nix
   ];
 
   programs = {
@@ -55,6 +56,11 @@ in
       # off the copy onboarding already downloaded. config.toml is chezmoi's.
       models."medium.en" = "sha256-zDfpNHgzjsdwAoGnrDChASiSnrj0J92i6GX6qPbaQ1Y=";
     };
+
+    # Runs alongside hyprvoice on purpose, for now: hyprvoice is on Mod+Y
+    # through the DMS plugin, whisrs grabs its own hotkey off evdev, so
+    # they do not collide. Drop whichever loses.
+    whisrs.enable = true;
 
     niri-splash = {
       enable = true;
