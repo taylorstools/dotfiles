@@ -57,7 +57,7 @@ binds {
     Mod+Space   { toggle-overview; }
 
     // Runner
-    Mod+R   { spawn "sh" "-c" "exec kitty --title Runner $HOME/scripts/runner.sh"; }
+    Mod+R   { spawn "sh" "-c" "exec $HOME/scripts/runner.sh"; }
 
     // Lock screen
     // --force: a keybind can only reach niri while the session is unlocked, so

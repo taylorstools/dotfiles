@@ -80,6 +80,7 @@
     satty
     showtime
     slurp
+    wl-clipboard
     wlogout
     wlr-which-key
     xed-editor
