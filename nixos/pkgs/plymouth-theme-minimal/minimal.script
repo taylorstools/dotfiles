@@ -122,6 +122,7 @@ state.prompted = 0;    # a prompt has been shown at least once
 # if a key is pressed, so the delay can never stop someone just typing.
 # Once revealed it stays revealed for the rest of the boot, so a rejection
 # re-prompt is immediate.
+state.blanked = 0;     # composition abandoned after a mode change; latches
 state.revealed = 0;    # field has been drawn; latches for the boot
 state.pending = 0;     # a passphrase request is outstanding right now
 state.reveal = @REVEAL_TICKS@;
@@ -135,15 +136,18 @@ state.dir = 1;
 # The logo starts hidden when spinnerBeforeUnlock is off, so that the screen
 # is genuinely dark until the disk resolves rather than dark-with-a-logo.
 # Both paths out of that state -- the unlock, and the hold-back expiring --
-# bring it back through here. The body is injected by package.nix and is
-# empty when the theme was built without a logo.
-fun reveal_logo() {
-@LOGO_REVEAL@
+# bring it back through here, and blank_all() takes it away again. The body
+# is injected by package.nix and is empty when the theme was built without a
+# logo.
+fun set_logo_opacity(o) {
+@LOGO_OPACITY@
 }
 
 fun show_spinner() {
-  spinner.on = 1;
-  spinner.sprite.SetOpacity(1);
+  if (state.blanked == 0) {
+    spinner.on = 1;
+    spinner.sprite.SetOpacity(1);
+  }
 }
 
 fun hide_spinner() {
@@ -154,7 +158,37 @@ fun hide_spinner() {
 # Called up to 50 times a second; advance one frame every @SPINNER_TICKS@th
 # call. Frame count and tick divisor together set the cycle length, and both
 # come from package.nix.
+# Every sprite position in this theme is computed once, at script load, from
+# the geometry Window.GetWidth()/GetHeight() reported then -- and Plymouth
+# does not re-run the script when the framebuffer changes size. On a machine
+# that hands off from the firmware's mode to a GPU driver's native one
+# partway through boot (livingroompc goes to 4K when nvidia loads), every
+# sprite is left at coordinates that were centred on a much smaller screen,
+# so the whole composition jumps to the top-left at a fraction of the right
+# size. The bitmaps cannot be rescaled at runtime -- Image.Scale() does not
+# antialias, which is why they are rasterised at their final size to begin
+# with -- so the honest response is to leave the screen rather than sit there
+# looking broken. It latches: the display manager is a second or two behind
+# the mode change, and a black gap there reads as nothing at all.
+fun blank_all() {
+  state.blanked = 1;
+  hide_spinner();
+  hide_field();
+  show_dots(0);
+  set_logo_opacity(0);
+}
+
 fun refresh() {
+  if (state.blanked == 0) {
+    if (Window.GetWidth() != screen.width) {
+      blank_all();
+    } else {
+      if (Window.GetHeight() != screen.height) {
+        blank_all();
+      }
+    }
+  }
+
   # Hold-back countdown. Runs only while a request is actually outstanding,
   # so an unlock from elsewhere stops it (display_normal clears pending)
   # rather than revealing an empty field seconds after boot moved on.
@@ -164,7 +198,7 @@ fun refresh() {
       if (state.reveal <= 0) {
         state.revealed = 1;
         hide_spinner();
-        reveal_logo();
+        set_logo_opacity(1);
         show_dots(state.dots);
         set_prompt_opacity(1);
       }
@@ -221,11 +255,13 @@ fun hide_field() {
 # Fade the whole prompt together: border, padlock and the lit dots. Only the
 # dots that are actually shown are touched, so the unused ones stay hidden.
 fun set_prompt_opacity(o) {
-  field.sprite.SetOpacity(o);
-  lock.sprite.SetOpacity(o);
-  for (i = 0; i < bullet.max; i++) {
-    if (i < state.dots) {
-      bullets[i].SetOpacity(o);
+  if (state.blanked == 0) {
+    field.sprite.SetOpacity(o);
+    lock.sprite.SetOpacity(o);
+    for (i = 0; i < bullet.max; i++) {
+      if (i < state.dots) {
+        bullets[i].SetOpacity(o);
+      }
     }
   }
 }
@@ -324,7 +360,7 @@ fun unlock_observed() {
     state.pending = 0;
     hide_field();
     show_dots(0);
-    reveal_logo();
+    set_logo_opacity(1);
     show_spinner();
   }
 }

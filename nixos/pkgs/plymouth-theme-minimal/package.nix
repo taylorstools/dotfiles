@@ -253,7 +253,7 @@ runCommand "plymouth-theme-${themeName}"
     # language does not fail loudly on Image() of a missing file, it just
     # yields a sprite that draws nothing and a GetWidth() that misbehaves.
     : > logo-lines.txt
-    : > logo-reveal.txt
+    : > logo-opacity.txt
     ${lib.optionalString (logo != null) ''
       rsvg-convert -w ${px logoWidth} ${logo} -o "$dir/logo.png"
       cat > logo-lines.txt <<'LOGO'
@@ -269,9 +269,9 @@ runCommand "plymouth-theme-${themeName}"
       logo.sprite.SetZ(5);
       logo.sprite.SetOpacity(${if spinnerBeforeUnlock then "1" else "0"});
       LOGO
-      cat > logo-reveal.txt <<'LOGOREVEAL'
-        logo.sprite.SetOpacity(1);
-      LOGOREVEAL
+      cat > logo-opacity.txt <<'LOGOOPACITY'
+        logo.sprite.SetOpacity(o);
+      LOGOOPACITY
     ''}
 
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
@@ -286,8 +286,8 @@ runCommand "plymouth-theme-${themeName}"
         -e "/@SPINNER_FRAMES@/d" \
         -e "/@LOGO@/r logo-lines.txt" \
         -e "/@LOGO@/d" \
-        -e "/@LOGO_REVEAL@/r logo-reveal.txt" \
-        -e "/@LOGO_REVEAL@/d" \
+        -e "/@LOGO_OPACITY@/r logo-opacity.txt" \
+        -e "/@LOGO_OPACITY@/d" \
         ${./minimal.script} > "$dir/${themeName}.script"
 
     # NixOS copies the selected theme into the initrd and rewrites any
