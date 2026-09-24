@@ -39,7 +39,13 @@ in
 
     quickshell.source = "stable";
 
-    whisrs.enable = true;
+    whisrs = {
+      enable = true;
+
+      # Must match model_path in dot_config/whisrs/config.toml. The hash is
+      # the ggml file's own: `nix hash file --sri` on the copy setup fetched.
+      models."small.en" = "sha256-xhONbVjsyDIgl+D5h8MvG+i7ChhTKj+I9zTRu/nEHl0=";
+    };
 
     niri-splash = {
       enable = true;

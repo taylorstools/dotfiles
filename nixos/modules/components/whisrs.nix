@@ -70,6 +70,22 @@ let
       exec cava -p "$conf"
     '';
   };
+
+  modelsDir = "%h/.local/share/whisrs/models";
+
+  # ggml weights, named and placed exactly as `whisrs setup` would, so the
+  # model_path in the chezmoi-managed config.toml resolves on a fresh machine
+  # without anyone running setup. Same URL setup downloads from.
+  modelRules = lib.mapAttrsToList (
+    id: hash:
+    "L+ ${modelsDir}/ggml-${id}.bin - - - - ${
+      pkgs.fetchurl {
+        name = "ggml-${id}.bin";
+        url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${id}.bin";
+        inherit hash;
+      }
+    }"
+  ) cfg.models;
 in
 {
   options.myOptions.whisrs = {
@@ -99,12 +115,33 @@ in
       defaultText = lib.literalExpression "inputs.whisrs.packages.\${system}.default";
       description = "The whisrs package to use. Upstream ships the flake; we only pick features.";
     };
+
+    models = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = { };
+      example = {
+        "small.en" = "sha256-AAAA...";
+      };
+      description = ''
+        Whisper models to place in ~/.local/share/whisrs/models, as model id
+        mapped to the SRI hash of its ggml file. Get the hash of one already
+        downloaded with `nix hash file --sri <path>`, or of one you do not have
+        yet with `nix store prefetch-file <url>`. The one named by model_path
+        in config.toml has to be in here.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
     # whisrs (CLI) and whisrsd (daemon). `whisrs setup` writes the initial
     # ~/.config/whisrs/config.toml; chezmoi owns it from there.
     environment.systemPackages = [ cfg.package cavaHelper ];
+
+    # The model config.toml points at, so a fresh machine needs no setup run.
+    systemd.user.tmpfiles.users.${cfg.user}.rules = [
+      "d %h/.local/share/whisrs 0755 - - -"
+      "d ${modelsDir} 0755 - - -"
+    ] ++ modelRules;
 
     # whisrs can take its hotkeys straight off evdev ([hotkeys] in its config)
     # before XKB translation, without a niri bind - and that is exactly
