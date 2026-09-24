@@ -46,7 +46,7 @@ menu:
     cmd: $HOME/scripts/niri_change-refresh-rate.sh
   - key: "y"
     desc: Toggle Voice-to-Text
-    cmd: dms ipc call hyprvoice toggle
+    cmd: whisrs toggle
   - key: "p"
     desc: Power
     cmd: pkill wlogout || wlogout --buttons-per-row 6

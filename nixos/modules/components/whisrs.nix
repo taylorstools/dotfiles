@@ -8,7 +8,7 @@ let
 
   # whisper.cpp links its backend at build time - there is no runtime switch -
   # so GPU decode means rebuilding whisrs with the cargo feature, the same
-  # tradeoff as whisper-cpp's vulkanSupport in the hyprvoice package.
+  # tradeoff as nixpkgs whisper-cpp's vulkanSupport.
   #
   # buildRustPackage maps buildFeatures -> cargoBuildFeatures inside the
   # function, so an overrideAttrs has to set the latter: the former is never
@@ -103,12 +103,11 @@ in
 
   config = lib.mkIf cfg.enable {
     # whisrs (CLI) and whisrsd (daemon). `whisrs setup` writes the initial
-    # ~/.config/whisrs/config.toml - chezmoi can take it over afterwards, the
-    # same way it owns hyprvoice's.
+    # ~/.config/whisrs/config.toml; chezmoi owns it from there.
     environment.systemPackages = [ cfg.package cavaHelper ];
 
-    # Unlike hyprvoice and Handy, whisrs takes its hotkeys straight off evdev
-    # before XKB translation, so there is no niri bind - and that is exactly
+    # whisrs can take its hotkeys straight off evdev ([hotkeys] in its config)
+    # before XKB translation, without a niri bind - and that is exactly
     # why it needs to read the input devices and write to /dev/uinput. The
     # rule ships in the package; upstream's flake already rewrote its ACL
     # fallback to the store setfacl.

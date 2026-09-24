@@ -14,7 +14,6 @@ in
     ./components/dms.nix
     ./components/greetd.nix
     ./components/howdy.nix
-    ./components/hyprvoice.nix
     ./components/niri.nix
     ./components/niri-splash
     ./components/power-management.nix
@@ -40,26 +39,6 @@ in
 
     quickshell.source = "stable";
 
-    hyprvoice = {
-      enable = true;
-
-      # nixpkgs' whisper-cpp is CPU-only by default, which on medium.en costs
-      # ~20s of silence after you stop talking. The 890M runs the same RADV
-      # Vulkan backend Handy picked for itself. Costs a local whisper-cpp
-      # build on every nixpkgs bump that touches it.
-      package = pkgs.callPackage ../pkgs/hyprvoice/package.nix {
-        whisper-cpp = pkgs.whisper-cpp.override { vulkanSupport = true; };
-      };
-
-      # The ggml file's own hash: `nix hash file --sri
-      # ~/.local/share/hyprvoice/models/whisper/ggml-medium.en.bin` reads it
-      # off the copy onboarding already downloaded. config.toml is chezmoi's.
-      models."medium.en" = "sha256-zDfpNHgzjsdwAoGnrDChASiSnrj0J92i6GX6qPbaQ1Y=";
-    };
-
-    # Runs alongside hyprvoice on purpose, for now: hyprvoice is on Mod+Y
-    # through the DMS plugin, whisrs grabs its own hotkey off evdev, so
-    # they do not collide. Drop whichever loses.
     whisrs.enable = true;
 
     niri-splash = {

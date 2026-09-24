@@ -69,9 +69,6 @@
     "largeIcons": true,
     "reservedBarWidth": 275
   },
-  "hyprvoicePill": {
-    "enabled": true
-  },
   "whisrsPill": {
     "enabled": true
   }

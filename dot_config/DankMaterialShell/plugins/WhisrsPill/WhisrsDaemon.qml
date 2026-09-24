@@ -33,7 +33,7 @@ PluginComponent {
     // Must match the bars= in whisrs-pill-cava (components/whisrs.nix).
     readonly property int barCount: 12
 
-    // Unlike hyprvoice, whisrs's state names mean what they say: "recording"
+    // whisrs's state names mean what they say: "recording"
     // is you talking, "transcribing" is the flush after you stop. local-whisper
     // streams, so most of the text has already been typed by then.
     readonly property bool listening: phase === "recording"
