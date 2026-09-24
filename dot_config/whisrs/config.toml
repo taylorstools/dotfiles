@@ -4,10 +4,13 @@ llm_commands = []
 backend = "local-whisper"
 language = "en"
 silence_timeout_ms = 2000
-notify = true
+# The pill covers recording state. whisrs suppresses its own toasts only
+# while its overlay is on, so with overlay = false they come back unless
+# this is off too.
+notify = false
 remove_filler_words = true
 filler_words = []
-audio_feedback = true
+audio_feedback = false
 audio_feedback_volume = 0.5
 vocabulary = []
 tray = true
