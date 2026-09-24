@@ -9,12 +9,12 @@
 #                   highlighted file's name in the field
 #   Backspace       on an empty field, go up one folder
 #   typing /, ~, .. jump there directly (paste a full path and it works too)
-#   Enter           open the highlighted item (folders in Thunar, files with
-#                   xdg-open, so a script opens in your editor). With nothing
-#                   highlighted, open what you typed as a path or URL, or run
-#                   it as a command
-#   Alt+Enter       run: the highlighted item if it's an executable file (a
-#                   script, say), otherwise what you typed, as a command
+#   Enter           open, never run: folders in Thunar, files in their default
+#                   app (so a script opens in your editor). With nothing
+#                   highlighted, open what you typed as a path or URL
+#   Alt+Enter       run: what you typed, if it starts with a command on your
+#                   PATH; otherwise the highlighted program or script (from its
+#                   own folder); otherwise what you typed, as a shell command
 #   Ctrl+F          search recursively below this folder (press again to go back)
 #   Ctrl+A          clear the field (back to / with nothing typed)
 #   Ctrl+C          copy the highlighted path (or what you typed) and close
@@ -47,12 +47,28 @@ run_in() {
     spawn sh -c 'cd -- "$1" || exit; exec sh -c "$2"' sh "$1" "$2"
 }
 
+# A file to run rather than open: executable, and a script (#!) or an ELF
+# binary. The content check keeps files that are merely +x (anything on an
+# exFAT/NTFS drive, say) opening normally.
+is_program() {
+    local magic
+    [[ -f $1 && -x $1 ]] || return 1
+    IFS= read -r -n 4 magic <"$1" 2>/dev/null
+    [[ $magic == '#!'* || $magic == $'\x7fELF' ]]
+}
+
+# Open in the default app: folders in Thunar, files with xdg-open.
 open_path() {
     if [[ -d $1 ]]; then
         spawn thunar "$1"
     else
         spawn xdg-open "$1"
     fi
+}
+
+# Run a program or script from its own folder.
+run_file() {
+    spawn sh -c 'cd -- "$(dirname -- "$1")" && exec "$1"' sh "$1"
 }
 
 copy_text() {
@@ -180,7 +196,7 @@ on_search_toggle() {
 }
 
 # Enter. With a match, hand it back to the main script. With none, open the
-# typed text as a URL or path, or else run it if it looks like a command.
+# typed text as a URL or path.
 on_enter() {
     local q=$FZF_QUERY target
     if (( FZF_MATCH_COUNT > 0 )); then
@@ -193,23 +209,24 @@ on_enter() {
         spawn xdg-open "$q"
     elif [[ -e $target ]]; then
         open_path "$target"
-    elif command -v -- "${q%% *}" >/dev/null; then
-        run_in "$(cur_dir)" "$q"
     else
-        act change-border-label " Nothing matches: $q "
+        act change-border-label " Nothing matches: $q (alt-⏎ to run it) "
         return
     fi
     printf 'abort'
 }
 
-# Alt+Enter: run the highlighted executable file from its own folder, or
-# else run the typed text as a command from the current folder.
+# Alt+Enter. Typed text that starts with a real command (firefox, git pull)
+# wins, so a fuzzy match can't hijack it; otherwise run the highlighted
+# program or script; otherwise run the typed text as a shell command.
 on_run() {
-    local path=${1-}
-    if [[ -n $path && -f $path && -x $path ]]; then
-        spawn sh -c 'cd -- "$(dirname -- "$1")" && exec "$1"' sh "$path"
-    elif [[ -n $FZF_QUERY ]]; then
-        run_in "$(cur_dir)" "$FZF_QUERY"
+    local path=${1-} q=$FZF_QUERY
+    if [[ -n $q ]] && command -v -- "${q%% *}" >/dev/null; then
+        run_in "$(cur_dir)" "$q"
+    elif [[ -n $path ]] && is_program "$path"; then
+        run_file "$path"
+    elif [[ -n $q ]]; then
+        run_in "$(cur_dir)" "$q"
     else
         return
     fi
@@ -244,11 +261,11 @@ run_ui() {
         done <"$ColorsFile"
     fi
 
-    export -f spawn run_in open_path copy_text act in_search cur_dir resolve is_url \
+    export -f spawn run_in is_program open_path run_file copy_text act in_search cur_dir resolve is_url \
         list_dir search_dir nav on_change on_complete on_back \
         on_search_toggle on_enter on_run on_copy
 
-    local hint=" → enter folder · ⌫ up · ^F search · alt-⏎ run · ^A clear · ^C copy "
+    local hint=" → into · ⌫ up · ^F search · alt-⏎ run · ^A clear · ^C copy "
     local selected
     selected=$(
         list_dir "$HOME/" |
