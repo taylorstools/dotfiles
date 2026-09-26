@@ -10,7 +10,7 @@ Boot into a minimal NixOS ISO, connect to Wi-Fi with `nmtui` if needed, then run
 nix run github:taylorstools/dotfiles?dir=nixos#install --extra-experimental-features "nix-command flakes"
 ```
 
-This will ask you to select a drive for your NixOS system to be installed to. If `taylorpc` or `taylorthinkpad` is selected as the host, the script will ask you if you plan on dual-booting on the drive. If you say yes, it will then prompt you either for the size of the Linux partition you want to create, so you can install Windows to the unallocated space later, or ask if you want to install NixOS to existing unallocated space on the drive. If the former, it wipes the drive and creates the Linux partition to be the size you specified. If the latter, it installs NixOS to the unallocated space without deleting any other partitions. And if you selected either of the HTPCs, the entire drive is wiped and used for NixOS. Before making any changes to the drive, the installation script also gives you a chance to review `disko.nix`, so you can make any adjustments as needed.
+This will ask you to select a drive for your NixOS system to be installed to. If `taylorpc` is selected as the host, the script will ask you if you plan on dual-booting on the drive. If you say yes, it will then prompt you either for the size of the Linux partition you want to create, so you can install Windows to the unallocated space later, or ask if you want to install NixOS to existing unallocated space on the drive. If the former, it wipes the drive and creates the Linux partition to be the size you specified. If the latter, it installs NixOS to the unallocated space without deleting any other partitions. And if you selected either of the HTPCs, the entire drive is wiped and used for NixOS. Before making any changes to the drive, the installation script also gives you a chance to review `disko.nix`, so you can make any adjustments as needed.
 
 Once the installation finishes, boot into the new system and log in with the credentials you set previously. Connect to Wi-Fi again with `nmtui` if needed, then run the post-install script:
 
@@ -83,13 +83,13 @@ Every host encrypts its root with LUKS2. How you get past that at boot differs b
 | Host | Unlock | Why |
 | --- | --- | --- |
 | `livingroompc`, `bedroompc` | TPM2 auto-unlock (PCR 0+7) | HTPCs across the room; typing a passphrase on a media box is impractical |
-| `taylorpc`, `taylorthinkpad` | Passphrase at a Plymouth prompt | Laptops that leave the house, so the disk should not open itself |
+| `taylorpc` | Passphrase at a Plymouth prompt | Laptop that leaves the house, so the disk should not open itself |
 
-A fresh install always starts with auto-unlock **off**. The post-install script seeds `/etc/nixos/luks-tpm-autounlock.nix` in that state, because no TPM keyslot exists yet. On the laptops that is the final state and there is nothing more to do. The graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`.
+A fresh install always starts with auto-unlock **off**. The post-install script seeds `/etc/nixos/luks-tpm-autounlock.nix` in that state, because no TPM keyslot exists yet. On the laptop that is the final state and there is nothing more to do. The graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`.
 
 ### Enabling TPM auto-unlock
 
-This is for the HTPCs. Do not run `--enable` on `taylorpc` or `taylorthinkpad`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. `--status` and `--disable` still apply there.
+This is for the HTPCs. Do not run `--enable` on `taylorpc`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. `--status` and `--disable` still apply there.
 
 Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot keys changes PCR 7, and a TPM keyslot bound to the old PCR 7 stops working the moment it does. The same applies later: firmware updates and any further key changes invalidate the enrollment, and you fall back to the passphrase until you re-run this.
 
@@ -122,7 +122,7 @@ What is left once the system is otherwise finished, meaning Secure Boot keys enr
 
 ### Howdy face enrollment
 
-`taylorpc` and `taylorthinkpad` only.
+`taylorpc` only.
 
 `myOptions.howdy` sets up the daemon, the PAM opt-in for hyprlock and camera group access. It cannot supply your face. Enrolled models live in `/var/lib/howdy/models/<user>.dat`, which a reinstall takes with it.
 
@@ -148,7 +148,7 @@ Failure is quiet by design: `pam_howdy`'s output goes to hyprlock, which swallow
 
 ### Login keyring
 
-`taylorpc` and `taylorthinkpad` only. The HTPCs authenticate against KWallet under Plasma, and gnome-keyring is not enabled there at all.
+`taylorpc` only. The HTPCs authenticate against KWallet under Plasma, and gnome-keyring is not enabled there at all.
 
 `services.gnome.gnome-keyring.enable` in `niri.nix` also turns on `security.pam.services.login.enableGnomeKeyring`, and `login` is the *console* PAM service. The graphical session comes up through greetd, whose stack has no `pam_gnome_keyring` in it, so nothing hands the daemon a password at login. Any keyring that has a password is therefore a prompt you answer by hand, every session, forever. A single TTY login as `taylor` is enough to create one holding the account password.
 
@@ -195,7 +195,7 @@ QD=$(command -v qdbus6 || command -v qdbus)
 
 A handle straight back means no password. A dialog means there is one.
 
-Be clear about what blank buys and costs here. These two hosts TPM-auto-unlock at boot and then autologin, so a wallet that opens itself is the last of three doors already standing open: anyone who powers the machine on reaches the saved browser keys and the Wi-Fi PSK, not just a desktop. That is the same concession the TPM keyslot makes, taken to its conclusion, and it is the right call for a media box. It is not the right call on the laptops, which is exactly why they keep the passphrase at boot.
+Be clear about what blank buys and costs here. These two hosts TPM-auto-unlock at boot and then autologin, so a wallet that opens itself is the last of three doors already standing open: anyone who powers the machine on reaches the saved browser keys and the Wi-Fi PSK, not just a desktop. That is the same concession the TPM keyslot makes, taken to its conclusion, and it is the right call for a media box. It is not the right call on the laptop, which is exactly why it keeps the passphrase at boot.
 
 ### Sunshine
 
@@ -214,7 +214,7 @@ sunshine --creds <username> <password>
 systemctl --user restart sunshine
 ```
 
-Then pair each client: add the host in Moonlight, and enter the PIN it shows on the web UI's PIN tab. Pairing is per client and per install, so every one has to be redone, including the laptops' own `moonlight-qt` against each HTPC, which is the direction that is easy to forget.
+Then pair each client: add the host in Moonlight, and enter the PIN it shows on the web UI's PIN tab. Pairing is per client and per install, so every one has to be redone, including the laptop's own `moonlight-qt` against each HTPC, which is the direction that is easy to forget.
 
 ## Per-host configuration files
 

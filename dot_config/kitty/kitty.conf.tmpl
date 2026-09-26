@@ -1,4 +1,4 @@
-{{ if has .chezmoi.hostname (list "taylorpc" "taylorthinkpad") -}}
+{{ if eq .chezmoi.hostname "taylorpc" -}}
 # Dank color generation
 include dank-tabs.conf
 include dank-theme.conf
@@ -16,7 +16,7 @@ bold_italic_font auto
 
 # Window Configuration
 window_padding_width 12
-{{ if has .chezmoi.hostname (list "taylorpc" "taylorthinkpad") -}}
+{{ if eq .chezmoi.hostname "taylorpc" -}}
 hide_window_decorations yes
 {{ else -}}
 hide_window_decorations no

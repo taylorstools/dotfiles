@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # The LED name is not the same on every machine -- asus::kbd_backlight on the
-# PX13, tpacpi::kbd_backlight on ThinkPads that have one -- and some machines
-# have no backlit keyboard at all. Find whatever is there rather than naming it,
+# PX13, something else on other vendors -- and some machines have no backlit
+# keyboard at all. Find whatever is there rather than naming it,
 # and treat "nothing is there" as a no-op so the lid and Fn-key paths that call
 # this on a machine without one do not fail.
 find_device() {

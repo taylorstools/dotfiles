@@ -35,9 +35,9 @@ if [ ! -d "$INSTALLER_DIR" ]; then
   gum confirm "Continue anyway?" || exit 1
 fi
 
-# rEFInd prompt (laptops only)
+# rEFInd prompt (laptop only)
 REFIND_ANSWER="n"
-if [[ "$HOST" == "taylorpc" || "$HOST" == "taylorthinkpad" ]]; then
+if [[ "$HOST" == "taylorpc" ]]; then
   gum confirm "Configure rEFInd?" && REFIND_ANSWER="y" || REFIND_ANSWER="n"
 fi
 

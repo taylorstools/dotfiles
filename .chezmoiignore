@@ -14,7 +14,7 @@ Wallpapers{,/**}
 .local/share/klipper{,/**}
 .local/share/kactivitymanagerd{,/**}
 
-# Files to ignore on the niri laptops
+# Files to ignore on the niri laptop
 {{- if not (has .chezmoi.hostname (list "bedroompc" "livingroompc")) }}
   .config/antimicrox{,/**}
   .config/autostart{,/**}
@@ -95,7 +95,7 @@ Wallpapers{,/**}
 {{- end }}
 
 # Files to ignore on htpcs
-{{- if not (has .chezmoi.hostname (list "taylorpc" "taylorthinkpad")) }}
+{{- if ne .chezmoi.hostname "taylorpc" }}
   .config/DankMaterialShell{,/**}
   .config/dconf{,/**}
   .config/environment.d{,/**}
