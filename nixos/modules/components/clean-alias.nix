@@ -16,7 +16,7 @@ let
       gum log --level info "Rewriting boot entries for the current generation..."
       sudo /run/current-system/bin/switch-to-configuration boot
 
-      gum log --level info "Optimising the nix store..."
+      gum log --level info "Optimizing the nix store..."
       sudo nix-store --optimise
 
       gum log --level info "Done."
