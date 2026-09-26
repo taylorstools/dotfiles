@@ -3,6 +3,7 @@
 {
   imports = [
     ./components/autoupgrade.nix
+    ./components/clean-alias.nix
     ./components/custom-tela-icons.nix
     ./components/desktop-graphics.nix
     ./components/flatpak.nix
