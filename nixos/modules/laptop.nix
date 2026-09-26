@@ -54,6 +54,9 @@ in
       namespaces = [ "dms:bar" "dms:dock" ];
     } // splashLogo;
     
+    # The theme's defaults are the laptop case: black until the passphrase
+    # field, which comes up the moment it is asked for (no clevis or TPM
+    # here), then logo and spinner once the disk opens.
     plymouth = {
       enable = true;
       theme = "minimal";

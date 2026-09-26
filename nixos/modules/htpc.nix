@@ -2,6 +2,15 @@
 
 let
   splashLogo = import ./components/assets/splash-logo.nix;
+
+  # How this host's root volume unlocks, read off the config that does the
+  # unlocking rather than restated per host, so the splash follows along when
+  # scripts/luks-tpm-autounlock.sh or clevis-tang.nix is switched on or off.
+  luksOpts = lib.concatMap (d: d.crypttabExtraOpts)
+    (lib.attrValues config.boot.initrd.luks.devices);
+  tpmUnlock = lib.any (lib.hasPrefix "tpm2-device=") luksOpts;
+  # The option only exists on hosts that import clevis-tang.nix.
+  clevisUnlock = config.myOptions.clevisTang.enable or false;
 in
 {
   imports = [
@@ -28,7 +37,8 @@ in
   config = {
     #region boot splash
     # The same minimal theme taylorpc uses, from the same logo definition, so
-    # the HTPCs look like the rest of the fleet on the way up.
+    # the HTPCs look like the rest of the fleet on the way up. What shows
+    # before the disk opens depends on how it opens; see below.
     #
     # The scale is per host: see myOptions.htpc.splashScale above.
     myOptions.plymouth = {
@@ -39,17 +49,20 @@ in
           (splashLogo // {
             uiScale = config.myOptions.htpc.splashScale;
 
-            # A clevis unlock lands around 12s, most of it wait-online, so
-            # 15 leaves a little margin without leaving someone staring at a
+            # Clevis (livingroompc): black while it tries. An unlock lands
+            # around 12s, most of it wait-online, so holding the field back
+            # 15s leaves a little margin without leaving someone staring at a
             # black screen when the network genuinely is not there. The tick
             # backstop is deliberately far longer: it is only meant to fire
-            # if Plymouth never reports boot progress at all.
-            passwordRevealSeconds = 15;
-            passwordRevealTicks = 4000;
+            # if Plymouth never reports boot progress at all. Without clevis
+            # there is nothing to wait for, so the field comes up when asked.
+            passwordRevealSeconds = if clevisUnlock then 15 else 0;
+            passwordRevealTicks = if clevisUnlock then 4000 else 0;
 
-            # Nothing but the logo until the disk resolves one way or the
-            # other -- see spinnerBeforeUnlock in package.nix.
-            spinnerBeforeUnlock = false;
+            # TPM2 (bedroompc): nothing to wait on, so logo and spinner from
+            # the first frame. A failed TPM unlock still gets the field,
+            # at once, in the spinner's place under the logo.
+            showAtStart = tpmUnlock && !clevisUnlock;
           }))
       ];
     };

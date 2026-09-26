@@ -40,8 +40,12 @@ pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
 # sits where the field's centre was and nothing else moves when one replaces
 # the other. Without a logo the slot is centred on the screen. With one, the
 # logo, a gap and the slot are centred on the screen as a single block; the
-# @LOGO@ block below recomputes slot.y for that case. niri-splash lays its
+# logo block below recomputes slot.y for that case. niri-splash lays its
 # spinner out with the same slot height and gap, so the handoff holds still.
+#
+# Never write a block placeholder's name in a comment: package.nix inserts
+# the block after every line that contains it, so the logo code once ran
+# twice, the first time before slot.height existed.
 slot.height = field.image.GetHeight();
 slot.y = (screen.height - slot.height) / 2;
 
@@ -117,7 +121,7 @@ state.prompted = 0;    # a prompt has been shown at least once
 # drawn the moment a passphrase is asked for: on a machine that unlocks over
 # the network (see modules/components/clevis-tang.nix) the request is
 # answered from the other side a few seconds later, and a prompt that appears
-# and vanishes on every boot reads as a fault. So the spinner keeps running
+# and vanishes on every boot reads as a fault. So the screen stays as it is
 # and the field is drawn only once the reveal counter runs out -- or at once
 # if a key is pressed, so the delay can never stop someone just typing.
 # Once revealed it stays revealed for the rest of the boot, so a rejection
@@ -133,14 +137,16 @@ state.dots = 0;        # how many dots are currently lit, so the pulse knows
 state.pulse = 0;       # triangle-wave counter driving the thinking pulse
 state.dir = 1;
 
-# The logo starts hidden when spinnerBeforeUnlock is off, so that the screen
-# is genuinely dark until the disk resolves rather than dark-with-a-logo.
-# Both paths out of that state -- the unlock, and the hold-back expiring --
-# bring it back through here, and blank_all() takes it away again. The body
-# is injected by package.nix and is empty when the theme was built without a
-# logo.
+# The logo and spinner start hidden, so the screen is black until there is
+# something to say. They come up together as "boot is progressing"
+# (show_progress), the logo comes up alone above the field when a prompt is
+# revealed (reveal_now), and both go for good on a mode change (blank_all).
+# The body is injected by package.nix and is empty when the theme was built
+# without a logo.
 fun set_logo_opacity(o) {
+  if (state.blanked == 0) {
 @LOGO_OPACITY@
+  }
 }
 
 fun show_spinner() {
@@ -155,6 +161,13 @@ fun hide_spinner() {
   spinner.sprite.SetOpacity(0);
 }
 
+# "Boot is progressing": logo and spinner together. Every path settles here
+# once the disk is open, and showAtStart begins here.
+fun show_progress() {
+  set_logo_opacity(1);
+  show_spinner();
+}
+
 # Called up to 50 times a second; advance one frame every @SPINNER_TICKS@th
 # call. Frame count and tick divisor together set the cycle length, and both
 # come from package.nix.
@@ -167,9 +180,10 @@ fun hide_spinner() {
 # so the whole composition jumps to the top-left at a fraction of the right
 # size. The bitmaps cannot be rescaled at runtime -- Image.Scale() does not
 # antialias, which is why they are rasterised at their final size to begin
-# with -- so the honest response is to leave the screen rather than sit there
-# looking broken. It latches: the display manager is a second or two behind
-# the mode change, and a black gap there reads as nothing at all.
+# with -- so the logo and spinner leave the screen rather than sit there
+# looking broken. A passphrase field, if one is up, stays: see blank_all. It
+# latches: the display manager is a second or two behind the mode change, and
+# a black gap there reads as nothing at all.
 fun reveal_now() {
   state.revealed = 1;
   hide_spinner();
@@ -201,11 +215,12 @@ fun boot_progress(duration, progress) {
 }
 
 fun blank_all() {
-  state.blanked = 1;
   hide_spinner();
-  hide_field();
-  show_dots(0);
   set_logo_opacity(0);
+  # Latched last, because set_logo_opacity is a no-op once blanked. The field
+  # and dots are deliberately left alone: after the mode change they sit
+  # off-center and undersized, but a prompt you can see beats typing blind.
+  state.blanked = 1;
 }
 
 fun refresh() {
@@ -253,7 +268,7 @@ fun refresh() {
       state.holding = 0;
       hide_field();
       show_dots(0);
-      show_spinner();
+      show_progress();
     }
   }
 
@@ -281,13 +296,11 @@ fun hide_field() {
 # Fade the whole prompt together: border, padlock and the lit dots. Only the
 # dots that are actually shown are touched, so the unused ones stay hidden.
 fun set_prompt_opacity(o) {
-  if (state.blanked == 0) {
-    field.sprite.SetOpacity(o);
-    lock.sprite.SetOpacity(o);
-    for (i = 0; i < bullet.max; i++) {
-      if (i < state.dots) {
-        bullets[i].SetOpacity(o);
-      }
+  field.sprite.SetOpacity(o);
+  lock.sprite.SetOpacity(o);
+  for (i = 0; i < bullet.max; i++) {
+    if (i < state.dots) {
+      bullets[i].SetOpacity(o);
     }
   }
 }
@@ -314,10 +327,13 @@ fun display_password(prompt, count) {
   }
 
   if (state.revealed == 0) {
-    # Still held: remember what was typed, draw nothing, keep spinning.
+    # Still held: remember what was typed, change nothing on screen.
     state.dots = count;
   } else {
+    # Same picture as reveal_now(), which this path skips when a keypress
+    # ends the hold-back: logo above the field, spinner gone.
     hide_spinner();
+    set_logo_opacity(1);
 
     # Being asked again while a submission was in flight means it was
     # rejected.
@@ -345,19 +361,20 @@ fun display_normal() {
 
   if (state.revealed == 0) {
     # Answered from elsewhere before the field was ever drawn -- nothing to
-    # hold and nothing to fade. Carry on spinning. Clearing pending above
+    # hold and nothing to fade. Straight to progress. Clearing pending above
     # also stops the reveal countdown, so the field cannot surface after
     # boot has moved on.
     hide_field();
     show_dots(0);
-    show_spinner();
+    show_progress();
   } else {
     if (state.prompted) {
       # A passphrase was just submitted. Hold the field, minus its dots,
       # rather than cutting to the spinner: a rejection comes back within
       # about a second, and a spinner that appears and vanishes reads as a
       # glitch. If no rejection arrives, refresh() gives up after the grace
-      # and shows the spinner, which is the accepted-passphrase path.
+      # and shows progress, which is the accepted-passphrase path. The unlock
+      # status usually beats it there: see unlock_observed.
       state.submitted = 1;
       state.holding = 1;
       state.wait = @VERIFY_GRACE@;
@@ -370,7 +387,7 @@ fun display_normal() {
     } else {
       hide_field();
       show_dots(0);
-      show_spinner();
+      show_progress();
     }
   }
 }
@@ -378,19 +395,36 @@ fun display_normal() {
 # Plymouth has no "the passphrase was answered by something else" callback,
 # and display_normal measurably does not fire on that path: when clevis
 # unlocks the disk over the network the password callbacks simply stop. So
-# the unlock is inferred from boot getting further instead. Root being
-# mounted cannot happen until the volume is open, which makes it a sound
-# signal even if it is a slightly late one.
+# the initrd says it outright. modules/components/plymouth.nix orders a
+# oneshot after every systemd-cryptsetup@ unit that runs
+# `plymouth update --status=luks-unlocked`, which lands in update_status()
+# a moment after the volume opens.
+#
+# It also ends the post-submission hold on a typed passphrase early. That
+# grace only exists because a rejection has to be inferred, and an open disk
+# settles the question.
+#
+# Root being mounted stays wired as a backstop. Under the systemd initrd it
+# does fire, but only from plymouth-switch-root.service right before
+# switch-root, which is too late to be the main signal.
 fun unlock_observed() {
-  if (state.revealed == 0) {
-    state.pending = 0;
-    hide_field();
-    show_dots(0);
-    set_logo_opacity(1);
-    show_spinner();
+  state.pending = 0;
+  state.holding = 0;
+  state.submitted = 0;
+  hide_field();
+  show_dots(0);
+  show_progress();
+}
+
+# The status string is shared with modules/components/plymouth.nix. Any other
+# status (nothing else on this fleet sends one) is ignored.
+fun update_status(status) {
+  if (status == "luks-unlocked") {
+    unlock_observed();
   }
 }
 
+Plymouth.SetUpdateStatusFunction(update_status);
 Plymouth.SetRootMountedFunction(unlock_observed);
 Plymouth.SetBootProgressFunction(boot_progress);
 
@@ -400,16 +434,15 @@ Plymouth.SetDisplayNormalFunction(display_normal);
 Plymouth.SetDisplayQuestionFunction(fun (prompt, entry) { display_normal(); });
 Plymouth.SetMessageFunction(fun (text) { });
 
-# Spin from the moment the splash comes up, not just after the passphrase.
+# Logo and spinner from the moment the splash comes up (showAtStart). Right
+# for a machine that unlocks with nothing to ask, such as TPM2: there is
+# nothing to wait on, so the screen may as well say boot is under way. If the
+# unlock fails and a passphrase is asked for after all, reveal_now() swaps the
+# spinner for the field under the same logo.
 #
-# Machines that unlock over the network turn this off (spinnerBeforeUnlock).
-# Until the unlock resolves there is nothing to report, and a spinner during
-# that wait is indistinguishable from a spinner during the rest of boot --
-# which makes the passphrase field, when it does appear, read as something
-# going wrong rather than as the expected offline path. With it off the
-# screen holds on the logo alone until either the disk unlocks (root being
-# mounted starts the spinner, see unlock_observed) or the hold-back expires
-# and the field appears.
-if (@SPIN_AT_START@ > 0) {
-  show_spinner();
+# Everything else starts black. A machine that always prompts goes straight to
+# the field. One that unlocks over the network stays black through the
+# hold-back until either the disk opens (unlock_observed) or the field is due.
+if (@SHOW_AT_START@ > 0) {
+  show_progress();
 }

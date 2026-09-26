@@ -127,14 +127,19 @@
   # with no network unlock wants.
 , passwordRevealTicks ? 0
 
-  # Whether the spinner runs from the moment the splash appears. True is the
-  # right answer for a machine whose disk unlocks immediately, where the
-  # spinner is an honest "boot is progressing". Set it false alongside
-  # passwordRevealSeconds on a machine that unlocks over the network: there the
-  # first several seconds are spent waiting on something that may or may not
-  # answer, and a spinner claims progress that has not happened. Off, the
-  # screen shows the logo alone until the disk unlocks or the field appears.
-, spinnerBeforeUnlock ? true
+  # Whether logo and spinner are up from the moment the splash appears. On for
+  # a machine that unlocks without asking (TPM2), where there is nothing to
+  # wait on and the spinner is an honest "boot is progressing". Off, the
+  # screen is black until the passphrase field is drawn or the disk opens,
+  # whichever comes first. That is right for a machine that always prompts,
+  # and for one that unlocks over the network, where a spinner during the wait
+  # would claim progress that has not happened.
+  #
+  # Either way the rest follows from what actually happens: a prompt shows the
+  # logo above the field, an open disk shows logo and spinner (signaled by
+  # the unit in modules/components/plymouth.nix), and a mode change takes the
+  # logo and spinner down for the rest of the boot.
+, showAtStart ? false
 }:
 
 let
@@ -276,7 +281,7 @@ runCommand "plymouth-theme-${themeName}"
       logo.sprite.SetX((screen.width - logo.image.GetWidth()) / 2);
       logo.sprite.SetY(group.top);
       logo.sprite.SetZ(5);
-      logo.sprite.SetOpacity(${if spinnerBeforeUnlock then "1" else "0"});
+      logo.sprite.SetOpacity(0);
       LOGO
       cat > logo-opacity.txt <<'LOGOOPACITY'
         logo.sprite.SetOpacity(o);
@@ -286,7 +291,7 @@ runCommand "plymouth-theme-${themeName}"
     sed -e "s/@BULLET_SPACING@/${toString bulletSpacing}/g" \
         -e "s/@REVEAL_TICKS@/${toString passwordRevealTicks}/g" \
         -e "s/@REVEAL_SECONDS@/${toString passwordRevealSeconds}/g" \
-        -e "s/@SPIN_AT_START@/${if spinnerBeforeUnlock then "1" else "0"}/g" \
+        -e "s/@SHOW_AT_START@/${if showAtStart then "1" else "0"}/g" \
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
         -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
         -e "s/@PULSE_MIN@/${toString pulseMin}/g" \
