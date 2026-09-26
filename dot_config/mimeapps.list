@@ -50,6 +50,18 @@ application/xml=org.x.editor.desktop
 application/javascript=org.x.editor.desktop
 application/x-yaml=org.x.editor.desktop
 application/toml=org.x.editor.desktop
+application/yaml=org.x.editor.desktop
+application/x-xbel=org.x.editor.desktop
+application/x-desktop=org.x.editor.desktop
+text/x-systemd-unit=org.x.editor.desktop
+text/x-patch=org.x.editor.desktop
+text/x-makefile=org.x.editor.desktop
+text/x-ms-regedit=org.x.editor.desktop
+text/x-lua=org.x.editor.desktop
+application/sql=org.x.editor.desktop
+application/x-trash=org.x.editor.desktop
+inode/directory=thunar.desktop
+application/pdf=google-chrome.desktop
 
 [Added Associations]
 application/x-shellscript=org.x.editor.desktop;
@@ -61,3 +73,6 @@ application/xml=org.x.editor.desktop;
 text/x-qml=org.x.editor.desktop;
 image/png=org.gnome.Loupe.desktop;
 video/mp4=org.gnome.Showtime.desktop;
+application/x-xbel=org.x.editor.desktop;
+application/x-desktop=org.x.editor.desktop;
+inode/directory=thunar.desktop;

@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790213009,
-        "narHash": "sha256-MLVF2Iq0AjJKtm59lcDWRL/S+bmB73brsnbo9Fk8GVQ=",
+        "lastModified": 1790311870,
+        "narHash": "sha256-OhmoILnH5DXeX2VWxlu+a9m88QTvqKCPou9ki4v09o8=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "65c0dc94acc6e15c080c05cfd3ae6953f1d362ac",
+        "rev": "acba8d9dba3b446bae367db520efbb98fdecb673",
         "type": "github"
       },
       "original": {
@@ -59,11 +59,11 @@
     "dank-qml-common": {
       "flake": false,
       "locked": {
-        "lastModified": 1790258284,
-        "narHash": "sha256-tk2rCsMS6jstnDXn9vt/+F3LoKrNpPWxyfBPtQ63Z28=",
+        "lastModified": 1790372543,
+        "narHash": "sha256-s+c+5khoiUJ1csJFrmt7DjNeLxzvJo5ev1/GVHsmYvs=",
         "owner": "AvengeMedia",
         "repo": "dank-qml-common",
-        "rev": "4b9a18dc9cce81731d266ba1e89c75786776ba75",
+        "rev": "4a77c5d73d44be3624f9b64adf4bd48a420b2413",
         "type": "github"
       },
       "original": {
@@ -121,11 +121,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790299512,
-        "narHash": "sha256-xlKglC2zuhkJqDk3MdYquliKpPKZVAf8EyNI8x1WIUk=",
+        "lastModified": 1790376893,
+        "narHash": "sha256-Bc+ty9abfe1bL9SCy9C9cqY2xVV/MVHR5JArvkeYxkQ=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "82fd310732b6bb3a2c6e204e6b00da6382c87fc6",
+        "rev": "324747636873e7742aed8d418aa571550fdea508",
         "type": "github"
       },
       "original": {
@@ -372,11 +372,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789967089,
-        "narHash": "sha256-872tMDDYdjR983q7v2yDlnKOEBSPp5FXDdWF2q87gik=",
+        "lastModified": 1790343625,
+        "narHash": "sha256-dLtjYGr1sTihGhsISR71LB17E6m0r18JhF+6BNAHy0M=",
         "ref": "refs/heads/master",
-        "rev": "fae96f1a5b7f53de9b7e40e5b53c0b7a2e97b1d7",
-        "revCount": 861,
+        "rev": "41651d7dcd62a9400eb6f4f8a8580efe00901efb",
+        "revCount": 864,
         "type": "git",
         "url": "https://git.outfoxxed.me/quickshell/quickshell"
       },
