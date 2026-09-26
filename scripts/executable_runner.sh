@@ -2,7 +2,9 @@
 #
 # runner.sh: a Win+R-style launcher (fzf in a floating kitty window).
 #
-# The prompt is the folder you're in, and what you type filters its entries.
+# The prompt is the folder you're in. What you type fuzzy-finds everything
+# below it: the folder's own entries are listed first, then everything in its
+# subfolders.
 #
 #   Up/Down         move through the entries
 #   Right / Tab     complete: step into the highlighted folder, or put the
@@ -10,12 +12,13 @@
 #   Backspace       on an empty field, go up one folder
 #   typing /, ~, .. jump there directly (paste a full path and it works too)
 #   Enter           open, never run: folders in Thunar, files in their default
-#                   app (so a script opens in your editor). With nothing
+#                   app. Anything that would open in xed asks whether to use
+#                   xed or VSCodium (when VSCodium is installed). With nothing
 #                   highlighted, open what you typed as a path or URL
 #   Alt+Enter       run: what you typed, if it starts with a command on your
 #                   PATH; otherwise the highlighted program or script (from its
 #                   own folder); otherwise what you typed, as a shell command
-#   Ctrl+F          search recursively below this folder (press again to go back)
+#   Ctrl+F          switch between "everything below" and "this folder only"
 #   Ctrl+A          clear the field (back to / with nothing typed)
 #   Ctrl+C          copy the highlighted path (or what you typed) and close
 #   Esc             close
@@ -23,6 +26,10 @@
 # Run it with no arguments and it toggles: it opens the window, or closes it if
 # it's already open. The check happens before a terminal is spawned, so
 # closing it doesn't flash a second window.
+#
+# The recursive search skips .git, .cache and node_modules (plus /nix, /proc,
+# /sys, /dev and /run when searching from /) and honors .gitignore, .ignore
+# and ~/.config/fd/ignore. Step into an excluded folder to search inside it.
 
 set -uo pipefail
 
@@ -30,6 +37,8 @@ Self=$(realpath -- "${BASH_SOURCE[0]}")
 PidFile="${XDG_RUNTIME_DIR:-/tmp}/runner.sh.pid"
 ColorsFile="$HOME/.config/matugen/colors.conf"
 export Self
+
+#region Helpers
 
 # Launch a program fully detached from this terminal. Under niri, the
 # compositor spawns it, so it gets focus and outlives the runner window.
@@ -57,15 +66,6 @@ is_program() {
     [[ $magic == '#!'* || $magic == $'\x7fELF' ]]
 }
 
-# Open in the default app: folders in Thunar, files with xdg-open.
-open_path() {
-    if [[ -d $1 ]]; then
-        spawn thunar "$1"
-    else
-        spawn xdg-open "$1"
-    fi
-}
-
 # Run a program or script from its own folder.
 run_file() {
     spawn sh -c 'cd -- "$(dirname -- "$1")" && exec "$1"' sh "$1"
@@ -91,9 +91,8 @@ act() {
     done
 }
 
-# The prompt is the current folder, with a trailing "**/" in search mode.
-in_search() { [[ $FZF_PROMPT == *'**/' ]]; }
-cur_dir() { printf '%s' "${FZF_PROMPT%'**/'}"; }
+# The prompt is always the current folder, with a trailing slash.
+cur_dir() { printf '%s' "$FZF_PROMPT"; }
 
 # Resolve typed text against the current folder: /abs, ~, ~/x, or relative.
 resolve() {
@@ -107,6 +106,25 @@ resolve() {
 }
 
 is_url() { [[ $1 =~ ^[A-Za-z][A-Za-z0-9+.-]*:// ]]; }
+
+# Search mode lives in a file so every handler sees it: "tree" (the default,
+# everything below) or "flat" (this folder only).
+get_mode() {
+    local mode=tree
+    [[ -r $StateDir/mode ]] && read -r mode <"$StateDir/mode"
+    printf '%s' "$mode"
+}
+
+# The key hints along the bottom border, per mode.
+label() {
+    if [[ $(get_mode) == flat ]]; then
+        printf '%s' " this folder only · ^F search subfolders too · → into · ⌫ up · alt-⏎ run "
+    else
+        printf '%s' " → into · ⌫ up · ^F this folder only · alt-⏎ run · ^A clear · ^C copy "
+    fi
+}
+
+#endregion
 
 #region List producers (fed to fzf as "full path<TAB>display")
 
@@ -125,12 +143,25 @@ list_dir() {
         cut -f3-
 }
 
-# Everything below a folder (fd honors .gitignore/.ignore/.fdignore).
-search_dir() {
-    local dir=${1%'**/'}
-    fd --hidden --exclude .git --type f --type d --color never \
+# Everything in the subfolders of a folder (depth 2 and deeper, since
+# list_dir already covers depth 1). Displayed relative to the folder.
+list_below() {
+    local dir=$1
+    local -a skip=(--exclude .git --exclude .cache --exclude node_modules)
+    if [[ $dir == / ]]; then
+        skip+=(--exclude /nix --exclude /proc --exclude /sys --exclude /dev --exclude /run)
+    fi
+    fd --hidden --min-depth 2 --type f --type d --color never "${skip[@]}" \
         --base-directory "$dir" . 2>/dev/null |
         awk -v dir="$dir" 'BEGIN { OFS = "\t" } { print dir $0, $0 }'
+}
+
+# What fzf shows for a folder: its entries first, then (in tree mode) the rest.
+load() {
+    local dir=$1
+    [[ $dir == */ ]] || dir+=/
+    list_dir "$dir"
+    [[ $(get_mode) == flat ]] || list_below "$dir"
 }
 
 #endregion
@@ -142,20 +173,22 @@ nav() {
     act change-prompt "$1"
     printf '+'
     act change-query "${2-}"
-    printf '+reload(list_dir "$FZF_PROMPT")+first'
+    printf '+reload(load "$FZF_PROMPT")+first'
 }
 
-# Query changed: if it now holds a path to an existing folder, move that
-# folder into the prompt and keep only the part after the last slash.
+# Query changed: reset the hint line, and if the query now holds a path to an
+# existing folder, move that folder into the prompt and keep only the part
+# after the last slash.
 on_change() {
     local q=$FZF_QUERY target dir
-    in_search && return
+    act change-border-label "$(label)"
     [[ $q == */* ]] || return
     is_url "$q" && return
     target=$(resolve "$q")
     dir=$(realpath -ms -- "${target%/*}/") || return
     [[ -d $dir ]] || return
     [[ $dir == / ]] || dir+=/
+    printf '+'
     nav "$dir" "${target##*/}"
 }
 
@@ -171,48 +204,47 @@ on_complete() {
     fi
 }
 
-# Backspace on an empty query: leave search mode, or go up one folder.
+# Backspace on an empty query: go up one folder.
 on_back() {
     local dir
     dir=$(cur_dir)
-    if in_search; then
-        nav "$dir"
-    elif [[ $dir != / ]]; then
-        dir=$(dirname -- "$dir")
-        [[ $dir == / ]] || dir+=/
-        nav "$dir"
-    fi
+    [[ $dir == / ]] && return
+    dir=$(dirname -- "$dir")
+    [[ $dir == / ]] || dir+=/
+    nav "$dir"
 }
 
-on_search_toggle() {
-    local dir
-    dir=$(cur_dir)
-    if in_search; then
-        nav "$dir" "$FZF_QUERY"
+# Ctrl+F: switch between everything below and this folder only.
+on_mode_toggle() {
+    if [[ $(get_mode) == flat ]]; then
+        echo tree >"$StateDir/mode"
     else
-        act change-prompt "$dir**/"
-        printf '+reload(search_dir "$FZF_PROMPT")+first'
+        echo flat >"$StateDir/mode"
     fi
+    act change-border-label "$(label)"
+    printf '+reload(load "$FZF_PROMPT")+first'
 }
 
-# Enter. With a match, hand it back to the main script. With none, open the
-# typed text as a URL or path.
+# Enter: hand the highlighted item (or the typed path) back to the main loop,
+# which opens it once fzf has exited. URLs open right away.
 on_enter() {
-    local q=$FZF_QUERY target
-    if (( FZF_MATCH_COUNT > 0 )); then
-        printf 'accept'
+    local path=${1-} q=$FZF_QUERY target
+    if (( FZF_MATCH_COUNT > 0 )) && [[ -n $path ]]; then
+        target=$path
+    elif [[ -z $q ]]; then
         return
-    fi
-    [[ -n $q ]] || return
-    target=$(resolve "$q")
-    if is_url "$q"; then
+    elif is_url "$q"; then
         spawn xdg-open "$q"
-    elif [[ -e $target ]]; then
-        open_path "$target"
-    else
-        act change-border-label " Nothing matches: $q (alt-⏎ to run it) "
+        printf 'abort'
         return
+    else
+        target=$(resolve "$q")
+        if [[ ! -e $target ]]; then
+            act change-border-label " Nothing matches: $q (alt-⏎ to run it) "
+            return
+        fi
     fi
+    printf '%s' "$target" >"$StateDir/pick"
     printf 'abort'
 }
 
@@ -242,11 +274,61 @@ on_copy() {
 
 #endregion
 
+#region Opening files (runs in the kitty window after the main fzf exits)
+
+# True if xdg-open would hand this file to xed: xed is the default for its
+# type, or nothing is and it's text.
+opens_in_xed() {
+    local mime app
+    command -v xdg-mime >/dev/null || return 1
+    mime=$(xdg-mime query filetype "$1" 2>/dev/null) || return 1
+    app=$(xdg-mime query default "$mime" 2>/dev/null)
+    [[ $app == org.x.editor.desktop || ( -z $app && $mime == text/* ) ]]
+}
+
+# Ask xed or VSCodium in the same window. Returns 1 if cancelled with Esc.
+choose_editor() {
+    local choice
+    choice=$(
+        printf '1   xed\n2   VSCodium\n' |
+            fzf \
+                --prompt "Open $(basename -- "$1") with: " \
+                --disabled --no-sort \
+                --layout reverse --info hidden --cycle \
+                --border --border-label " ⏎ open · 1/2 pick · esc back " \
+                --border-label-pos 0:bottom \
+                --bind '1:pos(1)+accept,2:pos(2)+accept' \
+                --color "$FzfColors"
+    )
+    case ${choice:0:1} in
+        1) spawn xed "$1" ;;
+        2) spawn codium "$1" ;;
+        *) return 1 ;;
+    esac
+}
+
+# Open what Enter picked. Returns 1 if the editor choice was cancelled.
+open_file() {
+    if [[ -d $1 ]]; then
+        spawn thunar "$1"
+    elif command -v codium >/dev/null && opens_in_xed "$1"; then
+        choose_editor "$1"
+    else
+        spawn xdg-open "$1"
+    fi
+}
+
+#endregion
+
 #region Main
 
 run_ui() {
     echo $$ >"$PidFile"
-    trap 'rm -f "$PidFile"' EXIT
+    StateDir=$(mktemp -d "${XDG_RUNTIME_DIR:-/tmp}/runner.XXXXXX")
+    export StateDir
+    trap 'rm -rf "$StateDir"; rm -f "$PidFile"' EXIT
+    trap 'exit 129' HUP
+    trap 'exit 143' TERM
 
     # Theme colors from matugen, e.g. "$light = rgba(51606fff)".
     local light="#51606f" lighter="#b9c8da" line
@@ -260,41 +342,49 @@ run_ui() {
             esac
         done <"$ColorsFile"
     fi
+    FzfColors="
+        fg:#ffffff, query:#ffffff,
+        fg+:$lighter, prompt:$lighter, hl:$lighter, hl+:#ffffff,
+        pointer:$lighter, selected-fg:$lighter, selected-bg:#000000,
+        bg:#000000, bg+:$light, list-bg:#000000, gutter:#000000,
+        border:$light, label:$light
+    "
 
-    export -f spawn run_in is_program open_path run_file copy_text act in_search cur_dir resolve is_url \
-        list_dir search_dir nav on_change on_complete on_back \
-        on_search_toggle on_enter on_run on_copy
+    export -f spawn run_in is_program run_file copy_text act cur_dir resolve \
+        is_url get_mode label list_dir list_below load nav on_change \
+        on_complete on_back on_mode_toggle on_enter on_run on_copy
 
-    local hint=" → into · ⌫ up · ^F search · alt-⏎ run · ^A clear · ^C copy "
-    local selected
-    selected=$(
-        list_dir "$HOME/" |
+    local dir="$HOME/" query="" path
+    while :; do
+        rm -f "$StateDir/pick"
+        load "$dir" |
             fzf \
                 --with-shell 'bash -c' \
                 --delimiter '\t' --with-nth 2 \
                 --scheme path \
-                --prompt "$HOME/" \
+                --prompt "$dir" --query "$query" \
                 --layout reverse --info hidden --cycle \
-                --border --border-label "$hint" --border-label-pos 0:bottom \
-                --bind "change:change-border-label($hint)+transform:on_change" \
+                --border --border-label "$(label)" --border-label-pos 0:bottom \
+                --bind 'change:transform:on_change' \
                 --bind 'right:transform:on_complete {1}' \
                 --bind 'tab:transform:on_complete {1}' \
                 --bind 'backward-eof:transform:on_back' \
-                --bind 'ctrl-f:transform:on_search_toggle' \
-                --bind 'enter:transform:on_enter' \
+                --bind 'ctrl-f:transform:on_mode_toggle' \
+                --bind 'enter:transform:on_enter {1}' \
                 --bind 'alt-enter:transform:on_run {1}' \
                 --bind 'ctrl-a:transform:nav /' \
                 --bind 'ctrl-c:transform:on_copy {1}' \
-                --color "
-                    fg:#ffffff, query:#ffffff,
-                    fg+:$lighter, prompt:$lighter, hl:$lighter, hl+:#ffffff,
-                    pointer:$lighter, selected-fg:$lighter, selected-bg:#000000,
-                    bg:#000000, bg+:$light, list-bg:#000000, gutter:#000000,
-                    border:$light, label:$light
-                "
-    )
+                --color "$FzfColors"
 
-    [[ -n $selected ]] && open_path "${selected%%$'\t'*}"
+        [[ -s $StateDir/pick ]] || break
+        path=$(<"$StateDir/pick")
+        open_file "$path" && break
+
+        # Editor choice cancelled: back to the runner, on that file.
+        dir=$(dirname -- "$path")
+        [[ $dir == / ]] || dir+=/
+        query=$(basename -- "$path")
+    done
 }
 
 # Toggle: close the open runner (if its PID is still a runner), else launch.
