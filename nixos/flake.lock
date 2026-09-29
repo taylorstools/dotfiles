@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790548472,
-        "narHash": "sha256-PFcrRBZuGPQdScw2nhtK4SlEa4K934xuiFux9USf92c=",
+        "lastModified": 1790645264,
+        "narHash": "sha256-dowJY7Z7oWXrQdIkbSlUSzPNy5qWItvIqLzNvR/stjA=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "a9864ada4fab4423b9f225959efe07cdf29c0865",
+        "rev": "44851cd511092a1d4878e8a3ff4ff4b082bbf65f",
         "type": "github"
       },
       "original": {
@@ -59,11 +59,11 @@
     "dank-qml-common": {
       "flake": false,
       "locked": {
-        "lastModified": 1790454246,
-        "narHash": "sha256-H4z2oxSO6DHTH93seEsY/WuiYuKCXKPreoQTBrU1XLY=",
+        "lastModified": 1790638766,
+        "narHash": "sha256-/X9CR5qLC/RnVdGYDo9XWn3Z958DVbSAv3c0+TxIQYw=",
         "owner": "AvengeMedia",
         "repo": "dank-qml-common",
-        "rev": "9594c1e3bdc561da82b74fd188811f66b64d1e12",
+        "rev": "445e6ad070f956920e23de62086257167af7cb06",
         "type": "github"
       },
       "original": {
@@ -121,11 +121,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790547861,
-        "narHash": "sha256-AfBGTWpYFnuGU3225ho4eR7fSRv7XtOpEkwN6pboqI4=",
+        "lastModified": 1790643779,
+        "narHash": "sha256-pV8Mj/yCuhuLTHAXKF4F54QexFo6fk4jEJWfleTv+KU=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "a4e500bc0083ed234a8db8c6f33a2c7987af3352",
+        "rev": "3fb27d93de8ee44d1e44f6a502213fae971a28c2",
         "type": "github"
       },
       "original": {
@@ -312,11 +312,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1790463110,
-        "narHash": "sha256-hKlVl12B1dF0Q5vd9dY3lIJM5mFGWYSlXwSLAqHZ1+s=",
+        "lastModified": 1790578696,
+        "narHash": "sha256-ZoxIApko70jCdbH3l20HWXOBaT2HZd87orzd2yJ9dVE=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e158d9ed9b51c98974c5e66e1ba1c9e0255fecaa",
+        "rev": "7a0f122f5090cf4c2ade2a13a0e229d4e19ba71f",
         "type": "github"
       },
       "original": {
@@ -444,11 +444,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789473505,
-        "narHash": "sha256-ho/p9o8PZSkMFALXs9WAgj4nZKGVhvHdxmOor5F6Szw=",
+        "lastModified": 1790584224,
+        "narHash": "sha256-mofF9hBkNbQdBCMLPTAvJ9ss1hwDR9eN1/8TTroPITU=",
         "owner": "y0sif",
         "repo": "whisrs",
-        "rev": "aaa7c9cc64a5f9396ad0eeef4eec99b27b39e19c",
+        "rev": "b9584a0aad7fba393336246619d3987e2f03e6d4",
         "type": "github"
       },
       "original": {

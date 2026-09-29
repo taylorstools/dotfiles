@@ -15,6 +15,15 @@ let
   # The rest line is byte-identical to the chezmoi-managed copy and to what
   # niri-splash.py writes, so every writer converges on the same file.
   cursorFile = ".config/niri/custom/cursor-startup.kdl";
+
+  # Present once this login has had its splash. switch-to-configuration
+  # re-starts every active user target, and starting default.target again
+  # pulls this (exited, Restart=no) unit back in. When the same switch
+  # restarts DMS, the bar is gone at that moment, already_up() fails, and
+  # the splash covers the screen until DMS comes back. The flag keeps the
+  # splash to one showing per login: written when the splash ends, removed
+  # at logout, and gone anyway with the runtime dir at reboot.
+  shownFlag = "%t/niri-splash.shown";
   cursorRest = "// niri-splash: no cursor override active";
   cursorBlank = ''
     // niri-splash: written at login, restored when the splash lifts.
@@ -127,11 +136,16 @@ in
       # a user manager that never went away. Deliberately no After=.
       wantedBy = [ "default.target" "niri.service" ];
       partOf = [ "graphical-session.target" ];
+      unitConfig.ConditionPathExists = "!${shownFlag}";
       serviceConfig = {
         Type = "simple";
         ExecStart = "${lib.getExe splash} ${flags}";
-        # However the splash ended, the cursor must not stay blank.
-        ExecStopPost = restoreCursor;
+        # However the splash ended, the cursor must not stay blank, and it
+        # must not come back before the next login.
+        ExecStopPost = [
+          restoreCursor
+          "${pkgs.coreutils}/bin/touch ${shownFlag}"
+        ];
         Restart = "no";
         TimeoutStopSec = 5;
       };
@@ -145,11 +159,18 @@ in
       partOf = [ "graphical-session.target" ];
       after = [ "graphical-session.target" ];
       wantedBy = [ "graphical-session.target" ];
+      # A restart runs ExecStop, which would blank the cursor mid-session
+      # and re-arm the splash. The store paths below change with every
+      # coreutils/bash bump, so without this a nightly switch could do it.
+      restartIfChanged = false;
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = "${pkgs.coreutils}/bin/true";
-        ExecStop = blankCursor;
+        ExecStop = [
+          blankCursor
+          "${pkgs.coreutils}/bin/rm -f ${shownFlag}"
+        ];
       };
     };
   };
