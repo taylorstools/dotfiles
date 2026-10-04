@@ -16,6 +16,7 @@ in
   imports = [
     ./components/dim-overlay
     ./components/kde-plasma.nix
+    ./components/reset-bluetooth-state.nix
     ./components/sddm-autologin.nix
     ./components/ventoy-backup.nix
     ./components/xbox-controller.nix
