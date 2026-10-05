@@ -115,6 +115,34 @@ if [[ "$HOSTNAME" == "taylorpc" ]]; then
   fi
 fi
 
+# NVMe sanitize: only when the whole drive is being wiped (never on the
+# install-to-unallocated path, which must preserve existing partitions).
+SANITIZE=false
+SANITIZE_SES=""
+SANITIZE_LBAF=""
+SANITIZE_DESC=""
+DISK_TRAN=$(lsblk -dno TRAN "$DISK_DEV" | tr -d '[:space:]')
+if [ "$WIPE" = true ] && [ "$DISK_TRAN" = "nvme" ]; then
+  FNA=$(nvme id-ctrl "$DISK_DEV" -o json 2>/dev/null | jq -r '.fna // empty') || FNA=""
+  FLBAS=$(nvme id-ns "$DISK_DEV" -o json 2>/dev/null | jq -r '.flbas // empty') || FLBAS=""
+  if [[ "$FNA" =~ ^[0-9]+$ ]] && [[ "$FLBAS" =~ ^[0-9]+$ ]]; then
+    # Keep the current LBA format (FLBAS bits 0-3 are the low index, bits 5-6 the high).
+    SANITIZE_LBAF=$(( (FLBAS & 0xF) | ((FLBAS >> 1) & 0x30) ))
+    # FNA bit 2: cryptographic erase supported as part of secure erase.
+    if (( FNA & 0x4 )); then
+      SANITIZE_SES=2
+      SANITIZE_DESC="cryptographic erase"
+    else
+      SANITIZE_SES=1
+      SANITIZE_DESC="user data erase"
+    fi
+    SANITIZE=true
+    gum log --level info "NVMe detected; $DISK_DEV will be sanitized ($SANITIZE_DESC) before partitioning."
+  else
+    gum log --level warn "Couldn't query NVMe capabilities for $DISK_DEV; skipping sanitize (blkdiscard only)."
+  fi
+fi
+
 # Generate ZFS hostId
 HOSTID=$(head -c4 /dev/urandom | od -A none -tx4 | tr -d ' ')
 gum log --level info "Generated networking.hostId = $HOSTID"
@@ -197,6 +225,9 @@ gum log --level warn "HostId:   $HOSTID"
 if [ "$WIPE" = true ]; then
   gum log --level warn "Action:   wipe entire disk"
   gum log --level warn "LUKS:     $LUKS_SIZE of disk"
+  if [ "$SANITIZE" = true ]; then
+    gum log --level warn "Sanitize: nvme format ($SANITIZE_DESC)"
+  fi
 else
   gum log --level warn "Action:   install to largest unallocated region (existing partitions preserved)"
 fi
@@ -217,6 +248,26 @@ if [ "$WIPE" = true ]; then
   gum log --level info "Wiping $DISK..."
   umount -R /mnt 2>/dev/null || true
   zpool labelclear -f "$DISK" 2>/dev/null || true
+
+  if [ "$SANITIZE" = true ]; then
+    # Release anything a previous failed run left open on this disk.
+    zpool export zroot 2>/dev/null || true
+    cryptsetup close cryptroot 2>/dev/null || true
+    DISK_NAME=$(basename "$DISK_DEV")
+    if compgen -G "/sys/class/block/$DISK_NAME/holders/*" >/dev/null \
+      || compgen -G "/sys/class/block/$DISK_NAME/${DISK_NAME}p*/holders/*" >/dev/null; then
+      gum log --level warn "$DISK_DEV is still in use (device-mapper/ZFS holder); skipping sanitize."
+    else
+      gum log --level info "Sanitizing $DISK_DEV (nvme format, $SANITIZE_DESC); this can take a few minutes..."
+      if nvme format "$DISK_DEV" --ses="$SANITIZE_SES" --lbaf="$SANITIZE_LBAF" --force --timeout=1800000; then
+        gum log --level info "Sanitize complete."
+      else
+        gum log --level warn "nvme format failed; continuing with blkdiscard."
+      fi
+      partprobe "$DISK" || true
+      udevadm settle || true
+    fi
+  fi
 
   if ! blkdiscard -f "$DISK" 2>/dev/null; then
     gum log --level warn "blkdiscard unsupported, falling back to zero-write."
