@@ -50,7 +50,7 @@ in
           (splashLogo // {
             uiScale = config.myOptions.htpc.splashScale;
 
-            # Clevis (livingroompc): black while it tries. An unlock lands
+            # Clevis (both HTPCs): black while it tries. An unlock lands
             # around 12s, most of it wait-online, so holding the field back
             # 15s leaves a little margin without leaving someone staring at a
             # black screen when the network genuinely is not there. The tick
@@ -60,7 +60,7 @@ in
             passwordRevealSeconds = if clevisUnlock then 15 else 0;
             passwordRevealTicks = if clevisUnlock then 4000 else 0;
 
-            # TPM2 (bedroompc): nothing to wait on, so logo and spinner from
+            # TPM2: nothing to wait on, so logo and spinner from
             # the first frame. A failed TPM unlock still gets the field,
             # at once, in the spinner's place under the logo.
             showAtStart = tpmUnlock && !clevisUnlock;
