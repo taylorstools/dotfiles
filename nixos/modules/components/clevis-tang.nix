@@ -16,6 +16,29 @@ in
         boot.initrd.availableKernelModules on the host.
       '';
     };
+
+    tangUrl = lib.mkOption {
+      type = lib.types.str;
+      default = "http://192.168.10.4:7654";
+      description = ''
+        Tang server the LUKS binding points at. Nothing in the build uses it:
+        the initrd takes the URL from the binding in the LUKS header.
+        scripts/luks-clevis-autounlock.sh reads it from here when it binds,
+        and --enable rebinds a header whose binding no longer matches, so
+        changing it takes effect the next time that runs on the host.
+      '';
+    };
+
+    pcrIds = lib.mkOption {
+      type = lib.types.str;
+      default = "0,7";
+      description = ''
+        PCRs the TPM half of the binding is sealed against, comma-separated
+        the way clevis takes them. Read only at bind time, like tangUrl.
+        PCR 0 ties the binding to the firmware, so a BIOS update breaks it
+        once; PCR 7 ties it to the Secure Boot state and keys.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -33,6 +33,10 @@ in
         and the keys that verified the boot) matches what it was sealed
         against. That is what makes it safe to keep in git and copy into the
         store and the signed initrd as-is.
+
+        scripts/luks-clevis-autounlock.sh writes it to
+        hosts/<host>/initrd-wifi.cred and re-seals it whenever it stops
+        opening; hosts point this option at that file.
       '';
     };
   };

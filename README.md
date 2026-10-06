@@ -82,22 +82,63 @@ Every host encrypts its root with LUKS2. How you get past that at boot differs b
 
 | Host | Unlock | Why |
 | --- | --- | --- |
-| `livingroompc`, `bedroompc` | TPM2 auto-unlock (PCR 0+7) | HTPCs across the room; typing a passphrase on a media box is impractical |
+| `livingroompc`, `bedroompc` | Clevis: Tang + TPM2 (PCR 0+7) | HTPCs across the room; typing a passphrase on a media box is impractical. Tang means the disk only opens on the home network, the TPM half that it only opens inside this machine's signed boot |
 | `taylorpc` | Passphrase at a Plymouth prompt | Laptop that leaves the house, so the disk should not open itself |
 
-A fresh install always starts with auto-unlock **off**. The post-install script seeds `/etc/nixos/luks-tpm-autounlock.nix` in that state, because no TPM keyslot exists yet. On the laptop that is the final state and there is nothing more to do. The graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`.
+A fresh install always starts on the passphrase: `install.sh` formats the volume with a passphrase keyslot and nothing else. On the laptop that is the final state and there is nothing more to do. The graphical passphrase prompt comes from the `minimal` Plymouth theme in `nixos/pkgs/plymouth-theme-minimal`, enabled through `myOptions.plymouth`, and it stays the fallback on the HTPCs whenever Clevis cannot unlock.
 
-### Enabling TPM auto-unlock
+### Network-bound unlock (HTPCs)
 
-This is for the HTPCs. Do not run `--enable` on `taylorpc`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. `--status` and `--disable` still apply there.
+The NixOS side is in the repo and builds on every install. `myOptions.clevisTang` (`clevis-tang.nix`) brings the network up in the initrd and runs `clevis-luks-askpass` alongside the passphrase prompt. On `bedroompc`, which has no cable, `myOptions.initrdWifi` (`initrd-wifi.nix`) joins wifi first. The Tang server's address and the PCRs the TPM half binds to are `myOptions.clevisTang.tangUrl` and `pcrIds`; the script below reads them from there.
 
-Do this only **after** `sbctl enroll-keys` and a reboot. Enrolling Secure Boot keys changes PCR 7, and a TPM keyslot bound to the old PCR 7 stops working the moment it does. The same applies later: firmware updates and any further key changes invalidate the enrollment, and you fall back to the passphrase until you re-run this.
+What no rebuild can produce is the per-install state, and `luks-clevis-autounlock.sh` makes it:
+
+- a Clevis binding in the LUKS header: an `sss` policy that needs both Tang and the TPM to release the key
+- on wifi hosts, `nixos/hosts/<host>/initrd-wifi.cred`: the initrd's `wpa_supplicant.conf`, sealed to this machine's TPM against PCR 7
+
+Do this only **after** `sbctl enroll-keys` and a reboot. Both pieces are bound to PCR 7, and `prepare-secure-boot.sh` generates new Secure Boot keys on every install, so anything bound before enrolling stops working the moment you enrol. The script checks for this and refuses to run early.
+
+On a wifi host, connect to the network the HTPC should join at boot first: the script seals for the SSID NetworkManager is on and asks for its passphrase.
+
+```sh
+"$HOME/scripts/luks-clevis-autounlock.sh" --enable
+```
+
+Reboot without touching the keyboard when it finishes. The screen stays black while the initrd reaches Tang, then the system comes up. If it has not unlocked within about 15 seconds the passphrase field appears, and typing into it works as always. To see what happened:
+
+```sh
+journalctl -b -u systemd-cryptsetup@cryptroot -u initrd-wpa-supplicant -u clevis-luks-askpass
+```
+
+If the script sealed or re-sealed `initrd-wifi.cred`, commit and push it. The file is encrypted to this machine's TPM, so it is safe in a public repo, but every checkout that builds the host needs the current one. The host config only turns initrd wifi on once that file exists and is tracked by git (`builtins.pathExists`), so a host whose credential has not been sealed yet still builds; it just has no network in the initrd.
+
+`--enable` is idempotent and doubles as the repair command (`--regen` is the same action). It tests each piece by actually unlocking with it and redoes only what fails. After a BIOS update (PCR 0) or a Secure Boot key or dbx change (PCR 7), the HTPC asks for the passphrase once: type it, then run `--enable` again. The same goes for moving or rekeying the Tang server, after changing `tangUrl` if it moved.
+
+Other flags:
+
+```sh
+--status         # Secure Boot, config, header and credential state, each tested live; changes nothing
+--disable        # remove the Clevis binding; the config still runs clevis, it just finds nothing
+--device <path>  # skip the device chooser
+--norebuild      # skip nixos-rebuild after sealing the credential
+--yes            # assume yes, and trust the Tang server's keys without asking
+```
+
+A `systemd-tpm2` token in the header undercuts all of this. systemd-cryptsetup tries enrolled tokens before it ever asks for a password, so a leftover TPM keyslot opens the disk on its own and Tang is never consulted, whatever crypttab says. `--enable` wipes one if it finds it, and `--status` reports it as drift.
+
+Like the TPM script, it refuses to leave a disk with no passphrase keyslot and backs the LUKS header up to `~/luks-header-backups/` before any destructive change. Move those backups off the machine. A header file plus your passphrase decrypts the disk.
+
+### TPM-only auto-unlock
+
+`luks-tpm-autounlock.sh` enrols a plain TPM2 keyslot (PCR 0+7) that opens the disk wherever the machine boots, with no network involved. No host uses it any more. The post-install script still seeds `/etc/nixos/luks-tpm-autounlock.nix` in its off state on every host, because no TPM keyslot exists on a fresh install and that file is where the initrd would be told to ask for one.
+
+Do not run `--enable` on `taylorpc`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. Do not run it on the HTPCs either: the TPM keyslot answers before Clevis is asked, so it quietly replaces the network-bound unlock with a weaker one. `--status` and `--disable` still apply anywhere.
+
+If you do use it, do so only **after** `sbctl enroll-keys` and a reboot, for the same PCR 7 reason as above.
 
 ```sh
 "$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$(hostname)" --enable
 ```
-
-Reboot when it finishes; the drive should unlock without a prompt.
 
 The script always changes the LUKS header and the NixOS config **together**: it enrolls or wipes the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
 
@@ -114,11 +155,11 @@ Other flags:
 
 `--status` is the first thing to run when auto-unlock stops behaving; it names the drift in either direction.
 
-The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change. Move those backups off the machine. A header file plus your passphrase decrypts the disk.
+The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change.
 
 ## Manual Post-Install Steps
 
-What is left once the system is otherwise finished, meaning Secure Boot keys enrolled and, on the HTPCs, TPM auto-unlock on. Each of these is state no rebuild can produce: enrollment data, credentials and pairings that live outside both the Nix store and chezmoi, so a reinstall starts with none of it.
+What is left once the system is otherwise finished, meaning Secure Boot keys enrolled and, on the HTPCs, network-bound unlock set up. Each of these is state no rebuild can produce: enrollment data, credentials and pairings that live outside both the Nix store and chezmoi, so a reinstall starts with none of it.
 
 ### Howdy face enrollment
 
@@ -195,7 +236,7 @@ QD=$(command -v qdbus6 || command -v qdbus)
 
 A handle straight back means no password. A dialog means there is one.
 
-Be clear about what blank buys and costs here. These two hosts TPM-auto-unlock at boot and then autologin, so a wallet that opens itself is the last of three doors already standing open: anyone who powers the machine on reaches the saved browser keys and the Wi-Fi PSK, not just a desktop. That is the same concession the TPM keyslot makes, taken to its conclusion, and it is the right call for a media box. It is not the right call on the laptop, which is exactly why it keeps the passphrase at boot.
+Be clear about what blank buys and costs here. These two hosts unlock themselves at boot on the home network and then autologin, so a wallet that opens itself is the last of three doors already standing open: anyone who powers the machine on in the house reaches the saved browser keys and the Wi-Fi PSK, not just a desktop. That is the same concession the network-bound unlock makes, taken to its conclusion, and it is the right call for a media box. It is not the right call on the laptop, which is exactly why it keeps the passphrase at boot.
 
 ### Sunshine
 
@@ -226,3 +267,5 @@ Four files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
 - `luks-tpm-autounlock.nix`
 
 The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive.** The next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`, or for the LUKS module through `luks-tpm-autounlock.sh`, which writes both.
+
+`initrd-wifi.cred` on wifi-only HTPCs is per-install state too, but it is the exception: the repo owns it, not `/etc/nixos`. It has to be in the flake's source to reach the initrd, and it is sealed to the machine's TPM, so committing it is safe. `luks-clevis-autounlock.sh` writes and stages it; commit and push it after.

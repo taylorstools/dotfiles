@@ -34,8 +34,12 @@
     "iwlwifi-so-a0-gf-a0.pnvm"
   ];
 
+  # The credential is per install: luks-clevis-autounlock.sh seals it to this
+  # machine's TPM once Secure Boot keys are enrolled. Until it exists and is
+  # tracked by git, the initrd simply has no wifi and boot falls back to the
+  # passphrase, rather than the build failing on a missing file.
   myOptions.initrdWifi = {
-    enable = true;
+    enable = builtins.pathExists ./initrd-wifi.cred;
     interface = "wlp0s20f3";
     credentialFile = ./initrd-wifi.cred;
   };
