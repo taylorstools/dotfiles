@@ -3,6 +3,20 @@
 let
   cfg = config.myOptions.claude-desktop;
   system = pkgs.stdenv.hostPlatform.system;
+  upstream = inputs.claude-desktop.packages.${system};
+
+  # Workaround for upstream 2.19675.1: the bundled claude-native-binding.node
+  # now has a DT_NEEDED on libpipewire-0.3.so.0, but nix/claude-desktop.nix
+  # lists pipewire only in runtimeDependencies. autoPatchelf applies those to
+  # executables alone, so the .node can't resolve it and the build fails.
+  # Putting pipewire in buildInputs lets autoPatchelf find it for every ELF.
+  # Drop this (and point the default back at upstream.claude-desktop-fhs) once
+  # upstream adds pipewire to buildInputs itself.
+  claude-desktop-fhs = upstream.claude-desktop-fhs.override {
+    claude-desktop = upstream.claude-desktop.overrideAttrs (old: {
+      buildInputs = old.buildInputs ++ [ pkgs.pipewire ];
+    });
+  };
 
   # niri exports ELECTRON_OZONE_PLATFORM_HINT=auto for the whole session, which
   # lands this app on Wayland no matter what the option below says. Chromium
@@ -44,9 +58,9 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = inputs.claude-desktop.packages.${system}.claude-desktop-fhs;
-      defaultText = lib.literalExpression
-        "inputs.claude-desktop.packages.\${system}.claude-desktop-fhs";
+      default = claude-desktop-fhs;
+      defaultText = lib.literalMD
+        "upstream `claude-desktop-fhs`, rebuilt with `pipewire` in the base package's `buildInputs`";
       description = ''
         Which Claude Desktop build to install. The -fhs variant runs the app
         under bubblewrap inside an FHS environment, which is what lets MCP
