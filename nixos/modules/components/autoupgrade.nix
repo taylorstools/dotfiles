@@ -45,7 +45,6 @@ let
         hardware-configuration.nix
         hostid.nix
         disko.nix
-        luks-tpm-autounlock.nix
       )
 
       if [ ! -d "$HOST_DIR" ]; then

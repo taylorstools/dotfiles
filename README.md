@@ -130,32 +130,9 @@ Like the TPM script, it refuses to leave a disk with no passphrase keyslot and b
 
 ### TPM-only auto-unlock
 
-`luks-tpm-autounlock.sh` enrols a plain TPM2 keyslot (PCR 0+7) that opens the disk wherever the machine boots, with no network involved. No host uses it any more. The post-install script still seeds `/etc/nixos/luks-tpm-autounlock.nix` in its off state on every host, because no TPM keyslot exists on a fresh install and that file is where the initrd would be told to ask for one.
+`scripts/luks-tpm-autounlock.sh` is from before Clevis, when the HTPCs unlocked with a plain TPM2 keyslot (PCR 0+7) that opens the disk wherever the machine boots. No host uses that any more, and nothing in the NixOS config reads the `/etc/nixos/luks-tpm-autounlock.nix` it writes. `--status` and `--disable` are still useful for finding and wiping a leftover TPM keyslot.
 
-Do not run `--enable` on `taylorpc`: auto-unlocking a laptop that leaves the house defeats the point of encrypting it, because anyone who powers it on gets a decrypted disk and, with autologin, a live session. Do not run it on the HTPCs either: the TPM keyslot answers before Clevis is asked, so it quietly replaces the network-bound unlock with a weaker one. `--status` and `--disable` still apply anywhere.
-
-If you do use it, do so only **after** `sbctl enroll-keys` and a reboot, for the same PCR 7 reason as above.
-
-```sh
-"$HOME/scripts/luks-tpm-autounlock.sh" --hostname "$(hostname)" --enable
-```
-
-The script always changes the LUKS header and the NixOS config **together**: it enrolls or wipes the TPM keyslot as well as flipping the crypttab option. Letting those drift is how you end up with an initrd asking a TPM that holds no keyslot: it stalls, fails, then prompts, with the reason hidden behind `quiet`, so it just looks like a slow boot.
-
-Other flags:
-
-```sh
---status         # report header state vs config state; changes nothing
---disable        # wipe the TPM keyslot and go back to the passphrase
---device <path>  # skip the device chooser
---keep-slot      # with --disable, leave the keyslot in the header
---norebuild      # write config, skip nixos-rebuild
---yes            # assume yes, for unattended runs
-```
-
-`--status` is the first thing to run when auto-unlock stops behaving; it names the drift in either direction.
-
-The script refuses to leave a disk that only the TPM can open, and backs the LUKS header up to `~/luks-header-backups/` before any destructive change.
+Do not run `--enable` anywhere. The keyslot still works without the crypttab option, because systemd-cryptsetup tries enrolled tokens on its own: on `taylorpc` that means a laptop that decrypts for anyone who powers it on, and on the HTPCs it answers before Clevis is asked, quietly replacing the network-bound unlock with a weaker one.
 
 ## Manual Post-Install Steps
 
@@ -259,13 +236,12 @@ Then pair each client: add the host in Moonlight, and enter the PIN it shows on 
 
 ## Per-host configuration files
 
-Four files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
+Three files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
 
 - `hardware-configuration.nix`
 - `hostid.nix`
 - `disko.nix`
-- `luks-tpm-autounlock.nix`
 
-The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive.** The next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`, or for the LUKS module through `luks-tpm-autounlock.sh`, which writes both.
+The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive.** The next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`.
 
 `initrd-wifi.cred` on wifi-only HTPCs is per-install state too, but it is the exception: the repo owns it, not `/etc/nixos`. It has to be in the flake's source to reach the initrd, and it is sealed to the machine's TPM, so committing it is safe. `luks-clevis-autounlock.sh` writes and stages it; commit and push it after.

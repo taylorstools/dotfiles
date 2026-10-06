@@ -5,7 +5,7 @@ let
 
   # How this host's root volume unlocks, read off the config that does the
   # unlocking rather than restated per host, so the splash follows along when
-  # scripts/luks-tpm-autounlock.sh or clevis-tang.nix is switched on or off.
+  # a crypttab TPM option or clevis-tang.nix is switched on or off.
   luksOpts = lib.concatMap (d: d.crypttabExtraOpts)
     (lib.attrValues config.boot.initrd.luks.devices);
   tpmUnlock = lib.any (lib.hasPrefix "tpm2-device=") luksOpts;
