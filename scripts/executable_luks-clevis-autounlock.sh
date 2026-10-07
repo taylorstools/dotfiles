@@ -16,6 +16,9 @@
 # by actually unlocking with it and only redoes what fails, which makes it the
 # repair command too, after a BIOS update (PCR 0) or a Secure Boot change
 # (PCR 7). --regen is the same action, under the name you would look for.
+# A wifi credential that still decrypts but holds an old password (the
+# network's password changed) is caught by comparing it with the password
+# NetworkManager has saved; --reseal forces a fresh one regardless.
 #
 # The Tang URL and PCRs come from the host's NixOS config
 # (myOptions.clevisTang.tangUrl / pcrIds), not from this file.
@@ -49,6 +52,7 @@ ACTION=""
 DEVICE=""
 NOREBUILD=false
 ASSUME_YES=false
+RESEAL=false
 
 usage() {
   cat >&2 <<'USAGE'
@@ -58,6 +62,8 @@ Usage: luks-clevis-autounlock.sh [options]
                       initrd wifi credential. On a host that is already set
                       up, redoes only what no longer unlocks.
   --regen             Same as --enable
+  --reseal            --enable, and re-seal the wifi credential even if the
+                      current one still decrypts (after a password change)
   --disable           Remove the Clevis binding from the LUKS header
   --status            Report state and test each piece; change nothing
   --hostname <host>   Defaults to this machine's hostname, and must match it
@@ -75,6 +81,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--hostname)   HOSTNAME_ARG="$2"; shift 2 ;;
     --enable|--regen) ACTION="enable"; shift ;;
+    --reseal)        ACTION="enable"; RESEAL=true; shift ;;
     --disable)       ACTION="disable"; shift ;;
     --status)        ACTION="status"; shift ;;
     --device)        DEVICE="$2"; shift 2 ;;
@@ -155,8 +162,11 @@ config_wants_tpm() {
 choose_device() {
   [[ -n "$DEVICE" ]] && { echo "$DEVICE"; return; }
 
+  # As root: the nix-shell this script re-execs into can put a udev-less
+  # lsblk first on PATH, which has to probe the partitions itself to report
+  # FSTYPE, and an unprivileged probe sees nothing.
   mapfile -t DEVICES < <(
-    lsblk -o PATH,FSTYPE,SIZE | awk '$2 == "crypto_LUKS" { print $1 " (" $3 ")" }'
+    sudo lsblk -o PATH,FSTYPE,SIZE | awk '$2 == "crypto_LUKS" { print $1 " (" $3 ")" }'
   )
 
   if [[ ${#DEVICES[@]} -eq 0 ]]; then
@@ -333,8 +343,59 @@ current_ssid() {
     | sed -n 's/^yes://p' | head -n1 | sed 's/\\\(.\)/\1/g'
 }
 
+# NetworkManager's connection on the wifi interface right now, if any.
+nm_connection() {
+  nmcli -g GENERAL.CONNECTION device show "$WIFI_IFACE" 2>/dev/null | head -n1
+}
+
+# The password NetworkManager has saved for a connection, or nothing. Tried
+# as the user first (secrets held by an agent such as KWallet), then as root
+# (secrets stored in the system connection file).
+nm_password() {
+  local conn="$1" pw=""
+  pw=$(nmcli --escape no -s -g 802-11-wireless-security.psk connection show "$conn" 2>/dev/null) || pw=""
+  if [[ -z "$pw" ]]; then
+    pw=$(sudo nmcli --escape no -s -g 802-11-wireless-security.psk connection show "$conn" 2>/dev/null) || pw=""
+  fi
+  printf '%s' "$pw"
+}
+
+# The psk= line wpa_supplicant would use for an SSID and password. A 64-digit
+# hex password is already the raw key.
+psk_line() {
+  local ssid="$1" pw="$2"
+  if [[ "$pw" =~ ^[0-9a-fA-F]{64}$ ]]; then
+    echo "psk=${pw,,}"
+    return
+  fi
+  wpa_passphrase "$ssid" <<<"$pw" 2>/dev/null \
+    | sed -n 's/^[[:space:]]*\(psk=[0-9a-f]\{64\}\)$/\1/p'
+}
+
+cred_psk_line() {
+  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - 2>/dev/null \
+    | sed -n 's/^[[:space:]]*\(psk=[0-9a-f]\{64\}\)$/\1/p' | head -n1
+}
+
+# Whether the sealed key is the one NetworkManager connects with right now.
+# 0: same. 1: different, so the network's password has changed since it was
+# sealed. 2: cannot tell (not on that SSID, or no saved password readable).
+cred_matches_nm() {
+  local ssid conn pw want have
+  ssid=$(cred_ssid)
+  [[ -n "$ssid" && "$(current_ssid)" == "$ssid" ]] || return 2
+  conn=$(nm_connection)
+  [[ -n "$conn" ]] || return 2
+  pw=$(nm_password "$conn")
+  [[ -n "$pw" ]] || return 2
+  want=$(psk_line "$ssid" "$pw")
+  have=$(cred_psk_line)
+  [[ -n "$want" && -n "$have" ]] || return 2
+  [[ "$want" == "$have" ]] || return 1
+}
+
 seal_credential() {
-  local ssid pass
+  local ssid pass="" conn
   ssid=$(current_ssid)
   if [[ -z "$ssid" ]]; then
     error "Not connected to wifi."
@@ -345,11 +406,24 @@ seal_credential() {
   info "Sealing the initrd wifi config for SSID '$ssid' (TPM, PCR $CRED_PCRS)."
   confirm "Is '$ssid' the network to join at boot?" || exit 1
 
+  # Prefer the password NetworkManager is connected with right now: it is
+  # known to work, and nothing has to be typed.
+  conn=$(nm_connection)
+  if [[ -n "$conn" ]]; then
+    pass=$(nm_password "$conn")
+  fi
+  if [[ -n "$pass" ]] && confirm "Use the password NetworkManager has saved for '$ssid'?"; then
+    info "Using NetworkManager's saved password."
+  else
+    pass=$(gum input --password --header "Passphrase for '$ssid':")
+  fi
+
   # wpa_passphrase's PSK form covers WPA2 and WPA2/WPA3 transition networks.
   # A WPA3-only (SAE) network needs key_mgmt=SAE and sae_password instead.
-  pass=$(gum input --password --header "Passphrase for '$ssid':")
   PLAINTEXT=$(umask 077; mktemp -p /dev/shm initrd-wifi.XXXXXX)
-  if ! wpa_passphrase "$ssid" <<<"$pass" 2>/dev/null \
+  if [[ "$pass" =~ ^[0-9a-fA-F]{64}$ ]]; then
+    printf 'network={\n\tssid="%s"\n\tpsk=%s\n}\n' "$ssid" "${pass,,}" > "$PLAINTEXT"
+  elif ! wpa_passphrase "$ssid" <<<"$pass" 2>/dev/null \
          | grep -v '^[[:space:]]*#' > "$PLAINTEXT" \
      || ! grep -q '^[[:space:]]*psk=' "$PLAINTEXT"; then
     unset pass
@@ -376,7 +450,7 @@ seal_credential() {
 #region Status
 
 print_status() {
-  local dev="$1" problems=0 s tpm good=false
+  local dev="$1" problems=0 s tpm good=false match
   local -a slots
 
   if secure_boot_ready; then
@@ -435,6 +509,14 @@ print_status() {
       problems=$(( problems + 1 ))
     elif cred_opens; then
       info "Wifi:        credential opens; SSID '$(cred_ssid)' on $WIFI_IFACE"
+      match=0
+      cred_matches_nm || match=$?
+      case "$match" in
+        0) info "Wifi:        its key matches the password NetworkManager connects with" ;;
+        1) warn "Wifi:        its key does NOT match NetworkManager's saved password; the network's password has changed. Run --enable."
+           problems=$(( problems + 1 )) ;;
+        *) info "Wifi:        could not compare its key with NetworkManager's (not on that SSID, or no readable saved password)" ;;
+      esac
     else
       warn "Wifi:        credential no longer opens (PCR 7 moved?)"
       problems=$(( problems + 1 ))
@@ -449,7 +531,7 @@ print_status() {
 #region Enable
 
 do_enable() {
-  local dev="$1" s good="" changed=false
+  local dev="$1" s good="" changed=false match
   local -a slots stale=() bind_args=() quiet_args=()
   $ASSUME_YES && quiet_args=(-q)
 
@@ -495,12 +577,31 @@ do_enable() {
 
   #region Wifi credential
   if [[ -n "$WIFI_IFACE" ]]; then
+    match=2
     if cred_opens; then
-      info "Wifi credential still opens (SSID '$(cred_ssid)'); keeping it."
-    else
-      [[ -f "$CRED_FILE" ]] && warn "Wifi credential no longer opens; re-sealing."
+      cred_matches_nm || match=$?
+    fi
+
+    if $RESEAL; then
+      info "Re-sealing the wifi credential (--reseal)."
       seal_credential
       changed=true
+    elif ! cred_opens; then
+      if [[ -f "$CRED_FILE" ]]; then
+        warn "Wifi credential no longer opens; re-sealing."
+      fi
+      seal_credential
+      changed=true
+    elif [[ "$match" -eq 1 ]]; then
+      warn "Wifi credential opens, but its key is not the password NetworkManager connects to '$(cred_ssid)' with."
+      warn "The network's password has changed since it was sealed; re-sealing."
+      seal_credential
+      changed=true
+    else
+      info "Wifi credential still opens (SSID '$(cred_ssid)'); keeping it."
+      if [[ "$match" -ne 0 ]]; then
+        warn "Could not compare its key with NetworkManager's saved password. If the network's password changed, rerun with --reseal."
+      fi
     fi
     if ! cred_tracked || ! git -C "$DOTFILES" diff --quiet -- "$CRED_REL"; then
       git -C "$DOTFILES" add -f "$CRED_REL"
