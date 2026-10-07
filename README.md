@@ -112,6 +112,8 @@ journalctl -b -u systemd-cryptsetup@cryptroot -u initrd-wpa-supplicant -u clevis
 
 If the script sealed or re-sealed `initrd-wifi.cred`, commit and push it. The file is encrypted to this machine's TPM, so it is safe in a public repo, but every checkout that builds the host needs the current one. The host config only turns initrd wifi on once that file exists and is tracked by git (`builtins.pathExists`), so a host whose credential has not been sealed yet still builds; it just has no network in the initrd.
 
+`myOptions.initrdWifi.frequencies` limits which radios the initrd will connect on, for a card that cannot finish a connection on one of them (`bedroompc` is 6 GHz only, because its AX211 never completes the handshake on the Archer's 5 GHz radio). It still scans every band. The setting is part of the sealed credential, so run `--enable` after changing it.
+
 `--enable` is idempotent and doubles as the repair command (`--regen` is the same action). It tests each piece by actually unlocking with it and redoes only what fails. After a BIOS update (PCR 0) or a Secure Boot key or dbx change (PCR 7), the HTPC asks for the passphrase once: type it, then run `--enable` again. Changing the wifi password does the same; `--enable` notices because the sealed key no longer matches the password NetworkManager has saved, and re-seals. The same goes for moving or rekeying the Tang server, after changing `tangUrl` if it moved.
 
 Other flags:

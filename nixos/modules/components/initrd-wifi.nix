@@ -6,13 +6,6 @@ let
   wpaSupplicant = "${pkgs.wpa_supplicant}/bin/wpa_supplicant";
   credential = "${cfg.credentialFile}";
   device = "sys-subsystem-net-devices-${cfg.interface}.device";
-
-  # Global settings that are not secret, passed alongside the sealed config
-  # with -I so they can change without re-sealing it.
-  extraConfig = pkgs.writeText "initrd-wpa_supplicant-extra.conf" ''
-    freq_list=${lib.concatMapStringsSep " " toString cfg.frequencies}
-  '';
-  limitFrequencies = cfg.frequencies != [ ];
 in
 {
   options.myOptions.initrdWifi = {
@@ -52,11 +45,15 @@ in
       default = [ ];
       example = lib.literalExpression "lib.genList (n: 5955 + 20 * n) 59  # every 6 GHz channel";
       description = ''
-        Frequencies (MHz) the initrd scans; empty means all of them. For a
-        radio the card associates with but cannot finish the handshake on,
-        which wpa_supplicant otherwise keeps retrying before it moves on.
-        Anything left out is never tried, so there is no falling back to it
-        either.
+        Frequencies (MHz) the initrd may connect on; empty means any. For a
+        radio the card associates with but never finishes the handshake on,
+        which wpa_supplicant otherwise retries before moving on. Scanning
+        still covers every band: the card only enables its 6 GHz channels
+        after a 2.4/5 GHz scan has told it the country.
+
+        The build does not read this. It is part of the sealed credential,
+        so luks-clevis-autounlock.sh writes it in and re-seals when it
+        changes; run --enable after editing it.
       '';
     };
   };
@@ -92,8 +89,7 @@ in
     # If the TPM refuses (PCR 7 moved after a dbx or key change), the unit
     # fails, nothing comes online, and boot falls through to the passphrase
     # prompt. Re-seal from the running system afterwards.
-    boot.initrd.systemd.storePaths =
-      [ wpaSupplicant credential ] ++ lib.optional limitFrequencies "${extraConfig}";
+    boot.initrd.systemd.storePaths = [ wpaSupplicant credential ];
 
     boot.initrd.systemd.services.initrd-wpa-supplicant = {
       description = "WPA supplicant on ${cfg.interface} (initrd)";
@@ -110,8 +106,7 @@ in
 
       serviceConfig = {
         LoadCredentialEncrypted = "wpa_supplicant.conf:${credential}";
-        ExecStart = "${wpaSupplicant} -D nl80211 -i ${cfg.interface} -c %d/wpa_supplicant.conf"
-          + lib.optionalString limitFrequencies " -I ${extraConfig}";
+        ExecStart = "${wpaSupplicant} -D nl80211 -i ${cfg.interface} -c %d/wpa_supplicant.conf";
       };
     };
     #endregion

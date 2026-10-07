@@ -42,10 +42,11 @@
     interface = "wlp0s20f3";
     credentialFile = ./initrd-wifi.cred;
 
-    # 6 GHz only. The Archer's 5 GHz radio and this AX211 associate but never
-    # finish the 4-way handshake (reason=15, WPA2 and WPA3 alike, in stage 2
-    # as well), and the initrd tried it first, costing 8-17s every boot. Drop
-    # this if that radio is fixed, or if 6 GHz ever stops reaching here.
+    # 6 GHz only. The Archer's 5 GHz radio never accepts this AX211's reply to
+    # the first handshake message (reason=15, WPA2 and WPA3 alike, Smart
+    # Connect on or off, in stage 2 as well), and trying it first cost 8-17s
+    # every boot. Remove this if 5 GHz is ever fixed, then run
+    # luks-clevis-autounlock.sh --enable to re-seal.
     frequencies = lib.genList (n: 5955 + 20 * n) 59;
   };
 

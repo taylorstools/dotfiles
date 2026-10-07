@@ -217,6 +217,7 @@ read_config() {
           tangUrl = try (o.clevisTang.tangUrl or "") "";
           pcrIds = try (o.clevisTang.pcrIds or "") "";
           wifiInterface = try (o.initrdWifi.interface or "") "";
+          wifiFrequencies = try (o.initrdWifi.frequencies or [ ]) [ ];
         }'); then
     error "Could not evaluate nixosConfigurations.$HOSTNAME_ARG."
     exit 1
@@ -226,6 +227,7 @@ read_config() {
   TANG_URL=$(jq -r '.tangUrl' <<<"$json")
   PCR_IDS=$(jq -r '.pcrIds' <<<"$json")
   WIFI_IFACE=$(jq -r '.wifiInterface' <<<"$json")
+  WIFI_FREQS=$(jq -r '.wifiFrequencies | map(tostring) | join(" ")' <<<"$json")
 }
 
 #endregion
@@ -379,11 +381,18 @@ passphrase_ok() {
 }
 
 write_wpa_config() {
-  local ssid="$1" pass="$2" out="$3"
+  local ssid="$1" pass="$2" out="$3" freqs=""
+  # freq_list in the network block limits which access points it will
+  # connect to, not what it scans: the card only enables its 6 GHz channels
+  # once a 2.4/5 GHz scan has told it the country, so a scan limited to
+  # 6 GHz is refused outright. It comes from myOptions.initrdWifi.frequencies.
+  if [[ -n "$WIFI_FREQS" ]]; then
+    freqs=$'\tfreq_list='"$WIFI_FREQS"$'\n'
+  fi
   # sae_pwe=2: hash-to-element as well as hunting-and-pecking; 6 GHz
   # requires hash-to-element.
-  printf 'sae_pwe=2\n\nnetwork={\n\tssid="%s"\n\tkey_mgmt=%s\n\tieee80211w=1\n\tpsk="%s"\n\tsae_password="%s"\n}\n' \
-    "$ssid" "$WPA_KEY_MGMT" "$pass" "$pass" > "$out"
+  printf 'sae_pwe=2\n\nnetwork={\n\tssid="%s"\n\tkey_mgmt=%s\n\tieee80211w=1\n%s\tpsk="%s"\n\tsae_password="%s"\n}\n' \
+    "$ssid" "$WPA_KEY_MGMT" "$freqs" "$pass" "$pass" > "$out"
 }
 
 cred_conf() {
@@ -393,6 +402,13 @@ cred_conf() {
 # Sealed in the WPA2+WPA3 format above, not the older WPA2-only one.
 cred_current_format() {
   cred_conf | grep -q "^[[:space:]]*key_mgmt=$WPA_KEY_MGMT\$"
+}
+
+# The credential allows exactly the frequencies the host config asks for.
+cred_freqs_match() {
+  local have
+  have=$(cred_conf | sed -n 's/^[[:space:]]*freq_list=\(.*\)$/\1/p' | head -n1)
+  [[ "$have" == "$WIFI_FREQS" ]]
 }
 
 cred_password() {
@@ -539,6 +555,12 @@ print_status() {
         problems=$(( problems + 1 ))
         match=3
       else
+        if ! cred_freqs_match; then
+          warn "Wifi:        its allowed frequencies differ from myOptions.initrdWifi.frequencies. Run --enable."
+          problems=$(( problems + 1 ))
+        elif [[ -n "$WIFI_FREQS" ]]; then
+          info "Wifi:        connects only on the frequencies in myOptions.initrdWifi.frequencies"
+        fi
         cred_matches_nm || match=$?
       fi
       case "$match" in
@@ -625,6 +647,10 @@ do_enable() {
       changed=true
     elif ! cred_current_format; then
       warn "Wifi credential is in the older WPA2-only format; re-sealing for WPA2 and WPA3."
+      seal_credential
+      changed=true
+    elif ! cred_freqs_match; then
+      warn "Wifi credential allows different frequencies than myOptions.initrdWifi.frequencies; re-sealing."
       seal_credential
       changed=true
     elif [[ "$match" -eq 1 ]]; then
