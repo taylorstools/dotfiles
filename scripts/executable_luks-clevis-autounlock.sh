@@ -35,13 +35,12 @@ if [ "$(id -u)" -eq 0 ]; then
   exit 1
 fi
 
-# clevis, jq and wpa_passphrase are not all in the system profile; re-exec
-# under nix-shell once.
+# clevis and jq are not in the system profile; re-exec under nix-shell once.
 if [[ -z "${LCA_NIX_SHELL:-}" ]] \
-  && ! { command -v clevis && command -v jq && command -v wpa_passphrase \
+  && ! { command -v clevis && command -v jq \
          && command -v cryptsetup && command -v curl; } >/dev/null 2>&1; then
   export LCA_NIX_SHELL=1
-  exec nix-shell -p clevis jq wpa_supplicant cryptsetup curl \
+  exec nix-shell -p clevis jq cryptsetup curl \
     --run "$(printf '%q ' "$0" "$@")"
 fi
 
@@ -360,38 +359,61 @@ nm_password() {
   printf '%s' "$pw"
 }
 
-# The psk= line wpa_supplicant would use for an SSID and password. A 64-digit
-# hex password is already the raw key.
-psk_line() {
-  local ssid="$1" pw="$2"
-  if [[ "$pw" =~ ^[0-9a-fA-F]{64}$ ]]; then
-    echo "psk=${pw,,}"
-    return
-  fi
-  wpa_passphrase "$ssid" <<<"$pw" 2>/dev/null \
-    | sed -n 's/^[[:space:]]*\(psk=[0-9a-f]\{64\}\)$/\1/p'
+# The sealed config offers WPA2 and WPA3 (SAE, management frame protection
+# optional) and lets the access point choose, which is what NetworkManager
+# does for a "wpa-psk" connection. A 6 GHz radio only accepts WPA3, and a
+# WPA2-only config can be turned away on the other bands too once the router
+# prefers WPA3. SAE works from the passphrase itself rather than the PSK
+# derived from it, so the config carries the passphrase.
+WPA_KEY_MGMT="WPA-PSK WPA-PSK-SHA256 SAE"
+
+# wpa_supplicant.conf quoted strings cannot hold a double quote or newline.
+conf_safe() {
+  [[ "$1" != *'"'* && "$1" != *$'\n'* ]]
 }
 
-cred_psk_line() {
-  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - 2>/dev/null \
-    | sed -n 's/^[[:space:]]*\(psk=[0-9a-f]\{64\}\)$/\1/p' | head -n1
+# A passphrase both WPA2 (8-63 characters) and the config file can take.
+passphrase_ok() {
+  local n=${#1}
+  (( n >= 8 && n <= 63 )) && conf_safe "$1"
 }
 
-# Whether the sealed key is the one NetworkManager connects with right now.
-# 0: same. 1: different, so the network's password has changed since it was
-# sealed. 2: cannot tell (not on that SSID, or no saved password readable).
+write_wpa_config() {
+  local ssid="$1" pass="$2" out="$3"
+  # sae_pwe=2: hash-to-element as well as hunting-and-pecking; 6 GHz
+  # requires hash-to-element.
+  printf 'sae_pwe=2\n\nnetwork={\n\tssid="%s"\n\tkey_mgmt=%s\n\tieee80211w=1\n\tpsk="%s"\n\tsae_password="%s"\n}\n' \
+    "$ssid" "$WPA_KEY_MGMT" "$pass" "$pass" > "$out"
+}
+
+cred_conf() {
+  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - 2>/dev/null
+}
+
+# Sealed in the WPA2+WPA3 format above, not the older WPA2-only one.
+cred_current_format() {
+  cred_conf | grep -q "^[[:space:]]*key_mgmt=$WPA_KEY_MGMT\$"
+}
+
+cred_password() {
+  cred_conf | sed -n 's/^[[:space:]]*sae_password="\(.*\)"$/\1/p' | head -n1
+}
+
+# Whether the sealed passphrase is the one NetworkManager connects with right
+# now. 0: same. 1: different, so the network's password has changed since it
+# was sealed. 2: cannot tell (not on that SSID, no saved password readable,
+# or a credential in the older format).
 cred_matches_nm() {
-  local ssid conn pw want have
+  local ssid conn pw have
   ssid=$(cred_ssid)
   [[ -n "$ssid" && "$(current_ssid)" == "$ssid" ]] || return 2
   conn=$(nm_connection)
   [[ -n "$conn" ]] || return 2
   pw=$(nm_password "$conn")
   [[ -n "$pw" ]] || return 2
-  want=$(psk_line "$ssid" "$pw")
-  have=$(cred_psk_line)
-  [[ -n "$want" && -n "$have" ]] || return 2
-  [[ "$want" == "$have" ]] || return 1
+  have=$(cred_password)
+  [[ -n "$have" ]] || return 2
+  [[ "$have" == "$pw" ]] || return 1
 }
 
 seal_credential() {
@@ -403,7 +425,7 @@ seal_credential() {
     exit 1
   fi
 
-  info "Sealing the initrd wifi config for SSID '$ssid' (TPM, PCR $CRED_PCRS)."
+  info "Sealing the initrd wifi config for SSID '$ssid' (WPA2 + WPA3; TPM, PCR $CRED_PCRS)."
   confirm "Is '$ssid' the network to join at boot?" || exit 1
 
   # Prefer the password NetworkManager is connected with right now: it is
@@ -412,24 +434,26 @@ seal_credential() {
   if [[ -n "$conn" ]]; then
     pass=$(nm_password "$conn")
   fi
-  if [[ -n "$pass" ]] && confirm "Use the password NetworkManager has saved for '$ssid'?"; then
+  if [[ -n "$pass" ]] && passphrase_ok "$pass" \
+     && confirm "Use the password NetworkManager has saved for '$ssid'?"; then
     info "Using NetworkManager's saved password."
   else
     pass=$(gum input --password --header "Passphrase for '$ssid':")
   fi
 
-  # wpa_passphrase's PSK form covers WPA2 and WPA2/WPA3 transition networks.
-  # A WPA3-only (SAE) network needs key_mgmt=SAE and sae_password instead.
-  PLAINTEXT=$(umask 077; mktemp -p /dev/shm initrd-wifi.XXXXXX)
-  if [[ "$pass" =~ ^[0-9a-fA-F]{64}$ ]]; then
-    printf 'network={\n\tssid="%s"\n\tpsk=%s\n}\n' "$ssid" "${pass,,}" > "$PLAINTEXT"
-  elif ! wpa_passphrase "$ssid" <<<"$pass" 2>/dev/null \
-         | grep -v '^[[:space:]]*#' > "$PLAINTEXT" \
-     || ! grep -q '^[[:space:]]*psk=' "$PLAINTEXT"; then
+  if ! conf_safe "$ssid"; then
     unset pass
-    error "wpa_passphrase rejected that passphrase (it must be 8-63 characters)."
+    error "The SSID contains a double quote, which this script cannot write into wpa_supplicant.conf."
     exit 1
   fi
+  if ! passphrase_ok "$pass"; then
+    unset pass
+    error "The passphrase must be 8-63 characters, without a double quote."
+    exit 1
+  fi
+
+  PLAINTEXT=$(umask 077; mktemp -p /dev/shm initrd-wifi.XXXXXX)
+  write_wpa_config "$ssid" "$pass" "$PLAINTEXT"
   unset pass
 
   sudo systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs="$CRED_PCRS" \
@@ -510,8 +534,15 @@ print_status() {
     elif cred_opens; then
       info "Wifi:        credential opens; SSID '$(cred_ssid)' on $WIFI_IFACE"
       match=0
-      cred_matches_nm || match=$?
+      if ! cred_current_format; then
+        warn "Wifi:        sealed in the older WPA2-only format, which WPA3 and 6 GHz access points turn away. Run --enable."
+        problems=$(( problems + 1 ))
+        match=3
+      else
+        cred_matches_nm || match=$?
+      fi
       case "$match" in
+        3) ;;
         0) info "Wifi:        its key matches the password NetworkManager connects with" ;;
         1) warn "Wifi:        its key does NOT match NetworkManager's saved password; the network's password has changed. Run --enable."
            problems=$(( problems + 1 )) ;;
@@ -590,6 +621,10 @@ do_enable() {
       if [[ -f "$CRED_FILE" ]]; then
         warn "Wifi credential no longer opens; re-sealing."
       fi
+      seal_credential
+      changed=true
+    elif ! cred_current_format; then
+      warn "Wifi credential is in the older WPA2-only format; re-sealing for WPA2 and WPA3."
       seal_credential
       changed=true
     elif [[ "$match" -eq 1 ]]; then

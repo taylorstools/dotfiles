@@ -94,7 +94,7 @@ The NixOS side is in the repo and builds on every install. `myOptions.clevisTang
 What no rebuild can produce is the per-install state, and `luks-clevis-autounlock.sh` makes it:
 
 - a Clevis binding in the LUKS header: an `sss` policy that needs both Tang and the TPM to release the key
-- on wifi hosts, `nixos/hosts/<host>/initrd-wifi.cred`: the initrd's `wpa_supplicant.conf`, sealed to this machine's TPM against PCR 7
+- on wifi hosts, `nixos/hosts/<host>/initrd-wifi.cred`: the initrd's `wpa_supplicant.conf`, offering WPA2 and WPA3 the way NetworkManager does (6 GHz radios take only WPA3), sealed to this machine's TPM against PCR 7
 
 Do this only **after** `sbctl enroll-keys` and a reboot. Both pieces are bound to PCR 7, and `prepare-secure-boot.sh` generates new Secure Boot keys on every install, so anything bound before enrolling stops working the moment you enrol. The script checks for this and refuses to run early.
 
