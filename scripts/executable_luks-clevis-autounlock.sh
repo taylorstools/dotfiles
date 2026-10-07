@@ -259,7 +259,7 @@ require_passphrase_slot() {
   n=$(passphrase_slot_count "$dev")
   if [[ "$n" -lt 1 ]]; then
     error "$dev has no passphrase keyslot."
-    error "Enrol one with 'cryptsetup luksAddKey $dev' before continuing."
+    error "Enroll one with 'cryptsetup luksAddKey $dev' before continuing."
     exit 1
   fi
 }
@@ -455,7 +455,7 @@ do_enable() {
 
   if ! secure_boot_ready; then
     error "Secure Boot is off, or the firmware is still in Setup Mode."
-    error "Enrol keys (sudo sbctl enroll-keys --microsoft) and reboot first."
+    error "Enroll keys (sudo sbctl enroll-keys --microsoft) and reboot first."
     error "Anything bound before that is bound to a PCR 7 that is about to change."
     exit 1
   fi
