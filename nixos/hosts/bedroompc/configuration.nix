@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 
 {
   imports = [
@@ -41,6 +41,12 @@
     enable = builtins.pathExists ./initrd-wifi.cred;
     interface = "wlp0s20f3";
     credentialFile = ./initrd-wifi.cred;
+
+    # 6 GHz only. The Archer's 5 GHz radio and this AX211 associate but never
+    # finish the 4-way handshake (reason=15, WPA2 and WPA3 alike, in stage 2
+    # as well), and the initrd tried it first, costing 8-17s every boot. Drop
+    # this if that radio is fixed, or if 6 GHz ever stops reaching here.
+    frequencies = lib.genList (n: 5955 + 20 * n) 59;
   };
 
   myOptions.clevisTang = {
