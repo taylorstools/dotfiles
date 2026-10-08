@@ -89,6 +89,48 @@ let
     ${pkgs.coreutils}/bin/chmod 0644 ${statusFile}
   '';
 
+  # Called by the `update` alias after a successful manual rebuild. A failed
+  # automatic run otherwise stays recorded until the next automatic run
+  # succeeds, so the failure keeps being reported even once it has been fixed
+  # by hand. Only a non-success result is overwritten; a clean status is left
+  # alone so its timestamp still reflects the last automatic run.
+  clearFailure = pkgs.writeShellApplication {
+    name = "nixos-upgrade-clear-failure";
+    runtimeInputs = [ pkgs.coreutils pkgs.gnugrep pkgs.systemd ];
+    text = ''
+      StatusFile="${statusFile}"
+
+      if [ "$(id -u)" -ne 0 ]; then
+        echo "nixos-upgrade-clear-failure must run as root." >&2
+        exit 1
+      fi
+
+      if [ ! -r "$StatusFile" ]; then
+        exit 0
+      fi
+
+      Result="$(grep -m1 '^result=' "$StatusFile" | cut -d= -f2- || true)"
+      if [ "$Result" = "success" ]; then
+        exit 0
+      fi
+
+      install -d -m 0755 ${statusDir}
+      {
+        echo "result=success"
+        echo "exit-status="
+        echo "finished=$(date --iso-8601=seconds)"
+        echo "cleared-by=manual-update"
+        echo "previous-result=''${Result:-unknown}"
+      } > "$StatusFile"
+      chmod 0644 "$StatusFile"
+
+      # Drop the unit's failed state too, so `systemctl --failed` agrees.
+      systemctl reset-failed nixos-upgrade.service 2>/dev/null || true
+
+      echo "Cleared failed automatic upgrade status (was: ''${Result:-unknown})."
+    '';
+  };
+
   notifyFailure = pkgs.writeShellApplication {
     name = "upgrade-failure-notify";
     runtimeInputs = [ pkgs.coreutils pkgs.gnugrep pkgs.libnotify pkgs.systemd ];
@@ -112,7 +154,11 @@ let
 
       Result="$(grep -m1 '^result=' "$StatusFile" | cut -d= -f2- || true)"
       if [ "$Result" = "success" ]; then
-        echo "Last automatic upgrade succeeded."
+        if grep -q '^cleared-by=' "$StatusFile"; then
+          echo "Last automatic upgrade failure was cleared by a successful manual update."
+        else
+          echo "Last automatic upgrade succeeded."
+        fi
         printf '%s\n' "$StatusHash" > "$StampFile"
         exit 0
       fi
@@ -161,6 +207,8 @@ in
     flake = "${userHome}/.dotfiles/nixos";
     allowReboot = false;
   };
+
+  environment.systemPackages = [ clearFailure ];
 
   # The .path unit below needs somewhere to watch before the first upgrade
   # has ever recorded a result.

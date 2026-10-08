@@ -54,6 +54,14 @@ let
 
       gum log --level info "Rebuilding system configuration..."
       sudo nixos-rebuild switch --flake "$DOTFILES/nixos#$HOST"
+
+      # A successful manual rebuild supersedes a failed automatic one; clear
+      # the recorded failure so it stops being reported at login. Resolved to
+      # a full path because sudo does not search this script's PATH.
+      CLEAR_FAILURE="$(command -v nixos-upgrade-clear-failure || true)"
+      if [ -n "$CLEAR_FAILURE" ]; then
+        sudo "$CLEAR_FAILURE"
+      fi
     '';
   };
 in
