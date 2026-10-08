@@ -45,6 +45,7 @@ let
         hardware-configuration.nix
         hostid.nix
         disko.nix
+        initrd-wifi.cred
       )
 
       if [ ! -d "$HOST_DIR" ]; then

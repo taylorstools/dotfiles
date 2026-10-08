@@ -103,6 +103,11 @@ fi
 DOTFILES="$HOME/.dotfiles"
 FLAKE="$DOTFILES/nixos"
 HOST_DIR="$FLAKE/hosts/$HOSTNAME_ARG"
+# The sealed wifi credential lives in /etc/nixos, like hardware-configuration
+# .nix: it belongs to this install, not to the repo. The repo copy is what the
+# flake builds from; the update alias and nixos-upgrade copy /etc/nixos over
+# it before every rebuild, and this script does the same when it seals.
+CRED_ETC="/etc/nixos/initrd-wifi.cred"
 CRED_REL="nixos/hosts/$HOSTNAME_ARG/initrd-wifi.cred"
 CRED_FILE="$DOTFILES/$CRED_REL"
 CRED_NAME="wpa_supplicant.conf"   # must match LoadCredentialEncrypted= in initrd-wifi.nix
@@ -328,12 +333,24 @@ cred_tracked() {
 }
 
 cred_opens() {
-  [[ -f "$CRED_FILE" ]] \
-    && sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - >/dev/null 2>&1
+  [[ -f "$CRED_ETC" ]] \
+    && sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_ETC" - >/dev/null 2>&1
+}
+
+# The repo copy matches /etc/nixos byte for byte.
+repo_cred_in_sync() {
+  [[ -f "$CRED_FILE" ]] && cmp -s "$CRED_ETC" "$CRED_FILE"
+}
+
+# Copy /etc/nixos over the repo copy and stage it, the same step the update
+# alias and nixos-upgrade run for every file in their SYNC_FILES.
+sync_credential() {
+  cp -f "$CRED_ETC" "$CRED_FILE"
+  git -C "$DOTFILES" add -f "$CRED_REL"
 }
 
 cred_ssid() {
-  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - 2>/dev/null \
+  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_ETC" - 2>/dev/null \
     | sed -n 's/^[[:space:]]*ssid="\(.*\)"$/\1/p' | head -n1
 }
 
@@ -396,7 +413,7 @@ write_wpa_config() {
 }
 
 cred_conf() {
-  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - 2>/dev/null
+  sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_ETC" - 2>/dev/null
 }
 
 # Sealed in the WPA2+WPA3 format above, not the older WPA2-only one.
@@ -472,17 +489,19 @@ seal_credential() {
   write_wpa_config "$ssid" "$pass" "$PLAINTEXT"
   unset pass
 
+  # World-readable like the rest of /etc/nixos: nixos-upgrade copies it as
+  # the user, and only this machine's TPM can open it anyway.
   sudo systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs="$CRED_PCRS" \
-    --name="$CRED_NAME" "$PLAINTEXT" "$CRED_FILE"
+    --name="$CRED_NAME" "$PLAINTEXT" "$CRED_ETC"
   cleanup
   PLAINTEXT=""
-  sudo chown "$USER:" "$CRED_FILE"
+  sudo chmod 0644 "$CRED_ETC"
 
   if ! cred_opens; then
-    error "Sealed $CRED_FILE, but it does not decrypt. Not using it."
+    error "Sealed $CRED_ETC, but it does not decrypt. Not using it."
     exit 1
   fi
-  info "Sealed $CRED_FILE."
+  info "Sealed $CRED_ETC."
 }
 
 #endregion
@@ -541,8 +560,11 @@ print_status() {
   fi
 
   if [[ -n "$WIFI_IFACE" ]]; then
-    if [[ ! -f "$CRED_FILE" ]]; then
-      warn "Wifi:        $CRED_REL is not sealed yet; the initrd has no network"
+    if [[ ! -f "$CRED_ETC" ]]; then
+      warn "Wifi:        $CRED_ETC does not exist; run --enable (it adopts the repo copy if that still opens)"
+      problems=$(( problems + 1 ))
+    elif ! repo_cred_in_sync; then
+      warn "Wifi:        $CRED_REL differs from $CRED_ETC; run update or --enable to copy it over"
       problems=$(( problems + 1 ))
     elif ! cred_tracked; then
       warn "Wifi:        $CRED_REL is not tracked by git, so the flake cannot see it"
@@ -630,6 +652,15 @@ do_enable() {
 
   #region Wifi credential
   if [[ -n "$WIFI_IFACE" ]]; then
+    # Hosts sealed before /etc/nixos became the source of truth only have
+    # the repo copy. Keep it if it still opens; the checks below decide
+    # whether it is current.
+    if [[ ! -f "$CRED_ETC" && -f "$CRED_FILE" ]] \
+       && sudo systemd-creds decrypt --name="$CRED_NAME" "$CRED_FILE" - >/dev/null 2>&1; then
+      sudo install -m 0644 "$CRED_FILE" "$CRED_ETC"
+      info "Adopted $CRED_REL as $CRED_ETC."
+    fi
+
     match=2
     if cred_opens; then
       cred_matches_nm || match=$?
@@ -640,7 +671,7 @@ do_enable() {
       seal_credential
       changed=true
     elif ! cred_opens; then
-      if [[ -f "$CRED_FILE" ]]; then
+      if [[ -f "$CRED_ETC" ]]; then
         warn "Wifi credential no longer opens; re-sealing."
       fi
       seal_credential
@@ -664,9 +695,9 @@ do_enable() {
         warn "Could not compare its key with NetworkManager's saved password. If the network's password changed, rerun with --reseal."
       fi
     fi
-    if ! cred_tracked || ! git -C "$DOTFILES" diff --quiet -- "$CRED_REL"; then
-      git -C "$DOTFILES" add -f "$CRED_REL"
-      info "Staged $CRED_REL."
+    if ! repo_cred_in_sync || ! cred_tracked; then
+      sync_credential
+      info "Copied $CRED_ETC to $CRED_REL and staged it."
       changed=true
     fi
   fi
@@ -749,7 +780,8 @@ do_enable() {
   info "Reboot without touching the keyboard; it should come up on its own. Then:"
   info "  journalctl -b -u systemd-cryptsetup@cryptroot -u initrd-wpa-supplicant -u clevis-luks-askpass"
   if [[ -n "$WIFI_IFACE" ]] && $changed; then
-    warn "Commit and push $CRED_REL: every checkout that builds $HOSTNAME_ARG needs the current one."
+    info "$CRED_ETC is the credential's source of truth; update and nixos-upgrade copy it into the repo before every rebuild."
+    info "Never copy it into the repo from another machine."
   fi
 }
 

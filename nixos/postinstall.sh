@@ -20,6 +20,7 @@ SYNC_FILES=(
   hardware-configuration.nix
   hostid.nix
   disko.nix
+  initrd-wifi.cred
 )
 
 gum style \

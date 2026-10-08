@@ -34,9 +34,10 @@ in
         against. That is what makes it safe to keep in git and copy into the
         store and the signed initrd as-is.
 
-        scripts/luks-clevis-autounlock.sh writes it to
-        hosts/<host>/initrd-wifi.cred and re-seals it whenever it stops
-        opening; hosts point this option at that file.
+        scripts/luks-clevis-autounlock.sh seals it into
+        /etc/nixos/initrd-wifi.cred, which the update alias and nixos-upgrade
+        copy to hosts/<host>/initrd-wifi.cred before every rebuild, like
+        hardware-configuration.nix. Hosts point this option at that copy.
       '';
     };
 

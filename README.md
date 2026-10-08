@@ -94,7 +94,7 @@ The NixOS side is in the repo and builds on every install. `myOptions.clevisTang
 What no rebuild can produce is the per-install state, and `luks-clevis-autounlock.sh` makes it:
 
 - a Clevis binding in the LUKS header: an `sss` policy that needs both Tang and the TPM to release the key
-- on wifi hosts, `nixos/hosts/<host>/initrd-wifi.cred`: the initrd's `wpa_supplicant.conf`, offering WPA2 and WPA3 the way NetworkManager does (6 GHz radios take only WPA3), sealed to this machine's TPM against PCR 7
+- on wifi hosts, `/etc/nixos/initrd-wifi.cred`: the initrd's `wpa_supplicant.conf`, offering WPA2 and WPA3 the way NetworkManager does (6 GHz radios take only WPA3), sealed to this machine's TPM against PCR 7
 
 Do this only **after** `sbctl enroll-keys` and a reboot. Both pieces are bound to PCR 7, and `prepare-secure-boot.sh` generates new Secure Boot keys on every install, so anything bound before enrolling stops working the moment you enrol. The script checks for this and refuses to run early.
 
@@ -110,7 +110,7 @@ Reboot without touching the keyboard when it finishes. The screen stays black wh
 journalctl -b -u systemd-cryptsetup@cryptroot -u initrd-wpa-supplicant -u clevis-luks-askpass
 ```
 
-If the script sealed or re-sealed `initrd-wifi.cred`, commit and push it. The file is encrypted to this machine's TPM, so it is safe in a public repo, but every checkout that builds the host needs the current one. The host config only turns initrd wifi on once that file exists and is tracked by git (`builtins.pathExists`), so a host whose credential has not been sealed yet still builds; it just has no network in the initrd.
+The credential is per-install state, so like `hardware-configuration.nix` it lives in `/etc/nixos`, and the update alias and nixos-upgrade copy it into `nixos/hosts/<host>/` before every rebuild (see [Per-host configuration files](#per-host-configuration-files)). The host config only turns initrd wifi on once that copy exists and is tracked by git (`builtins.pathExists`), so a host whose credential has not been sealed yet still builds; it just has no network in the initrd.
 
 `myOptions.initrdWifi.frequencies` limits which radios the initrd will connect on, for a card that cannot finish a connection on one of them (`bedroompc` is 6 GHz only, because its AX211 never completes the handshake on the Archer's 5 GHz radio). It still scans every band. The setting is part of the sealed credential, so run `--enable` after changing it.
 
@@ -239,12 +239,13 @@ Then pair each client: add the host in Moonlight, and enter the PIN it shows on 
 
 ## Per-host configuration files
 
-Three files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
+Four files are owned by `/etc/nixos`. The dotfiles repo only holds a copy:
 
 - `hardware-configuration.nix`
 - `hostid.nix`
 - `disko.nix`
+- `initrd-wifi.cred` (wifi-only HTPCs; written by `luks-clevis-autounlock.sh`)
 
 The `update` alias and the autoupgrade service both copy `/etc/nixos` over the repo copy immediately before every rebuild. **Editing the repo copy by hand does not survive.** The next rebuild overwrites it and commits the overwrite. Change these through `/etc/nixos`.
 
-`initrd-wifi.cred` on wifi-only HTPCs is per-install state too, but it is the exception: the repo owns it, not `/etc/nixos`. It has to be in the flake's source to reach the initrd, and it is sealed to the machine's TPM, so committing it is safe. `luks-clevis-autounlock.sh` writes and stages it; commit and push it after.
+Each of these belongs to one machine, so only that machine should ever change the repo copy. Copying one into the repo from another machine gives the next pull on the owner a version it did not make, and a conflict when it has its own uncommitted copy staged. `initrd-wifi.cred` is encrypted to its machine's TPM, so it is safe in a public repo, and every seal produces different bytes even with the same settings.
