@@ -22,6 +22,20 @@ in
     ./components/xbox-controller.nix
   ];
 
+  options.myOptions.htpc.passwordRevealSeconds = lib.mkOption {
+    type = lib.types.ints.unsigned;
+    default = if clevisUnlock then 15 else 0;
+    defaultText = lib.literalExpression "if clevisTang.enable then 15 else 0";
+    description = ''
+      Seconds the splash holds the passphrase field back while Clevis tries
+      to unlock, counted from when Plymouth starts. Set it past the host's
+      usual unlock time so the field does not flash up just before the disk
+      opens. Typing reveals it at once regardless, so a longer hold only
+      costs time when the network is genuinely down and nobody touches the
+      keyboard.
+    '';
+  };
+
   options.myOptions.htpc.splashScale = lib.mkOption {
     type = lib.types.either lib.types.int lib.types.float;
     default = 1.5;
@@ -50,15 +64,17 @@ in
           (splashLogo // {
             uiScale = config.myOptions.htpc.splashScale;
 
-            # Clevis (both HTPCs): black while it tries. An unlock lands
-            # around 12s, most of it wait-online, so holding the field back
-            # 15s leaves a little margin without leaving someone staring at a
-            # black screen when the network genuinely is not there. The tick
+            # Clevis (both HTPCs): black while it tries, for
+            # myOptions.htpc.passwordRevealSeconds (above). The tick
             # backstop is deliberately far longer: it is only meant to fire
             # if Plymouth never reports boot progress at all. Without clevis
             # there is nothing to wait for, so the field comes up when asked.
-            passwordRevealSeconds = if clevisUnlock then 15 else 0;
-            passwordRevealTicks = if clevisUnlock then 4000 else 0;
+            passwordRevealSeconds = config.myOptions.htpc.passwordRevealSeconds;
+            # Kept well past the seconds hold at any plausible tick rate.
+            passwordRevealTicks =
+              if clevisUnlock
+              then lib.max 4000 (config.myOptions.htpc.passwordRevealSeconds * 200)
+              else 0;
 
             # TPM2: nothing to wait on, so logo and spinner from
             # the first frame. A failed TPM unlock still gets the field,

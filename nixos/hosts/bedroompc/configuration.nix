@@ -15,9 +15,15 @@
 
   # The Intel GOP hands the initrd native 3840x2160, where livingroompc's
   # nvidia box drops to 1920x1080 before the kernel starts. The splash bitmaps
-  # are fixed pixel sizes, so matching livingroompc's apparent size takes
-  # twice its scale (the htpc.nix default of 1.5).
-  myOptions.htpc.splashScale = 3.0;
+  # are fixed pixel sizes, so matching livingroompc's apparent size would take
+  # twice its scale (3.0 against the htpc.nix default of 1.5); 2.0 is a
+  # deliberate step smaller, which reads better on this screen.
+  myOptions.htpc.splashScale = 2.0;
+
+  # Wifi makes the unlock slower and less even than livingroompc's cable:
+  # the disk opens around 12-14s after power-on, which the default 15s hold
+  # cut close enough that the passphrase field flashed up just before it.
+  myOptions.htpc.passwordRevealSeconds = 25;
 
   # bedroompc has no cable, so Clevis reaches Tang over wifi from the initrd.
   # iwlwifi only declares the newest firmware API it supports, which
