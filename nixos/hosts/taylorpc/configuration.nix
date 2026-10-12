@@ -21,7 +21,7 @@
     davinci.enable = true;
 
     howdy = {
-      enable = true;
+      enable = false;
       # Stable by-path node for the IR sensor; /dev/videoN can move on reboot.
       devicePath = "/dev/video2";
 
