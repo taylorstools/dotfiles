@@ -13,6 +13,7 @@
     ./components/gpu-intel.nix
     ./components/gpu-nvidia.nix
     ./components/linux-kernel.nix
+    ./components/luks-idle-poweroff.nix
     ./components/mission-center.nix
     ./components/plymouth.nix
     ./components/printing.nix

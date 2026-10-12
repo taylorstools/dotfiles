@@ -47,6 +47,11 @@ in
       models."small.en" = "sha256-xhONbVjsyDIgl+D5h8MvG+i7ChhTKj+I9zTRu/nEHl0=";
     };
 
+    # Nothing unlocks a laptop but a person, so a prompt nobody is answering
+    # means it was left on - often in a bag after a lid-open or a stray
+    # power-button press. Turn it off instead of cooking the battery.
+    luksIdlePoweroff.enable = true;
+
     niri-splash = {
       enable = true;
       # The dock is a separate DMS surface and comes up a second or two
