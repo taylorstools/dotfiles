@@ -54,7 +54,7 @@ ToolBoxButtonY=62
 Color=0,0,0
 
 [Containments][152][Wallpaper][org.kde.image][General]
-Image=file:///home/taylor/.dotfiles/Wallpapers/alena-aenami-new-year1k.png
+Image=file:///home/taylor/.dotfiles/Wallpapers/enlarge_alena-aenami-eternity-1080px.jpg
 SlidePaths=/home/vince/.local/share/wallpapers,/usr/share/wallpapers
 
 [Containments][152][Wallpaper][org.kde.slideshow][General]
@@ -189,8 +189,8 @@ immutability=1
 lastScreen=-1
 location=0
 plugin=org.kde.plasma.systemtray
-popupHeight=740
-popupWidth=1124
+popupHeight=736
+popupWidth=1284
 wallpaperplugin=org.kde.image
 
 [Containments][60][Applets][65][Applets][100]
@@ -200,9 +200,6 @@ plugin=org.kde.plasma.mediacontroller
 [Containments][60][Applets][65][Applets][159]
 immutability=1
 plugin=org.kde.kdeconnect
-
-[Containments][60][Applets][65][Applets][160][Configuration]
-PreloadWeight=42
 
 [Containments][60][Applets][65][Applets][66]
 immutability=1
@@ -278,8 +275,8 @@ DialogWidth=810
 [Containments][60][Applets][65][General]
 disabledStatusNotifiers=plasmashell_microphone
 extraItems=org.kde.plasma.cameraindicator,org.kde.plasma.manage-inputmethod,org.kde.plasma.keyboardlayout,org.kde.plasma.weather,org.kde.plasma.keyboardindicator,org.kde.plasma.printmanager,org.kde.kscreen,org.kde.plasma.devicenotifier,org.kde.plasma.networkmanagement,org.kde.plasma.battery,org.kde.plasma.brightness,org.kde.plasma.volume,org.kde.plasma.clipboard,org.kde.plasma.bluetooth,org.kde.plasma.mediacontroller,org.kde.plasma.notifications,org.kde.kdeconnect
-hiddenItems=org.kde.plasma.clipboard,antimicrox,tray-id,org.kde.plasma.mediacontroller,org.kde.plasma.notifications,org.kde.kdeconnect,trayid27771
-knownItems=org.kde.plasma.cameraindicator,org.kde.plasma.manage-inputmethod,org.kde.plasma.keyboardlayout,org.kde.plasma.clipboard,org.kde.plasma.weather,org.kde.plasma.keyboardindicator,org.kde.plasma.notifications,org.kde.plasma.printmanager,org.kde.kscreen,org.kde.plasma.devicenotifier,org.kde.plasma.networkmanagement,org.kde.plasma.mediacontroller,org.kde.plasma.battery,org.kde.plasma.brightness,org.kde.plasma.volume,org.kde.kdeconnect,org.kde.plasma.bluetooth
+hiddenItems=org.kde.plasma.clipboard,antimicrox,org.kde.plasma.mediacontroller,org.kde.plasma.notifications,org.kde.kdeconnect
+knownItems=org.kde.plasma.cameraindicator,org.kde.plasma.manage-inputmethod,org.kde.plasma.keyboardlayout,org.kde.plasma.clipboard,org.kde.plasma.weather,org.kde.plasma.keyboardindicator,org.kde.plasma.notifications,org.kde.plasma.printmanager,org.kde.kscreen,org.kde.plasma.devicenotifier,org.kde.plasma.networkmanagement,org.kde.plasma.mediacontroller,org.kde.plasma.battery,org.kde.plasma.brightness,org.kde.plasma.volume,org.kde.kdeconnect,org.kde.plasma.bluetooth,org.kde.merkuro.contact.applet
 
 [Containments][60][Applets][79]
 immutability=1
@@ -288,7 +285,7 @@ plugin=org.kde.plasma.digitalclock
 [Containments][60][Applets][79][Configuration]
 immutability=1
 popupHeight=721
-popupWidth=976
+popupWidth=1104
 
 [Containments][60][Applets][79][Configuration][Appearance]
 dateDisplayFormat=BelowTime
