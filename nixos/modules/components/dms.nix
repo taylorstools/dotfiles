@@ -89,6 +89,16 @@ in
       enableClipboardPaste = true;
     };
 
+    # Bridge: DMS #3514 (80711f1c, 2026-10-12) switched the flake's NixOS
+    # module to Type=notify, but only DMS git sends READY=1 -- no tagged
+    # release (v1.6.3 and older, i.e. pkgs.dms-shell) does. With the stable
+    # package systemd waits out the 90s start timeout, kills the shell, and
+    # nixos-rebuild switch fails on user activation. Drop this once nixpkgs
+    # ships a dms-shell release that includes #3514.
+    systemd.user.services.dms.serviceConfig = lib.mkIf (cfg.dms.source == "stable") {
+      Type = lib.mkForce "simple";
+    };
+
     environment.systemPackages = with pkgs; [
       accountsservice
       adw-gtk3
