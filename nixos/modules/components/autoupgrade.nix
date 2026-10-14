@@ -32,6 +32,24 @@ let
     fi
   '';
 
+  # Runs a command with stdout and stderr merged and every line prefixed with
+  # a local AM/PM timestamp. The printf %()T builtin keeps it fork-free, so
+  # chatty build output is not slowed down. Exits with the command's status,
+  # not the loop's, so systemd still sees the real result.
+  stampOutput = pkgs.writeShellScript "nixos-upgrade-stamp" ''
+    "$@" 2>&1 | while IFS= read -r Line || [ -n "$Line" ]; do
+      printf '[%(%b %d %I:%M:%S %p)T] %s\n' -1 "$Line"
+    done
+    exit "''${PIPESTATUS[0]}"
+  '';
+
+  # The upstream module builds ExecStart from `script`; rebuild the same job
+  # script here so it can run under stampOutput.
+  upgradeScript = pkgs.writeShellScript "nixos-upgrade-start" ''
+    set -e
+    ${config.systemd.services.nixos-upgrade.script}
+  '';
+
   preUpgrade = pkgs.writeShellScript "nixos-upgrade-pre" ''
     set -euo pipefail
     ${pkgs.util-linux}/bin/runuser -u ${username} -- ${pkgs.bash}/bin/bash -c '
@@ -132,9 +150,38 @@ let
     '';
   };
 
+  # Shows the failure notification and opens the log when it is clicked.
+  # Started as its own transient unit by notifyFailure: notify-send --wait
+  # blocks until the notification is answered, and a critical notification
+  # never times out, so waiting inside that oneshot would hold it past its
+  # start timeout. DMS runs the first action on a body click, so the single
+  # "open" action covers both the button and clicking the notification.
+  showFailure = pkgs.writeShellApplication {
+    name = "upgrade-failure-show";
+    runtimeInputs = [ pkgs.libnotify pkgs.systemd pkgs.xdg-utils ];
+    text = ''
+      LogFile="${logFile}"
+
+      Action="$(notify-send \
+        --app-name="NixOS Upgrade" \
+        --urgency=critical \
+        --icon=dialog-error \
+        --action=open="Open log" \
+        --wait \
+        "Last automatic upgrade failed" \
+        "$LogFile" || true)"
+
+      if [ "$Action" = "open" ]; then
+        # Its own scope, so the editor outlives this unit instead of being
+        # killed with the rest of its cgroup when the script exits.
+        systemd-run --user --scope --quiet -- xdg-open "$LogFile"
+      fi
+    '';
+  };
+
   notifyFailure = pkgs.writeShellApplication {
     name = "upgrade-failure-notify";
-    runtimeInputs = [ pkgs.coreutils pkgs.gnugrep pkgs.libnotify pkgs.systemd ];
+    runtimeInputs = [ pkgs.coreutils pkgs.gnugrep pkgs.systemd ];
     text = ''
       StatusFile="${statusFile}"
       StampFile="$XDG_RUNTIME_DIR/upgrade-failure-notified"
@@ -184,12 +231,13 @@ let
       # finish coming up and the splash get out of the way.
       sleep ${toString settleSeconds}
 
-      notify-send \
-        --app-name="NixOS Upgrade" \
-        --urgency=critical \
-        --icon=dialog-error \
-        "Last automatic upgrade failed" \
-        "${logFile}"
+      # A notification left over from an earlier failure may still be waiting
+      # on an answer; this one supersedes it.
+      systemctl --user stop upgrade-failure-show.service 2>/dev/null || true
+      systemd-run --user --collect --quiet \
+        --unit=upgrade-failure-show \
+        --description="Show the failed NixOS upgrade notification" \
+        ${lib.getExe showFailure}
 
       printf '%s\n' "$StatusHash" > "$StampFile"
     '';
@@ -222,11 +270,19 @@ in
     ExecStartPre = [
       "${pkgs.coreutils}/bin/truncate -s 0 ${logFile}"
       "${pkgs.coreutils}/bin/chown ${username}:users ${logFile}"
-      "${waitForNetwork}"
-      "${preUpgrade}"
+      "${stampOutput} ${waitForNetwork}"
+      "${stampOutput} ${preUpgrade}"
     ];
+    ExecStart = lib.mkForce "${stampOutput} ${upgradeScript}";
     ExecStopPost = [ "${recordStatus}" ];
   };
+
+  # If upstream ever stops using `script`, the forced ExecStart above would
+  # run an empty job and report success; fail the build instead.
+  assertions = [{
+    assertion = config.systemd.services.nixos-upgrade.script != "";
+    message = "autoupgrade.nix wraps nixos-upgrade's `script`, but it is empty; the upstream module has changed.";
+  }];
 
   # Bound to the graphical session rather than default.target: the previous
   # wiring started this alongside the user manager, so the After= on
