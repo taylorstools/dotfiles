@@ -4,20 +4,19 @@
 # starts the LLM VM if it isn't already running, waits for it to come up, then
 # opens an interactive `ollama run` session on it over SSH.
 #
+# Only QEMU VMs (qm) are shut down. LXC containers (pct), such as the tang
+# server, are never touched.
+#
 # Usage:
 #   llm              # chat with the newest model in `ollama list` on the VM
 #   llm qwen3:14b    # chat with a specific model
 #   /bye or Ctrl+D   # leave the chat (the VM keeps running)
 #
-# Before the first run, create the credentials file. It is read by your user,
-# not root, and must NOT go in git or the chezmoi tree:
-#   sudo install -m 0600 -o taylor -g users /dev/null /etc/llm-chat.cred
-# then open /etc/llm-chat.cred in an editor and add:
-#   proxmox_password=ROOT_PASSWORD_ON_PROXMOX
-#   llm_password=TAYLOR_PASSWORD_ON_THE_LLM_VM
-# (An editor rather than `tee <<EOF`, which leaves the passwords in shell
-# history.) Leave a line out, or skip the file entirely, and ssh falls back to
-# keys or an interactive password prompt for that host.
+# The first run asks for the root password on Proxmox and your password on the
+# VM, and saves them to credentialsFile (/etc/llm-chat.cred: owned by you, mode
+# 0600, created with sudo once, never in git). Leave a prompt empty to use SSH
+# keys for that host instead. A rejected password is asked for again and
+# re-saved; `sudo rm /etc/llm-chat.cred` to start over.
 
 { config, lib, pkgs, ... }:
 
@@ -35,6 +34,7 @@ let
       exit 1
     fi
 
+    # qm only lists QEMU VMs, so LXC containers (tang) are left running.
     # qm list columns: VMID NAME STATUS MEM(MB) BOOTDISK(GB) PID
     mapfile -t Others < <(qm list | awk -v Target="$TargetId" \
       'NR > 1 && $3 == "running" && $1 != Target { print $1 " " $2 }')
@@ -99,7 +99,7 @@ let
 
   llm = pkgs.writeShellApplication {
     name = "llm";
-    runtimeInputs = with pkgs; [ bash coreutils gum openssh sshpass ];
+    runtimeInputs = with pkgs; [ bash coreutils gnugrep gum openssh sshpass ];
     text = ''
       # Config
       ProxmoxHost=${lib.escapeShellArg cfg.proxmox.host}
@@ -112,19 +112,24 @@ let
       BootTimeout=${toString cfg.bootTimeout}
       DefaultModel=${lib.escapeShellArg (if cfg.model == null then "" else cfg.model)}
 
+      ProxmoxTarget="$ProxmoxUser@$ProxmoxHost"
+      VmTarget="$VmUser@$VmHost"
+
       case "''${1:-}" in
         -h|--help)
           echo "Usage: llm [model]"
-          echo "Shuts down other VMs on $ProxmoxHost, starts VM $VmId, and opens an Ollama chat on $VmHost."
+          echo "Shuts down other VMs (not LXC containers) on $ProxmoxHost, starts VM $VmId,"
+          echo "and opens an Ollama chat on $VmHost."
+          echo "Saved SSH passwords: $CredFile (sudo rm it to be asked again)."
           exit 0
           ;;
       esac
       Model="''${1:-$DefaultModel}"
 
-      # Passwords: optional, one per host. Values are taken verbatim after the
-      # first '=', so passwords may contain '=' and spaces.
-      ProxmoxPass=""
-      LlmPass=""
+      # Saved passwords: key=value lines, one per host. Values are taken
+      # verbatim after the first '=', so they may contain '=' and spaces. A key
+      # with an empty value means "nothing saved, use SSH keys or ask".
+      declare -A Passwords=()
       if [[ -e "$CredFile" ]]; then
         if [[ ! -r "$CredFile" ]]; then
           gum log --level error "$CredFile exists but $(id -un) can't read it. Fix: sudo chown $(id -un) $CredFile"
@@ -135,14 +140,56 @@ let
           gum log --level warn "$CredFile is mode $CredMode; it holds passwords, so: chmod 600 $CredFile"
         fi
         while IFS='=' read -r Key Value || [[ -n "$Key" ]]; do
-          Value="''${Value%$'\r'}"
           case "$Key" in
-            proxmox_password) ProxmoxPass="$Value" ;;
-            llm_password) LlmPass="$Value" ;;
+            proxmox_password|llm_password) Passwords[$Key]="''${Value%$'\r'}" ;;
           esac
         done < "$CredFile"
-      else
-        gum log --level warn "No $CredFile; ssh will use keys or ask for passwords."
+      fi
+
+      # SaveCred KEY VALUE: create the file on first use (0600, owned by the
+      # user running llm; sudo only if its directory isn't ours), then replace
+      # KEY's line. Rewritten in place so the owner and mode stick.
+      SaveCred() {
+        local Key="$1" Value="$2" Others
+        if [[ ! -e "$CredFile" ]]; then
+          if [[ -w "$(dirname "$CredFile")" ]]; then
+            install -m 0600 /dev/null "$CredFile"
+          else
+            gum log --level info "Creating $CredFile (asks sudo once)..."
+            sudo install -m 0600 -o "$(id -un)" -g "$(id -gn)" /dev/null "$CredFile"
+          fi
+        fi
+        Others="$(grep -v "^$Key=" "$CredFile" || true)"
+        {
+          if [[ -n "$Others" ]]; then
+            printf '%s\n' "$Others"
+          fi
+          printf '%s=%s\n' "$Key" "$Value"
+        } > "$CredFile"
+      }
+
+      # AskPass KEY TARGET: prompt for TARGET's SSH password and save it.
+      AskPass() {
+        local Key="$1" Target="$2"
+        if [[ ! -t 0 ]]; then
+          gum log --level error "No saved password for $Target and no terminal to ask on. Run llm from a terminal once."
+          exit 1
+        fi
+        Passwords[$Key]="$(gum input --password \
+          --header "SSH password for $Target (leave empty to use SSH keys):")"
+        SaveCred "$Key" "''${Passwords[$Key]}"
+      }
+
+      # Ask for anything not saved yet up front, so a first run doesn't stop
+      # halfway through (after the other VMs are already shut down) to ask.
+      if [[ ! -v Passwords[proxmox_password] || ! -v Passwords[llm_password] ]]; then
+        gum log --level info "Saving SSH passwords to $CredFile. You won't be asked again."
+      fi
+      if [[ ! -v Passwords[proxmox_password] ]]; then
+        AskPass proxmox_password "$ProxmoxTarget"
+      fi
+      if [[ ! -v Passwords[llm_password] ]]; then
+        AskPass llm_password "$VmTarget"
       fi
 
       SshOpts=(
@@ -153,7 +200,7 @@ let
       )
 
       # RunSsh PASSWORD SSH_ARGS...: feed the password through sshpass when
-      # we have one, otherwise plain ssh (keys or a normal prompt).
+      # there is one, otherwise plain ssh (keys or a normal prompt).
       RunSsh() {
         local Pass="$1"
         shift
@@ -165,20 +212,33 @@ let
         fi
       }
 
+      # SshAs KEY TARGET SSH_ARGS...: ssh with the password saved under KEY.
+      # sshpass exits 5 on a rejected password; ask again (and re-save) up to
+      # twice before giving up.
+      SshAs() {
+        local Key="$1" Target="$2" Tries=1 Rc
+        shift 2
+        while :; do
+          Rc=0
+          RunSsh "''${Passwords[$Key]}" "$@" || Rc=$?
+          if (( Rc == 5 && Tries < 3 )) && [[ -t 0 ]]; then
+            gum log --level warn "$Target rejected the saved password."
+            AskPass "$Key" "$Target"
+            Tries=$((Tries + 1))
+            continue
+          fi
+          case "$Rc" in
+            5) gum log --level error "$Target rejected the password. Fix it in $CredFile or delete that line to be asked again." ;;
+            255) gum log --level error "SSH to $Target failed (see above)." ;;
+          esac
+          return "$Rc"
+        done
+      }
+
       # Single-quote a string for the remote shell, whatever that shell is.
       Quote() {
         local Escaped="''${1//\'/\'\\\'\'}"
         printf "'%s'" "$Escaped"
-      }
-
-      # Explain the sshpass-specific exit codes; anything else ssh already
-      # printed its own reason for.
-      ExplainSshFailure() {
-        local Rc="$1" Target="$2"
-        case "$Rc" in
-          5) gum log --level error "Wrong password for $Target. Check $CredFile." ;;
-          255) gum log --level error "SSH to $Target failed (see above)." ;;
-        esac
       }
 
       PortOpen() {
@@ -193,10 +253,9 @@ let
 
       gum log --level info "Preparing VM $VmId on $ProxmoxHost..."
       Rc=0
-      RunSsh "$ProxmoxPass" "$ProxmoxUser@$ProxmoxHost" \
+      SshAs proxmox_password "$ProxmoxTarget" "$ProxmoxTarget" \
         "bash -c $(Quote "$(< ${pveScript})") llm-chat $VmId $ShutdownTimeout" || Rc=$?
       if (( Rc != 0 )); then
-        ExplainSshFailure "$Rc" "$ProxmoxUser@$ProxmoxHost"
         exit "$Rc"
       fi
 
@@ -215,11 +274,8 @@ let
 
       # 3. Chat.
       Rc=0
-      RunSsh "$LlmPass" -t "$VmUser@$VmHost" \
+      SshAs llm_password "$VmTarget" -t "$VmTarget" \
         "sh -c $(Quote "$(< ${chatScript})") llm-chat $(Quote "$Model")" || Rc=$?
-      if (( Rc != 0 )); then
-        ExplainSshFailure "$Rc" "$VmUser@$VmHost"
-      fi
       exit "$Rc"
     '';
   };
@@ -246,7 +302,7 @@ in
       id = lib.mkOption {
         type = lib.types.ints.positive;
         default = 103;
-        description = "Proxmox VMID of the Ollama VM. Every other running VM is shut down.";
+        description = "Proxmox VMID of the Ollama VM. Every other running VM (not LXC container) is shut down.";
       };
 
       host = lib.mkOption {
@@ -278,7 +334,8 @@ in
       default = "/etc/llm-chat.cred";
       description = ''
         File with proxmox_password= and llm_password= lines, owned by the user
-        who runs `llm`, mode 0600. Kept outside the store and the repo.
+        who runs `llm`, mode 0600. `llm` creates it and fills it in on first
+        run. Kept outside the store and the repo.
       '';
     };
 
