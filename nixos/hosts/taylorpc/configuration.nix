@@ -46,6 +46,23 @@
       };
     };
 
+    llmChat.enable = true;
+
     roland.enable = true;
   };
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      davinci-resolve-studio =
+        prev.davinci-resolve-studio.override (old: {
+          buildFHSEnv = args:
+            old.buildFHSEnv (args // {
+              extraBwrapArgs =
+                (args.extraBwrapArgs or []) ++ [
+                  "--bind /run/opengl-driver/etc/OpenCL /etc/OpenCL"
+                ];
+            });
+        });
+    })
+  ];
 }

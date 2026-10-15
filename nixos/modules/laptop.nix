@@ -14,6 +14,7 @@ in
     ./components/dms.nix
     ./components/greetd.nix
     ./components/howdy.nix
+    ./components/llm-chat.nix
     ./components/niri.nix
     ./components/niri-splash
     ./components/power-management.nix
