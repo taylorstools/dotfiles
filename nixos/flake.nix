@@ -6,11 +6,7 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    davinci-resolve = {
-      url = "git+https://git.voidarc.co.uk/voidarc/nixos.davinci?rev=4a5b823e81a15c36834c7c2a9f0e18b6added29e";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-pinned.follows = "nixpkgs";
-    };
+    davinci-resolve.url = "git+https://git.voidarc.co.uk/voidarc/nixos.davinci?rev=4a5b823e81a15c36834c7c2a9f0e18b6added29e";
 
     asus-px-keyboard-tool = {
       url = "github:a-chaudhari/asus-px-keyboard-tool";

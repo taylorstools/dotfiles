@@ -10,6 +10,9 @@
 
   networking.hostName = "taylorpc";
 
+  environment.etc."vulkan/icd.d/radeon_icd.x86_64.json".source = 
+  "/run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json";
+
   myOptions = {
     nvidia.mode = "disabled";
 
