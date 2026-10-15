@@ -1,22 +1,39 @@
-# `llm`: one command to get a chat prompt on the Ollama VM.
+# `llm`: one command to get to the Ollama VM.
 #
 # It SSHes to the Proxmox host, shuts down every other running VM there,
-# starts the LLM VM if it isn't already running, waits for it to come up, then
-# opens an interactive `ollama run` session on it over SSH.
+# starts the LLM VM if it isn't already running, waits for Open WebUI on it to
+# come up, then opens it in the browser.
 #
 # Only QEMU VMs (qm) are shut down. LXC containers (pct), such as the tang
 # server, are never touched.
 #
 # Usage:
-#   llm              # chat with the newest model in `ollama list` on the VM
-#   llm qwen3:14b    # chat with a specific model
-#   /bye or Ctrl+D   # leave the chat (the VM keeps running)
+#   llm                        # open Open WebUI in the browser
+#   llm --terminal             # chat in the terminal instead (`ollama run`
+#   llm --terminal qwen3:14b   #   over SSH), newest model or a named one;
+#                              #   /bye or Ctrl+D to leave
+# Either way the VM keeps running afterwards.
 #
-# The first run asks for the root password on Proxmox and your password on the
-# VM, and saves them to credentialsFile (/etc/llm-chat.cred: owned by you, mode
-# 0600, created with sudo once, never in git). Leave a prompt empty to use SSH
-# keys for that host instead. A rejected password is asked for again and
-# re-saved; `sudo rm /etc/llm-chat.cred` to start over.
+# The first run asks for the root password on Proxmox (and, the first time
+# --terminal is used, your password on the VM) and saves them to
+# credentialsFile (/etc/llm-chat.cred: owned by you, mode 0600, created with
+# sudo once, never in git). Leave a prompt empty to use SSH keys for that host
+# instead. A rejected password is asked for again and re-saved;
+# `sudo rm /etc/llm-chat.cred` to start over.
+#
+# One-time setup on the VM (Debian 13), over `ssh taylor@<vm>`:
+#   sudo apt install -y docker.io
+#   sudo docker run -d --name open-webui --restart always --network host \
+#     -e OLLAMA_BASE_URL=http://127.0.0.1:11434 \
+#     -v open-webui:/app/backend/data \
+#     ghcr.io/open-webui/open-webui:main
+# Host networking lets the container reach Ollama on the VM's loopback, so
+# Ollama's unauthenticated API never has to listen on the LAN; only Open WebUI
+# (which has its own login) does, on port 8080. The first account created in
+# it becomes the admin. To update it later:
+#   sudo docker pull ghcr.io/open-webui/open-webui:main
+#   sudo docker rm -f open-webui    # then the `docker run` above again
+# (chats and settings live in the open-webui volume and survive this).
 
 { config, lib, pkgs, ... }:
 
@@ -99,7 +116,7 @@ let
 
   llm = pkgs.writeShellApplication {
     name = "llm";
-    runtimeInputs = with pkgs; [ bash coreutils gnugrep gum openssh sshpass ];
+    runtimeInputs = with pkgs; [ bash coreutils curl gnugrep gum openssh sshpass util-linux xdg-utils ];
     text = ''
       # Config
       ProxmoxHost=${lib.escapeShellArg cfg.proxmox.host}
@@ -107,6 +124,7 @@ let
       VmId=${toString cfg.vm.id}
       VmHost=${lib.escapeShellArg cfg.vm.host}
       VmUser=${lib.escapeShellArg cfg.vm.user}
+      WebUiPort=${toString cfg.webUi.port}
       CredFile=${lib.escapeShellArg cfg.credentialsFile}
       ShutdownTimeout=${toString cfg.shutdownTimeout}
       BootTimeout=${toString cfg.bootTimeout}
@@ -114,16 +132,31 @@ let
 
       ProxmoxTarget="$ProxmoxUser@$ProxmoxHost"
       VmTarget="$VmUser@$VmHost"
+      WebUiUrl="http://$VmHost:$WebUiPort"
 
+      Usage() {
+        echo "Usage: llm                      open Open WebUI ($WebUiUrl) in the browser"
+        echo "       llm --terminal [model]   chat in the terminal over SSH instead"
+        echo
+        echo "Either way, first shuts down other VMs (not LXC containers) on $ProxmoxHost"
+        echo "and starts VM $VmId. Saved SSH passwords: $CredFile (sudo rm it to be asked again)."
+      }
+
+      Mode="web"
       case "''${1:-}" in
         -h|--help)
-          echo "Usage: llm [model]"
-          echo "Shuts down other VMs (not LXC containers) on $ProxmoxHost, starts VM $VmId,"
-          echo "and opens an Ollama chat on $VmHost."
-          echo "Saved SSH passwords: $CredFile (sudo rm it to be asked again)."
+          Usage
           exit 0
           ;;
+        -t|--terminal)
+          Mode="terminal"
+          shift
+          ;;
       esac
+      if [[ "$Mode" == web && $# -gt 0 ]]; then
+        Usage >&2
+        exit 2
+      fi
       Model="''${1:-$DefaultModel}"
 
       # Saved passwords: key=value lines, one per host. Values are taken
@@ -180,17 +213,27 @@ let
         SaveCred "$Key" "''${Passwords[$Key]}"
       }
 
-      # Ask for anything not saved yet up front, so a first run doesn't stop
-      # halfway through (after the other VMs are already shut down) to ask.
-      if [[ ! -v Passwords[proxmox_password] || ! -v Passwords[llm_password] ]]; then
-        gum log --level info "Saving SSH passwords to $CredFile. You won't be asked again."
+      # Ask for anything this run needs and hasn't saved yet up front, so a
+      # first run doesn't stop halfway through (after the other VMs are
+      # already shut down) to ask. The VM password is only needed for SSH
+      # into the VM, so only for --terminal.
+      Needed=(proxmox_password)
+      if [[ "$Mode" == terminal ]]; then
+        Needed+=(llm_password)
       fi
-      if [[ ! -v Passwords[proxmox_password] ]]; then
-        AskPass proxmox_password "$ProxmoxTarget"
-      fi
-      if [[ ! -v Passwords[llm_password] ]]; then
-        AskPass llm_password "$VmTarget"
-      fi
+      Announced=0
+      for Key in "''${Needed[@]}"; do
+        if [[ ! -v Passwords[$Key] ]]; then
+          if (( ! Announced )); then
+            gum log --level info "Saving SSH passwords to $CredFile. You won't be asked again."
+            Announced=1
+          fi
+          case "$Key" in
+            proxmox_password) AskPass "$Key" "$ProxmoxTarget" ;;
+            llm_password) AskPass "$Key" "$VmTarget" ;;
+          esac
+        fi
+      done
 
       SshOpts=(
         -o ConnectTimeout=10
@@ -241,12 +284,36 @@ let
         printf "'%s'" "$Escaped"
       }
 
+      # PortOpen HOST PORT
       PortOpen() {
-        timeout 3 bash -c "echo > /dev/tcp/$1/22" 2>/dev/null
+        timeout 3 bash -c "echo > /dev/tcp/$1/$2" 2>/dev/null
+      }
+
+      WebUiReady() {
+        curl -fsS --max-time 3 "$WebUiUrl/health" >/dev/null 2>&1
+      }
+
+      # WaitFor DESCRIPTION HINT CHECK...: run CHECK until it succeeds or
+      # BootTimeout runs out. Silent if it's already up.
+      WaitFor() {
+        local What="$1" Hint="$2" Deadline
+        shift 2
+        if "$@"; then
+          return 0
+        fi
+        gum log --level info "Waiting up to $BootTimeout seconds for $What..."
+        Deadline=$((SECONDS + BootTimeout))
+        until "$@"; do
+          if (( SECONDS >= Deadline )); then
+            gum log --level error "$What still isn't up after $BootTimeout seconds. $Hint"
+            exit 1
+          fi
+          sleep 2
+        done
       }
 
       # 1. Proxmox: other VMs off, LLM VM on.
-      if ! PortOpen "$ProxmoxHost"; then
+      if ! PortOpen "$ProxmoxHost" 22; then
         gum log --level error "Proxmox host $ProxmoxHost isn't reachable on port 22. It looks to be down."
         exit 1
       fi
@@ -259,30 +326,35 @@ let
         exit "$Rc"
       fi
 
-      # 2. Wait for the VM's sshd.
-      if ! PortOpen "$VmHost"; then
-        gum log --level info "Waiting up to $BootTimeout seconds for $VmHost to boot..."
-        Deadline=$((SECONDS + BootTimeout))
-        until PortOpen "$VmHost"; do
-          if (( SECONDS >= Deadline )); then
-            gum log --level error "$VmHost still isn't answering on port 22 after $BootTimeout seconds. Check the VM console in Proxmox."
-            exit 1
-          fi
-          sleep 2
-        done
+      # 2a. Terminal chat over SSH.
+      if [[ "$Mode" == terminal ]]; then
+        WaitFor "SSH on $VmHost" "Check the VM console in Proxmox." PortOpen "$VmHost" 22
+        Rc=0
+        SshAs llm_password "$VmTarget" -t "$VmTarget" \
+          "sh -c $(Quote "$(< ${chatScript})") llm-chat $(Quote "$Model")" || Rc=$?
+        exit "$Rc"
       fi
 
-      # 3. Chat.
-      Rc=0
-      SshAs llm_password "$VmTarget" -t "$VmTarget" \
-        "sh -c $(Quote "$(< ${chatScript})") llm-chat $(Quote "$Model")" || Rc=$?
-      exit "$Rc"
+      # 2b. Open WebUI. Its first start after an image update can take a few
+      # minutes while it migrates and downloads its embedding model.
+      WaitFor "Open WebUI at $WebUiUrl" \
+        "Check the VM console in Proxmox, or on the VM: sudo docker logs open-webui" \
+        WebUiReady
+
+      if [[ -n "''${WAYLAND_DISPLAY:-}''${DISPLAY:-}" ]]; then
+        gum log --level info "Opening $WebUiUrl"
+        # Detached: xdg-open can block for as long as a freshly started
+        # browser stays open.
+        setsid -f xdg-open "$WebUiUrl" >/dev/null 2>&1
+      else
+        gum log --level info "Open WebUI is up at $WebUiUrl"
+      fi
     '';
   };
 in
 {
   options.myOptions.llmChat = {
-    enable = lib.mkEnableOption "the `llm` launcher for the Ollama VM on Proxmox";
+    enable = lib.mkEnableOption "the `llm` launcher for Open WebUI on the Ollama VM on Proxmox";
 
     proxmox = {
       host = lib.mkOption {
@@ -307,7 +379,7 @@ in
 
       host = lib.mkOption {
         type = lib.types.str;
-        default = "192.168.10.24";
+        default = "llm.lan";
         description = "Hostname or IP of the Ollama VM (its DHCP reservation).";
       };
 
@@ -324,8 +396,8 @@ in
       default = null;
       example = "qwen3:14b";
       description = ''
-        Model to chat with when `llm` is run with no argument. null picks the
-        newest model in `ollama list` on the VM.
+        Model for `llm --terminal` when no model is given. null picks the
+        newest model in `ollama list` on the VM. Open WebUI has its own picker.
       '';
     };
 
@@ -345,10 +417,20 @@ in
       description = "Seconds to wait for each other VM to shut down cleanly before giving up.";
     };
 
+    webUi.port = lib.mkOption {
+      type = lib.types.port;
+      default = 8080;
+      description = "Port Open WebUI listens on inside the VM.";
+    };
+
     bootTimeout = lib.mkOption {
       type = lib.types.ints.positive;
-      default = 180;
-      description = "Seconds to wait for the Ollama VM to accept SSH after starting it.";
+      default = 300;
+      description = ''
+        Seconds to wait for the VM to come up after starting it: for Open
+        WebUI to answer, or for SSH with --terminal. Open WebUI's first start
+        after an update can take a few minutes.
+      '';
     };
   };
 
