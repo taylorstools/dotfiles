@@ -9,7 +9,6 @@
     davinci-resolve = {
       url = "git+https://git.voidarc.co.uk/voidarc/nixos.davinci?rev=4a5b823e81a15c36834c7c2a9f0e18b6added29e";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-pinned.follows = "nixpkgs";
     };
 
     asus-px-keyboard-tool = {
