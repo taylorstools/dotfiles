@@ -65,6 +65,38 @@
     })
   ];
 
+  # The lid-close bind in dot_config/niri/custom/misc.kdl locks the session and
+  # then runs `sleep 1; systemctl suspend` itself. logind's own default,
+  # HandleLidSwitch=suspend, acts on the same lid event and gets there first:
+  # the machine is already asleep while the bind is still inside `sleep 1`.
+  # CLOCK_MONOTONIC stands still through suspend, so that second runs out only
+  # after the lid opens - and its `systemctl suspend` puts the laptop straight
+  # back to sleep a moment after it woke. That second suspend is the screen
+  # and keyboard going dark right after opening the lid.
+  #
+  # Hold logind's lid handling for as long as niri is up, so the bind is the
+  # only thing acting on the lid (the same inhibitor GNOME and KDE take). At
+  # the greeter or a TTY nothing holds it, and logind suspends on its own.
+  # Check with: systemd-inhibit --list
+  systemd.user.services.niri-lid-inhibit = {
+    description = "Hold logind lid handling while niri handles the lid";
+    wantedBy = [ "niri.service" ];
+    bindsTo = [ "niri.service" ];
+    after = [ "niri.service" ];
+    serviceConfig = {
+      ExecStart = lib.concatStringsSep " " [
+        "${pkgs.systemd}/bin/systemd-inhibit"
+        "--what=handle-lid-switch"
+        "--who=niri"
+        # Quoted for systemd's ExecStart parser, which splits on spaces.
+        "\"--why=niri's lid-close bind locks and suspends\""
+        "--mode=block"
+        "${lib.getExe' pkgs.coreutils "sleep"} infinity"
+      ];
+      Restart = "on-failure";
+    };
+  };
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     fd
