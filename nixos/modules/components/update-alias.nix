@@ -1,9 +1,11 @@
 { pkgs, ... }:
 
 let
+  flake-update = pkgs.callPackage ../../pkgs/flake-update/package.nix { };
+
   update-alias = pkgs.writeShellApplication {
     name = "update";
-    runtimeInputs = with pkgs; [ coreutils diffutils git gum nix nixos-rebuild ];
+    runtimeInputs = [ flake-update ] ++ (with pkgs; [ coreutils diffutils git gum nix nixos-rebuild ]);
     text = ''
       set -euo pipefail
 
@@ -51,7 +53,7 @@ let
       done
 
       gum log --level info "Updating flake..."
-      nix flake update --flake "$DOTFILES/nixos"
+      flake-update "$DOTFILES/nixos"
 
       gum log --level info "Rebuilding system configuration..."
       sudo nixos-rebuild switch --flake "$DOTFILES/nixos#$HOST"

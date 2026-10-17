@@ -80,18 +80,17 @@
         "nixpkgs-pinned": "nixpkgs-pinned"
       },
       "locked": {
-        "lastModified": 1790349619,
-        "narHash": "sha256-cU4QbXhq5LKLUdrlDEVLIm/onZma++w0esx64Hrsi3U=",
+        "lastModified": 1792225325,
+        "narHash": "sha256-U88+hxCd3VyY/Y19QEFUudks9hXhILHbEvnkhZCp0mo=",
         "ref": "refs/heads/main",
-        "rev": "4a5b823e81a15c36834c7c2a9f0e18b6added29e",
-        "revCount": 7,
+        "rev": "f87218db2d55aff4644e6251a78fbc923930e991",
+        "revCount": 1,
         "type": "git",
-        "url": "https://git.voidarc.co.uk/voidarc/nixos.davinci"
+        "url": "http://git.lan:3000/taylorstools/davinci-resolve-studio-nixos-flake"
       },
       "original": {
-        "rev": "4a5b823e81a15c36834c7c2a9f0e18b6added29e",
         "type": "git",
-        "url": "https://git.voidarc.co.uk/voidarc/nixos.davinci"
+        "url": "http://git.lan:3000/taylorstools/davinci-resolve-studio-nixos-flake"
       }
     },
     "disko": {
@@ -123,11 +122,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792206010,
-        "narHash": "sha256-ndty3yKSimePsT+rHaoPQ91JvXF68W0qoGGV0CyzIa0=",
+        "lastModified": 1792223226,
+        "narHash": "sha256-f3h4JJY4dQth2eJPLVUUFCsDlrD66sfHnQw0XiJ4drY=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "d8a87a8e13693b4e0a2a627e5e7ef6bb7248b311",
+        "rev": "ae361e37fc06fcf24c5e465217f6b15b23211362",
         "type": "github"
       },
       "original": {
@@ -298,17 +297,17 @@
     },
     "nixpkgs-pinned": {
       "locked": {
-        "lastModified": 1772567409,
-        "narHash": "sha256-qspxGige37s/66q9sptyG5VA/l2IOmMMZVJ4Xhta2wU=",
+        "lastModified": 1791956154,
+        "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e4ec59bc1152b09a4843702e4a49381194f065a2",
+        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e4ec59bc1152b09a4843702e4a49381194f065a2",
+        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
         "type": "github"
       }
     },

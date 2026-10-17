@@ -13,6 +13,10 @@ let
   networkWaitSeconds = 600;
   networkPollSeconds = 10;
 
+  # Skips the Forgejo-hosted inputs when git.lan is out of reach, instead of
+  # failing the whole run; see pkgs/flake-update/package.nix.
+  flakeUpdate = pkgs.callPackage ../../pkgs/flake-update/package.nix { };
+
   waitForNetwork = pkgs.writeShellScript "nixos-upgrade-wait-network" ''
     set -euo pipefail
 
@@ -91,7 +95,7 @@ let
           "nixos/hosts/$HOSTNAME/$f"
       done
 
-      ${pkgs.nix}/bin/nix flake update --flake "$DOTFILES/nixos"
+      ${lib.getExe flakeUpdate} "$DOTFILES/nixos"
     '
   '';
 
