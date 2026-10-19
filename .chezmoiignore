@@ -118,6 +118,7 @@ Wallpapers{,/**}
   .config/xfce4{,/**}
   .config/xsettingsd{,/**}
   .icons/default/index.theme
+  .local/share/desktop-bookmark
   .local/share/applications/Lock.desktop
   .local/share/applications/Logout.desktop
   .local/share/applications/Reboot.desktop
