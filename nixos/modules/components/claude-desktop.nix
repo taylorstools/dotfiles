@@ -5,37 +5,15 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   upstream = inputs.claude-desktop.packages.${system};
 
-  # Workaround for upstream 2.19675.1: the bundled claude-native-binding.node
-  # now has a DT_NEEDED on libpipewire-0.3.so.0, but nix/claude-desktop.nix
-  # lists pipewire only in runtimeDependencies. autoPatchelf applies those to
-  # executables alone, so the .node can't resolve it and the build fails.
-  # Putting pipewire in buildInputs lets autoPatchelf find it for every ELF.
-  # Drop this (and point the default back at upstream.claude-desktop-fhs) once
-  # upstream adds pipewire to buildInputs itself.
-  claude-desktop-fhs = upstream.claude-desktop-fhs.override {
-    claude-desktop = upstream.claude-desktop.overrideAttrs (old: {
-      buildInputs = old.buildInputs ++ [ pkgs.pipewire ];
-    });
-  };
-
-  # niri exports ELECTRON_OZONE_PLATFORM_HINT=auto for the whole session, which
-  # lands this app on Wayland no matter what the option below says. Chromium
-  # >= 146 asserts zwp_idle_inhibit_manager_v1 on any open window, with no
-  # video, audio or Wake Lock API in play; niri honours it and stops emitting
-  # ext-idle-notify, so hypridle never learns the session went idle and nothing
-  # dims, locks or blanks. Pin the hint per-app so the option decides.
-  ozonePlatform = if cfg.wayland then "wayland" else "x11";
-
   # Only env vars and Chromium flags reach this build. CLAUDE_USE_WAYLAND and
   # CLAUDE_PASSWORD_STORE are read by upstream's scripts/launcher-common.sh,
   # which only the .deb and .rpm formats install: nix/claude-desktop.nix copies
   # usr/lib and usr/share out of the official .deb and makeWrappers the Electron
   # ELF itself, so no launcher script exists here to interpret them. Setting
-  # them is a no-op; the ozone hint and a raw --password-store are the knobs.
+  # them is a no-op; a raw --password-store is the knob.
   wrapperArgs =
     lib.optionals (cfg.passwordStore != null)
-      [ "--add-flags" "--password-store=${cfg.passwordStore}" ]
-    ++ [ "--set" "ELECTRON_OZONE_PLATFORM_HINT" ozonePlatform ];
+      [ "--add-flags" "--password-store=${cfg.passwordStore}" ];
 
   wrapped = pkgs.symlinkJoin {
     name = "claude-desktop-wrapped";
@@ -58,9 +36,9 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = claude-desktop-fhs;
-      defaultText = lib.literalMD
-        "upstream `claude-desktop-fhs`, rebuilt with `pipewire` in the base package's `buildInputs`";
+      default = upstream.claude-desktop-fhs;
+      defaultText = lib.literalExpression
+        "inputs.claude-desktop.packages.\${system}.claude-desktop-fhs";
       description = ''
         Which Claude Desktop build to install. The -fhs variant runs the app
         under bubblewrap inside an FHS environment, which is what lets MCP
@@ -104,19 +82,6 @@ in
         kvm group membership, but that is a Debianism: nixpkgs leaves
         systemd's dev-kvm-mode at its 0666 default, and the udev rule for
         /dev/vhost-vsock uses the same mode.
-      '';
-    };
-
-    wayland = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Run Electron natively on Wayland rather than through XWayland.
-
-        Leave this off unless the rendering is worth it: on Wayland the app
-        holds an idle inhibitor open the entire time its window is, which
-        stops hypridle from ever dimming, locking or blanking the screen.
-        See the ELECTRON_OZONE_PLATFORM_HINT note at the top of this file.
       '';
     };
   };
