@@ -87,12 +87,6 @@ in
 
       enableDynamicTheming = true;
       enableClipboardPaste = true;
-
-      # Defaults to true and adds pkgs.khal to systemPackages. Nothing here
-      # configures khal (no khal/vdirsyncer config), so it only costs a
-      # build -- and khal 0.14.1 on unstable (2026-10-17) fails to produce
-      # its `man` output, breaking the whole system build.
-      enableCalendarEvents = false;
     };
 
     # Bridge: DMS #3514 (80711f1c, 2026-10-12) switched the flake's NixOS
