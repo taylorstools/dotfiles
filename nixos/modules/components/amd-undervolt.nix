@@ -1,17 +1,39 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
+  kernel = config.boot.kernelPackages.kernel;
+
+  # nixpkgs (Oct 2026) now signs every kernel module with kmodigest during
+  # `make modules_install` and aggregates the per-module `<mod>.ko.cer`
+  # files into modules.cer, which gets baked into the kernel image. The
+  # ryzen-smu package installs its .ko by hand, so it never gets signed and
+  # the modules aggregator dies on `cat ryzen_smu.ko.cer: No such file`.
+  # Sign it ourselves. postFixup so it runs after strip, which would
+  # otherwise mangle the appended signature. Drop this (and go back to
+  # hardware.cpu.amd.ryzen-smu.enable) once the nixpkgs package does it.
+  ryzenSmu = config.boot.kernelPackages.ryzen-smu.overrideAttrs (old: {
+    postFixup = (old.postFixup or "") + ''
+      ko=$out/lib/modules/${kernel.modDirVersion}/kernel/drivers/ryzen_smu/ryzen_smu.ko
+      chmod u+w "$ko"
+      ${lib.getExe pkgs.buildPackages.kmodigest} "$ko"
+      chmod 444 "$ko" "$ko.cer"
+    '';
+  });
+
   coMagnitude = 25;
   coall = 1048576 - coMagnitude; # 0x100000 - coMagnitude
 
   ryzenadjBin = "${pkgs.ryzenadj}/bin/ryzenadj";
 in
 {
-  hardware.cpu.amd.ryzen-smu.enable = true;
+  # Same as hardware.cpu.amd.ryzen-smu.enable, but with the signed package.
+  boot.kernelModules = [ "ryzen-smu" ];
+  boot.extraModulePackages = [ ryzenSmu ];
 
   environment.systemPackages = with pkgs; [
     #mprime
     ryzenadj
+    ryzenSmu
   ];
 
   systemd.services.ryzenadj = {
