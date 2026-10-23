@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.myOptions.clevisTang;
@@ -80,6 +80,16 @@ in
       enable = true;
       useTang = true;
     };
+
+    # clevis-luks-askpass hands the recovered passphrase to cryptsetup through
+    # systemd-reply-password, called by its full store path. Nothing pulls
+    # that helper into the systemd initrd, so without this every unlock fails
+    # with "No such file or directory" and falls back to the typed passphrase.
+    # pkgs.systemd is the build clevis references, not necessarily the
+    # initrd's systemd package.
+    boot.initrd.systemd.storePaths = [
+      "${pkgs.systemd}/lib/systemd/systemd-reply-password"
+    ];
     #endregion
   };
 }
