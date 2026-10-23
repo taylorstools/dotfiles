@@ -50,6 +50,12 @@ in
     boot.initrd.systemd.network.networks."10-lan" = {
       matchConfig.Name = cfg.interface;
       networkConfig.DHCP = "ipv4";
+      # networkd defaults to a DUID-based client ID (ff:...), NetworkManager
+      # sends 01:<MAC>. Kea treats leases with different client IDs as
+      # different clients, so whichever phase asked second found the reserved
+      # address held by the other and got a pool address instead. Sending the
+      # MAC makes the initrd and stage 2 the same client to the DHCP server.
+      dhcpV4Config.ClientIdentifier = "mac";
       linkConfig.RequiredForOnline = "routable";
     };
 
