@@ -1,0 +1,5 @@
+[Applications][org.qbittorrent.qBittorrent]
+Seen=true
+
+[Services][xdg-desktop-portal-kde]
+ShowPopups=false
