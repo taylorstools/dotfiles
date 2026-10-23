@@ -50,6 +50,7 @@ Wallpapers{,/**}
   .config/Launcher.png
   .config/menus{,/**}
   .config/plasma-org.kde.plasma.desktop-appletsrc
+  .config/plasmanotifyrc
   .config/plasmarc
   .config/plasmashellrc
   .config/powerdevilrc
