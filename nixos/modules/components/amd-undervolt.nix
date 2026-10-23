@@ -3,20 +3,24 @@
 let
   kernel = config.boot.kernelPackages.kernel;
 
-  # nixpkgs (Oct 2026) now signs every kernel module with kmodigest during
+  # TEMP(nixpkgs-2026-10): nixpkgs now signs every kernel module with kmodigest during
   # `make modules_install` and aggregates the per-module `<mod>.ko.cer`
   # files into modules.cer, which gets baked into the kernel image. The
   # ryzen-smu package installs its .ko by hand, so it never gets signed and
   # the modules aggregator dies on `cat ryzen_smu.ko.cer: No such file`.
   # Sign it ourselves. postFixup so it runs after strip, which would
-  # otherwise mangle the appended signature. Drop this (and go back to
-  # hardware.cpu.amd.ryzen-smu.enable) once the nixpkgs package does it.
+  # otherwise mangle the appended signature. Fixed on nixpkgs master (the
+  # package now uses modules_install); once that reaches the channel the
+  # .ko.cer already exists and this skips itself. Then drop it and go back
+  # to hardware.cpu.amd.ryzen-smu.enable.
   ryzenSmu = config.boot.kernelPackages.ryzen-smu.overrideAttrs (old: {
     postFixup = (old.postFixup or "") + ''
       ko=$out/lib/modules/${kernel.modDirVersion}/kernel/drivers/ryzen_smu/ryzen_smu.ko
-      chmod u+w "$ko"
-      ${lib.getExe pkgs.buildPackages.kmodigest} "$ko"
-      chmod 444 "$ko" "$ko.cer"
+      if [ ! -e "$ko.cer" ]; then
+        chmod u+w "$ko"
+        ${lib.getExe pkgs.buildPackages.kmodigest} "$ko"
+        chmod 444 "$ko" "$ko.cer"
+      fi
     '';
   });
 
