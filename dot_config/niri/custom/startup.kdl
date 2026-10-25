@@ -16,3 +16,6 @@ spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
 
 // libinput-gestures
 spawn-sh-at-startup "systemctl --user start libinput-gestures &"
+
+// Hidden kitty for the window switcher (Mod+Tab), so it opens instantly
+spawn-sh-at-startup "$HOME/scripts/niri_window-switcher.sh --warm"

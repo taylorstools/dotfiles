@@ -106,6 +106,7 @@
     gparted
     grim
     gsettings-desktop-schemas
+    librsvg # rsvg-convert, for niri_window-switcher.sh's SVG icons
     loupe
     nwg-look
     python3

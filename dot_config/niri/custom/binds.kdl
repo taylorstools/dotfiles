@@ -59,6 +59,9 @@ binds {
     // Runner
     Mod+R   { spawn "sh" "-c" "exec $HOME/scripts/runner.sh"; }
 
+    // Window switcher
+    Mod+Tab { spawn "sh" "-c" "exec $HOME/scripts/niri_window-switcher.sh"; }
+
     // Lock screen
     // --force: a keybind can only reach niri while the session is unlocked, so
     // any hyprlock still alive here is a leftover that failed to exit.

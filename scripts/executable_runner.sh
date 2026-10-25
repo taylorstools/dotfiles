@@ -294,7 +294,7 @@ choose_editor() {
             fzf \
                 --prompt "Open $(basename -- "$1") with: " \
                 --disabled --no-sort \
-                --layout reverse --info hidden --cycle \
+                --layout reverse --info hidden --cycle --gutter ' ' \
                 --border --border-label " ⏎ open · 1/2 pick · esc back " \
                 --border-label-pos 0:bottom \
                 --bind '1:pos(1)+accept,2:pos(2)+accept' \
@@ -346,7 +346,7 @@ run_ui() {
         fg:#ffffff, query:#ffffff,
         fg+:$lighter, prompt:$lighter, hl:$lighter, hl+:#ffffff,
         pointer:$lighter, selected-fg:$lighter, selected-bg:#000000,
-        bg:#000000, bg+:$light, list-bg:#000000, gutter:#000000,
+        bg:#000000, bg+:$light, list-bg:#000000, gutter:-1,
         border:$light, label:$light
     "
 
@@ -363,7 +363,7 @@ run_ui() {
                 --delimiter '\t' --with-nth 2 \
                 --scheme path \
                 --prompt "$dir" --query "$query" \
-                --layout reverse --info hidden --cycle \
+                --layout reverse --info hidden --cycle --gutter ' ' \
                 --border --border-label "$(label)" --border-label-pos 0:bottom \
                 --bind 'change:transform:on_change' \
                 --bind 'right:transform:on_complete {1}' \

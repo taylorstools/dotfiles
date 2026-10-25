@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792718685,
-        "narHash": "sha256-RwFBSJHLJxf+LWHhvn0RV4XovmvQ3LupQUjtXNGvwJ8=",
+        "lastModified": 1792804912,
+        "narHash": "sha256-klbtO1TBqdytstAQ100XrCzvJuEOaMFbNm/R1GMnB50=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "9cc52c82c96535002542a39907b8f1394e0cb5da",
+        "rev": "a74844bb9c1ade7ba997a2225844ab06c59e9bb0",
         "type": "github"
       },
       "original": {
@@ -59,11 +59,11 @@
     "dank-qml-common": {
       "flake": false,
       "locked": {
-        "lastModified": 1792767358,
-        "narHash": "sha256-0YG9NpPzk6jo2Y4amMYlCbVdE5Mdkv/WD2suSJj18CE=",
+        "lastModified": 1792779269,
+        "narHash": "sha256-v1eFTX2PqTtXfsH/fAj5SChc24KqGm5GSXJEJNAFKSc=",
         "owner": "duxlabs-dev",
         "repo": "dux-qml-common",
-        "rev": "fb4853fbf1e8a8a4ae8dc21d33daf20590188887",
+        "rev": "794dfc9d9e6bacf6e6f5ec183caa00fcffb479bb",
         "type": "github"
       },
       "original": {
@@ -80,11 +80,11 @@
         "nixpkgs-pinned": "nixpkgs-pinned"
       },
       "locked": {
-        "lastModified": 1792637126,
-        "narHash": "sha256-RgcrjNVptWpuo5uZbBxycpuNMsagJvxCY+JVID8GspU=",
+        "lastModified": 1792824017,
+        "narHash": "sha256-1/9TaGwD+mbyF7HrtwERBYFFN/Eqty3JWR1Lh0hMt/k=",
         "ref": "refs/heads/main",
-        "rev": "0c07f29e203c9e4a88bb83fd0d2a530dce0a7bf1",
-        "revCount": 3,
+        "rev": "afa61cd31f2760e0d5ae66ba0e5e6e08f6023656",
+        "revCount": 4,
         "type": "git",
         "url": "http://git.lan:3000/taylorstools/davinci-resolve-studio-nixos-flake"
       },
@@ -122,11 +122,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792767479,
-        "narHash": "sha256-1BZ/C46BzNI8LlfYrpRKOnoJofBkqw2ex21zkKx3wtE=",
+        "lastModified": 1792813553,
+        "narHash": "sha256-P03WOnS4eMEYIwkyri+74z5GdCx1LU5eSumUUAwEbCM=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "b7be4a344a148768f3e931ab70386d13c73185cf",
+        "rev": "52d6a46d8993b946f3c2765c66b3dd8f7b698ef6",
         "type": "github"
       },
       "original": {
