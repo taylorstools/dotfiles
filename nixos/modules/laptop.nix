@@ -36,9 +36,9 @@ in
       passwordStore = "gnome-libsecret";
     };
 
-    dms.source = "stable";
+    dms.source = "git";
 
-    quickshell.source = "stable";
+    quickshell.source = "git";
 
     whisrs = {
       enable = true;
