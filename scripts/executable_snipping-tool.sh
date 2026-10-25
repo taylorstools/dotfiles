@@ -104,8 +104,7 @@ Action=$(notify-send \
     --icon="$ShotFile" \
     --action=save="Save" \
     --wait \
-    "Screenshot copied to clipboard" \
-    "Press Save to keep it as an image." 2>/dev/null || true)
+    "Screenshot copied to clipboard" 2>/dev/null || true)
 
 [ "$Action" = "save" ] || exit 0
 #endregion
