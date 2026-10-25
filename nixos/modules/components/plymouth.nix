@@ -48,10 +48,6 @@ in
       inherit (cfg) theme themePackages;
     };
 
-    # The agent that draws the passphrase prompt on top of the splash is a
-    # systemd password agent, so the initrd has to be the systemd one.
-    boot.initrd.systemd.enable = lib.mkDefault true;
-
     # The upstream plymouth module already adds "splash" itself.
     boot.kernelParams = lib.optionals cfg.quietBoot [
       "quiet"
@@ -86,7 +82,6 @@ in
         };
       };
 
-    boot.initrd.verbose = !cfg.quietBoot;
     boot.consoleLogLevel = lib.mkIf cfg.quietBoot 0;
   };
 }

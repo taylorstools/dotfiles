@@ -62,8 +62,8 @@ in
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = config.boot.initrd.systemd.enable && config.boot.initrd.systemd.tpm2.enable;
-        message = "myOptions.initrdWifi needs the systemd initrd with TPM2 support to open its credential.";
+        assertion = config.boot.initrd.systemd.tpm2.enable;
+        message = "myOptions.initrdWifi needs TPM2 support in the initrd to open its credential.";
       }
     ];
 

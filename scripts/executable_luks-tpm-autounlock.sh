@@ -280,7 +280,6 @@ $GENERATED
 { ... }:
 
 {
-  boot.initrd.systemd.enable = true;
   boot.initrd.luks.devices.cryptroot.crypttabExtraOpts = [ "tpm2-device=auto" ];
 }
 EOF
@@ -293,10 +292,6 @@ $GENERATED
 { ... }:
 
 {
-  # Kept regardless of TPM state. The systemd initrd runs the password agent
-  # that draws the Plymouth passphrase prompt; dropping it here would silently
-  # send this host back to the scripted initrd.
-  boot.initrd.systemd.enable = true;
 }
 EOF
   gum log --level info "Wrote $ETC_FILE (auto-unlock disabled)."

@@ -54,10 +54,9 @@
   boot.zfs.forceImportRoot = false;
   services.zfs.autoScrub.enable = true;
 
-  # Every host unlocks LUKS through the systemd initrd: the Plymouth password
+  # Every host unlocks LUKS through the systemd initrd (the Plymouth password
   # agent, clevis-luks-askpass and the zfs-import ordering below all assume
-  # it. plymouth.nix sets it too, but only as a default.
-  boot.initrd.systemd.enable = true;
+  # it). It's the only initrd nixpkgs has now, so there's nothing to enable.
 
   # No timeout on LUKS prompt
   boot.initrd.systemd.services."zfs-import-zroot" = {
