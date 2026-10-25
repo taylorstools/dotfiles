@@ -692,18 +692,22 @@ on_close() {
 #region Closing on focus loss
 
 # Watch niri's events and close switcher $1 (its process group) once focus
-# moves to anything else, after its own window has had focus. The first
-# events describe the current state, so this also works if the window was
-# focused before the watch started.
+# moves to anything else, after its own window has had focus. The stream
+# starts with the full window list, where the focused window is only flagged
+# (is_focused), not announced, so that counts as a focus too: the switcher is
+# usually focused before the watch starts.
 watch_focus() {
     local kind id seen=0
     local -A mine=()
     niri msg --json event-stream 2>/dev/null |
         jq --unbuffered -r --arg app "$AppId" '
+            def report:
+                (select(.app_id == $app) | "mine \(.id)"),
+                (select(.is_focused) | "focus \(.id)");
             if .WindowsChanged then
-                .WindowsChanged.windows[] | select(.app_id == $app) | "mine \(.id)"
+                .WindowsChanged.windows[] | report
             elif .WindowOpenedOrChanged then
-                .WindowOpenedOrChanged.window | select(.app_id == $app) | "mine \(.id)"
+                .WindowOpenedOrChanged.window | report
             elif .WindowFocusChanged then
                 "focus \(.WindowFocusChanged.id // "none")"
             else

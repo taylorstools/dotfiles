@@ -106,11 +106,11 @@
     gparted
     grim
     gsettings-desktop-schemas
+    libnotify # notify-send, for snipping-tool.sh's clipboard/save notification
     librsvg # rsvg-convert, for niri_window-switcher.sh's SVG icons
     loupe
     nwg-look
     python3
-    satty
     showtime
     slurp
     wl-clipboard

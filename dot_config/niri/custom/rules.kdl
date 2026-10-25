@@ -69,15 +69,6 @@ window-rule {
 }
 
 window-rule {
-    match app-id="com.gabm.satty"
-    open-floating true
-    min-width 1200
-    max-width 1200
-    min-height 750
-    max-height 750
-}
-
-window-rule {
     match app-id="io.missioncenter.MissionCenter"
     open-maximized false
     open-floating true

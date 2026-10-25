@@ -10,7 +10,8 @@ binds {
     Mod+Shift+T { spawn "ghostty" "-e" "sudo" "-i"; }
 
     // Screenshot
-    Print   { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
+    Print       { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
+    Ctrl+Print  { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh --region"; }
 
     // Dictation. whisrs fires its own hook into the DMS pill, so these call
     // it directly - and Super+Shift+V from its [hotkeys] does the same.
