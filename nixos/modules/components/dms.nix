@@ -87,13 +87,6 @@ in
 
       enableDynamicTheming = true;
       enableClipboardPaste = true;
-
-      # TEMP(nixpkgs-2026-10): defaults to true and adds pkgs.khal, which
-      # fails to build on nixos-unstable since the Oct 16 staging-next merge
-      # (sphinxHook + structuredAttrs, nixpkgs #573479). Nothing here uses
-      # khal. Remove once the channel's khal package.nix has
-      # sphinxBuilders = [ "html man" ] or #573479 has landed.
-      enableCalendarEvents = false;
     };
 
     # Bridge: DMS #3514 (80711f1c, 2026-10-12) switched the flake's NixOS
