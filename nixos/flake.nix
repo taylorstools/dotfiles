@@ -29,6 +29,15 @@
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.1.0";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-overlay.follows = "rust-overlay";
+    };
+
+    # Only here so lanzaboote can follow it. The rust-overlay pinned in
+    # lanzaboote's own lock uses stdenv.isLinux/isDarwin, which current
+    # nixpkgs flags as deprecated on every eval; a current rust-overlay doesn't.
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     quickshell = {
