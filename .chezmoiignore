@@ -5,6 +5,11 @@ README.md
 refind{,/**}
 Wallpapers{,/**}
 
+# DMS: plugin registry clone (re-cloned by the plugin browser) and
+# wallpaper-generated CSS. Machine-local, churns on every wallpaper change.
+.config/dms/plugins/.repos{,/**}
+.config/dms/firefox.css
+
 # Never managed anywhere: secret stores, clipboard history and activity
 # databases. These are per-machine state, and a bulk `chezmoi add` of
 # ~/.local/share swept them into a public repo once already. Ignored
@@ -97,7 +102,7 @@ Wallpapers{,/**}
 
 # Files to ignore on htpcs
 {{- if ne .chezmoi.hostname "taylorpc" }}
-  .config/DankMaterialShell{,/**}
+  .config/dms{,/**}
   .config/dconf{,/**}
   .config/environment.d{,/**}
   .config/ghostty{,/**}
@@ -126,7 +131,7 @@ Wallpapers{,/**}
   .local/share/applications/Shutdown.desktop
   .local/share/applications/Sleep.desktop
   .local/share/applications/Snipping Tool.desktop
-  .local/state/DankMaterialShell{,/**}
+  .local/state/dms{,/**}
 {{- end }}
 
 # Files that only make it to livingroompc

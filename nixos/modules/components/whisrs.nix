@@ -26,7 +26,7 @@ let
     else
       basePkg;
 
-  # The pill's waveform (dot_config/DankMaterialShell/plugins/WhisrsPill): a
+  # The pill's waveform (dot_config/dms/plugins/WhisrsPill): a
   # second capture of the same source whisrs records from. cava needs a config
   # file and a named source, and a QML plugin has no business writing either -
   # bars here must match barCount in WhisrsDaemon.qml.
