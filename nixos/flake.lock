@@ -122,16 +122,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1792912781,
-        "narHash": "sha256-zQUCuLXFTYnmMKDY8UwZ0LAlTWUZEdB0IbVwCU7Ij/8=",
-        "owner": "AvengeMedia",
-        "repo": "DankMaterialShell",
-        "rev": "696be97018d3d7bfc5eb8c6839f4989484e52e12",
+        "lastModified": 1792923542,
+        "narHash": "sha256-eJib1DYTwKvgZUaFz6s6vaS1B9GRRYMeFUVmcbKYOdo=",
+        "owner": "duxlabs-dev",
+        "repo": "dux-shell",
+        "rev": "e689cd2ce77dd83d7eb7ca394dc34a3e6f709b6a",
         "type": "github"
       },
       "original": {
-        "owner": "AvengeMedia",
-        "repo": "DankMaterialShell",
+        "owner": "duxlabs-dev",
+        "repo": "dux-shell",
         "type": "github"
       }
     },

@@ -6,7 +6,7 @@ layer-rule {
 
 layer-rule {
     match namespace="wlr_which_key"
-    geometry-corner-radius 10
+    geometry-corner-radius 12
     background-effect {
         blur true
     }
@@ -14,14 +14,6 @@ layer-rule {
 
 window-rule {
     match title="Runner"
-    open-floating true
-    min-width 850
-    max-width 850
-    min-height 420
-    max-height 420
-}
-
-window-rule {
     match app-id="^niri-window-switcher$"
     open-floating true
     min-width 850
@@ -33,7 +25,7 @@ window-rule {
 // All popups and context menus
 window-rule {
     popups {
-        geometry-corner-radius 15
+        geometry-corner-radius 12
         opacity 0.9
         background-effect {
             blur true
@@ -55,6 +47,7 @@ window-rule {
 window-rule {
     match app-id="codium"
     match app-id="obsidian"
+    match app-id="com.anthropic.Claude"
     opacity 0.95
     background-effect {
         blur true
