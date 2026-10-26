@@ -21,5 +21,5 @@ if [ -z "$Text" ]; then
 fi
 
 printf "%s" "$Text" | wl-copy
-notify-send --app-name="OCR" "Text copied to clipboard" "$(printf "%s" "$Text" | head -c 200)"
+notify-send --app-name="OCR" "Text copied to clipboard"
 #endregion
