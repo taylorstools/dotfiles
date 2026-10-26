@@ -96,6 +96,7 @@
     python3
     showtime
     slurp
+    (tesseract.override { enableLanguages = [ "eng" ]; }) # ocr-snip.sh
     wl-clipboard
     wlogout
     wlr-which-key

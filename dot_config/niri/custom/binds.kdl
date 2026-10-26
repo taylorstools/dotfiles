@@ -12,6 +12,7 @@ binds {
     // Screenshot
     Print       { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
     Ctrl+Print  { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh --region"; }
+    Mod+Shift+O { spawn "sh" "-c" "$HOME/scripts/ocr-snip.sh"; }
 
     // Dictation. whisrs fires its own hook into the DMS pill, so these call
     // it directly - and Super+Shift+V from its [hotkeys] does the same.

@@ -29,6 +29,9 @@ menu:
   - key: "s"
     desc: Snipping Tool
     cmd: $HOME/scripts/snipping-tool.sh
+  - key: "o"
+    desc: OCR Select and Copy
+    cmd: $HOME/scripts/ocr-snip.sh
   - key: "b"
     desc: Toggle Night Mode
     cmd: dms ipc call night toggle
