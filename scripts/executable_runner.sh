@@ -12,8 +12,10 @@
 #   Backspace       on an empty field, go up one folder
 #   typing /, ~, .. jump there directly (paste a full path and it works too)
 #   Enter           open, never run: folders in Thunar, files in their default
-#                   app. Anything that would open in xed asks whether to use
-#                   xed or VSCodium (when VSCodium is installed). With nothing
+#                   app. Text files (anything mimeapps.list sends to xed, or
+#                   any plain-text file whose type it doesn't list) ask whether
+#                   to use xed or VSCodium (just xed where VSCodium isn't
+#                   installed). With nothing
 #                   highlighted, open what you typed as a path or URL
 #   Alt+Enter       run: what you typed, if it starts with a command on your
 #                   PATH; otherwise the highlighted program or script (from its
@@ -276,14 +278,40 @@ on_copy() {
 
 #region Opening files (runs in the kitty window after the main fzf exits)
 
-# True if xdg-open would hand this file to xed: xed is the default for its
-# type, or nothing is and it's text.
+# The app the user's own mimeapps.list sets as default for a MIME type, if any.
+user_default_app() {
+    local list="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
+    [[ -r $list ]] || return 0
+    awk -F= -v mime="$1" '
+        /^\[/ { in_defaults = ($0 == "[Default Applications]"); next }
+        in_defaults && $1 == mime { split($2, apps, ";"); print apps[1]; exit }
+    ' "$list"
+}
+
+# Plain text: no NUL bytes in the first 8 KiB (an empty file counts as text).
+is_text() {
+    local all stripped
+    all=$(head -c 8192 -- "$1" | wc -c)
+    stripped=$(head -c 8192 -- "$1" | tr -d '\000' | wc -c)
+    (( all == stripped ))
+}
+
+# A file for a text editor: its type is mapped to xed in mimeapps.list, or it
+# isn't mapped at all and its contents are plain text. Deciding by content
+# covers types the MIME database names oddly or not at all (.kdl, say), which
+# xdg-open would otherwise hand to a web browser as a last resort.
 opens_in_xed() {
-    local mime app
-    command -v xdg-mime >/dev/null || return 1
-    mime=$(xdg-mime query filetype "$1" 2>/dev/null) || return 1
-    app=$(xdg-mime query default "$mime" 2>/dev/null)
-    [[ $app == org.x.editor.desktop || ( -z $app && $mime == text/* ) ]]
+    local mime="" app=""
+    [[ -f $1 && -r $1 ]] || return 1
+    if command -v xdg-mime >/dev/null; then
+        mime=$(xdg-mime query filetype "$1" 2>/dev/null)
+    fi
+    [[ -n $mime ]] && app=$(user_default_app "$mime")
+    if [[ -n $app ]]; then
+        [[ $app == org.x.editor.desktop ]]
+    else
+        is_text "$1"
+    fi
 }
 
 # Ask xed or VSCodium in the same window. Returns 1 if cancelled with Esc.
@@ -311,8 +339,12 @@ choose_editor() {
 open_file() {
     if [[ -d $1 ]]; then
         spawn thunar "$1"
-    elif command -v codium >/dev/null && opens_in_xed "$1"; then
-        choose_editor "$1"
+    elif opens_in_xed "$1"; then
+        if command -v codium >/dev/null; then
+            choose_editor "$1"
+        else
+            spawn xed "$1"
+        fi
     else
         spawn xdg-open "$1"
     fi
