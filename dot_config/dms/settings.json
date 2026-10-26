@@ -60,7 +60,7 @@
     "apps": "list"
   },
   "dankLauncherV2Size": "micro",
-  "dankLauncherV2BorderThickness": 3,
+  "dankLauncherV2BorderThickness": 1,
   "dankLauncherV2ShowFooter": false,
   "weatherEnabled": false,
   "networkPreference": "wifi",
