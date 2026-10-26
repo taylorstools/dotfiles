@@ -19,7 +19,8 @@
 #
 #   a-z, 0-9        focus the window with that letter underlined
 #   Up/Down, Enter  move to a window and focus it (the cursor starts on the
-#                   window you came from)
+#                   window you came from); Tab and Shift+Tab move too, and
+#                   all of them wrap around at the ends
 #   /               search: letters now type into the field to fuzzy-filter;
 #                   Esc, or Backspace on an empty field, goes back to letters
 #   Delete          close the highlighted window
@@ -854,6 +855,7 @@ run_ui() {
         "${binds[@]}" \
         --bind "load:pos(${start:-1})+unbind(load)" \
         --bind '/:transform:on_slash' \
+        --bind 'tab:down,btab:up' \
         --bind 'esc:transform:on_esc' \
         --bind 'backward-eof:transform:on_back' \
         --bind 'enter:transform:on_enter {1}' \
