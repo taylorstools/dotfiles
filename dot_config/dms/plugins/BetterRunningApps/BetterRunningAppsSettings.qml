@@ -87,7 +87,7 @@ PluginSettings {
     SliderSetting {
         settingKey: "reservedBarWidth"
         label: "Reserved right-side space"
-        description: "Extra pixels to keep free (e.g. for the right-side widget cluster) when using the percentage budget."
+        description: "Extra pixels to keep free when using the percentage budget. Dux Shell 2.0 already shrinks the widget to fit the bar, so 0 is usually fine."
         defaultValue: 0
         minimum: 0
         maximum: 2000

@@ -218,17 +218,59 @@ Item {
         return screenW * maxWidthFraction - reservedBarWidth;
     }
 
-    // Space available per app for a title, before any clamping.
-    readonly property real rawTitleBudget: {
+    // --- Dux Shell 2.0 bar overflow contract ---
+    // DBar resolves each section's layout in OverflowLayout.js. A widget that
+    // exposes naturalPrimarySize/minimumPrimarySize is "flexible": when the bar
+    // is crowded the resolver allots it a width between the two (passed back in
+    // allottedPrimarySize) before it resorts to moving widgets into the overflow
+    // popout. Without these the widget reports one rigid width, and once that
+    // width stops fitting the whole strip gets pushed into overflow -- every
+    // running app vanishes at once.
+    // naturalPrimarySize must not depend on allottedPrimarySize, or the
+    // resolver's input would chase its own output.
+    property real allottedPrimarySize: 0
+
+    function titleBudgetFor(budget) {
         if (windowCount === 0) {
             return 0;
         }
-        if (isVertical || availableWidth <= 0) {
+        if (isVertical || budget <= 0) {
             return fullTitleWidth;
         }
         const fixed = (windowCount - 1) * itemSpacing + horizontalPadding * 2;
-        return (availableWidth - fixed) / windowCount - iconAreaWidth;
+        return (budget - fixed) / windowCount - iconAreaWidth;
     }
+
+    function stripSizeFor(budget) {
+        if (windowCount === 0) {
+            return 0;
+        }
+        const rawTitle = titleBudgetFor(budget);
+        const perApp = rawTitle >= minTitleWidth ? (iconAreaWidth + Math.min(fullTitleWidth, Math.max(0, rawTitle))) : iconOnlyWidth;
+        return Math.round(windowCount * perApp + (windowCount - 1) * itemSpacing + horizontalPadding * 2);
+    }
+
+    // The settings budget is a ceiling; the bar's allotment can only tighten it.
+    readonly property real layoutBudget: {
+        if (isVertical || allottedPrimarySize <= 0) {
+            return availableWidth;
+        }
+        return availableWidth > 0 ? Math.min(availableWidth, allottedPrimarySize) : allottedPrimarySize;
+    }
+
+    readonly property real naturalPrimarySize: isVertical ? height : stripSizeFor(availableWidth)
+    readonly property real minimumPrimarySize: {
+        if (isVertical) {
+            return height;
+        }
+        if (windowCount === 0) {
+            return 0;
+        }
+        return Math.round(windowCount * iconOnlyWidth + (windowCount - 1) * itemSpacing + horizontalPadding * 2);
+    }
+
+    // Space available per app for a title, before any clamping.
+    readonly property real rawTitleBudget: titleBudgetFor(layoutBudget)
 
     // Once the title area would be narrower than minTitleWidth, drop labels and show icon-only pills.
     readonly property bool labelsVisible: windowCount > 0 && rawTitleBudget >= minTitleWidth
@@ -237,12 +279,7 @@ Item {
 
     readonly property real perAppWidth: labelsVisible ? (iconAreaWidth + effectiveTitleWidth) : iconOnlyWidth
 
-    readonly property int calculatedSize: {
-        if (windowCount === 0) {
-            return 0;
-        }
-        return Math.round(windowCount * perAppWidth + (windowCount - 1) * itemSpacing + horizontalPadding * 2);
-    }
+    readonly property int calculatedSize: stripSizeFor(layoutBudget)
 
     width: windowCount > 0 ? (isVertical ? barThickness : calculatedSize) : 0
     height: windowCount > 0 ? (isVertical ? calculatedSize : barThickness) : 0
