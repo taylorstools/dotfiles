@@ -1,0 +1,93 @@
+{
+  "currentThemeName": "dynamic",
+  "fontFamily": "Inter",
+  "fontWeight": 300,
+  "lockScreenFontFamily": "Inter Display",
+  "clockFormat": "12h",
+  "showSeconds": false,
+  "padHours12Hour": false,
+  "lockDateFormat": "dddd, MMMM d",
+  "lockScreenWallpaperPath": "/home/taylor/.config/.EffectsWallpaper.png",
+  "lockScreenWallpaperFillMode": "Fill",
+  "weatherEnabled": false,
+  "greeterRememberLastUser": true,
+  "greeterRememberLastSession": true,
+  "powerActionConfirm": false,
+  "powerMenuActions": ["suspend", "poweroff", "reboot"],
+  "greeterWidgetInstances": [
+    {
+      "id": "lock_date",
+      "widgetType": "lockDate",
+      "enabled": true,
+      "config": {
+        "displayPreferences": ["all"],
+        "syncPositionAcrossScreens": true,
+        "colorMode": "custom",
+        "customColor": "#51606f"
+      }
+    },
+    {
+      "id": "lock_clock",
+      "widgetType": "desktopClock",
+      "enabled": true,
+      "config": {
+        "displayPreferences": ["all"],
+        "syncPositionAcrossScreens": true,
+        "style": "expressive",
+        "fontFamily": "Inter Display",
+        "weight": 200,
+        "rounded": false,
+        "twoTone": false,
+        "transparency": 0,
+        "showDate": false,
+        "showDigitalSeconds": false,
+        "autoPosition": false,
+        "colorMode": "custom",
+        "customColor": "#b9c8da"
+      }
+    },
+    {
+      "id": "lock_auth",
+      "widgetType": "lockAuth",
+      "enabled": true,
+      "config": {
+        "displayPreferences": ["all"],
+        "syncPositionAcrossScreens": true,
+        "style": "pill",
+        "profileVisibility": "never",
+        "passwordVisibility": "always"
+      }
+    },
+    {
+      "id": "lock_status",
+      "widgetType": "lockStatus",
+      "enabled": true,
+      "config": {
+        "displayPreferences": ["all"],
+        "syncPositionAcrossScreens": true,
+        "showMediaPlayer": false,
+        "showWeather": false,
+        "background": false
+      }
+    },
+    {
+      "id": "lock_power",
+      "widgetType": "lockPower",
+      "enabled": true,
+      "config": {
+        "displayPreferences": ["all"],
+        "syncPositionAcrossScreens": true,
+        "shape": "round"
+      }
+    },
+    {
+      "id": "greeter_session",
+      "widgetType": "greeterSession",
+      "enabled": false,
+      "config": {
+        "displayPreferences": ["all"],
+        "syncPositionAcrossScreens": true
+      }
+    }
+  ]
+}

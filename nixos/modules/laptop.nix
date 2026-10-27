@@ -12,6 +12,7 @@ in
     ./components/claude-desktop.nix
     ./components/davinci-resolve.nix
     ./components/dms.nix
+    ./components/dux-greeter
     ./components/greetd.nix
     ./components/howdy.nix
     ./components/llm-chat.nix
