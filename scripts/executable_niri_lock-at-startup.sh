@@ -22,14 +22,6 @@ RETRYWINDOW=120     # seconds; a second failure inside this window stops retryin
 
 UPTIME=$(cut -d. -f1 /proc/uptime)
 
-# With dux-greeter as greetd's default_session, every session after the cold
-# boot was authenticated by the greeter's own password prompt, and locking it
-# would ask twice. The marker exists only while the greeter is configured:
-# nixos/modules/components/dux-greeter/default.nix.
-if [[ -e /etc/greetd/greeter-authenticates ]]; then
-    exit 0
-fi
-
 if [[ "${NIRI_LOCK_AT_STARTUP:-0}" != 1 ]] && (( UPTIME < COLDBOOTGRACE )); then
     exit 0
 fi
