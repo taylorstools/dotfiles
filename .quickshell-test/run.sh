@@ -4,6 +4,7 @@
 #   ./run.sh            start the bar + launcher next to DMS (Ctrl+C to quit)
 #   ./run.sh solo       same, but stop DMS while it runs and restart DMS after
 #   ./run.sh launcher   toggle the launcher of the running instance
+#   ./run.sh notepad    toggle the notepad of the running instance
 #   ./run.sh stop       stop a running instance
 #
 # Nothing here is installed or enabled anywhere; it only runs when you call it.
@@ -50,11 +51,14 @@ case "${1:-start}" in
     launcher)
         exec "$qs_bin" ipc -p "$dir" call launcher toggle
         ;;
+    notepad)
+        exec "$qs_bin" ipc -p "$dir" call notepad toggle
+        ;;
     stop)
         exec "$qs_bin" kill -p "$dir"
         ;;
     *)
-        sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
         exit 1
         ;;
 esac

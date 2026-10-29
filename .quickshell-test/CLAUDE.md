@@ -22,6 +22,7 @@ real Quickshell yet**. The first job is to run it and fix whatever breaks.
 ./run.sh            # runs `qs -p <this folder>` in the foreground, next to DMS
 ./run.sh solo       # systemctl --user stop dms.service, run, start dms on exit
 ./run.sh launcher   # qs ipc -p <folder> call launcher toggle
+./run.sh notepad    # qs ipc -p <folder> call notepad toggle
 ./run.sh stop       # qs kill -p <folder>
 ```
 
@@ -40,14 +41,16 @@ real Quickshell yet**. The first job is to run it and fix whatever breaks.
 
 | Path | Role |
 | --- | --- |
-| `shell.qml` | `ShellRoot`: `Variants` of `Bar` per screen, plus `Launcher` |
+| `shell.qml` | `ShellRoot`: `Variants` of `Bar` per screen, plus `Launcher` and `Notepad` |
 | `Common/Theme.qml` | Singleton: palette, sizes, fonts, `barTextSize`/`barIconSize` (same formulas as DMS) |
 | `Common/Config.qml` | Singleton: settings carried over from DMS `settings.json` / `plugin_settings.json` |
 | `Services/Niri.qml` | Singleton: niri IPC. An event-stream socket keeps `workspaces`/`windows` maps; a request socket sends actions (`FocusWindow`, `CloseWindow`, `FocusWorkspace {reference:{Id}}`, `FocusWorkspaceUp/Down`) |
 | `Services/Apps.qml` | Singleton: desktop-entry lookups (`iconFor`, `nameFor`) and launcher search/scoring |
+| `Services/NotepadStore.qml` | Singleton: notepad tabs, same JSON/folder layout as DMS's `NotepadStorageService` but under `~/.local/state/qstest/notepad` (DMS's notes are copied there on first start) |
 | `Services/Network.qml` | Singleton: `nmcli` polling, refreshed by `nmcli monitor` |
 | `Widgets/` | `StyledText`, `MaterialIcon` (ligature glyphs), `BarPopup` (PopupWindow anchored above an item), `Tooltip` |
 | `Bar/` | `Bar.qml` plus one file per widget |
+| `Notepad/Notepad.qml` | Right-edge slide-in PanelWindow (Top layer, OnDemand focus, no exclusive zone) with tabs, autosave, Save As/Open path field; `IpcHandler` target `notepad` |
 | `Launcher/Launcher.qml` | Full-screen transparent overlay PanelWindow with a centered panel; `IpcHandler` target `launcher` (`toggle`/`open`/`close`) |
 
 Imports use Quickshell's `qs.<Dir>` module system (`import qs.Common`, etc.).

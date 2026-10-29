@@ -8,6 +8,7 @@ import QtQuick
 import Quickshell
 import qs.Bar
 import qs.Launcher
+import qs.Notepad
 
 ShellRoot {
     Variants {
@@ -17,4 +18,5 @@ ShellRoot {
     }
 
     Launcher {}
+    Notepad {}
 }

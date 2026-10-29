@@ -10,6 +10,7 @@ so chezmoi ignores it too. It only runs when you start it.
 ./run.sh            # bar + launcher next to DMS (Ctrl+C to quit)
 ./run.sh solo       # stop DMS while it runs, restart DMS when you quit
 ./run.sh launcher   # toggle the launcher (from a terminal or a temporary bind)
+./run.sh notepad    # toggle the notepad
 ./run.sh stop       # stop a running instance
 ```
 
@@ -22,7 +23,7 @@ the DMS bar. Use `solo` to see it on its own.
 
 | Path | What it is |
 | --- | --- |
-| `shell.qml` | Entry point: one bar per monitor, plus the launcher |
+| `shell.qml` | Entry point: one bar per monitor, plus the launcher and notepad |
 | `Bar/Bar.qml` | Bottom bar, laid out like your DMS bar |
 | `Bar/BetterRunningApps.qml` | Port of your plugin (adaptive width, icon-only fallback, grouping) |
 | `Bar/BetterClock.qml` | Port of your plugin |
@@ -30,6 +31,7 @@ the DMS bar. Use `solo` to see it on its own.
 | `Bar/SystemTray.qml` | Tray, collapsed behind a chevron like your `dms.nix` patch |
 | `Bar/Battery.qml`, `Bar/StatusIcons.qml` | Battery, network, bluetooth, volume |
 | `Launcher/Launcher.qml` | Centered app search; IPC target `launcher` |
+| `Notepad/Notepad.qml` | Notepad sliding in from the right; IPC target `notepad` |
 | `Common/Theme.qml` | Colors (live from DMS's matugen output), sizes, fonts |
 | `Common/Config.qml` | Settings that lived in DMS's settings files |
 | `Services/` | niri IPC, desktop-entry lookups and search, nmcli |

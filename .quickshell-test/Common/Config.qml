@@ -34,4 +34,11 @@ Singleton {
     // Launcher
     readonly property real launcherWidth: 560
     readonly property int launcherVisibleRows: 8
+
+    // Notepad (DMS slideout widths and notepad defaults)
+    readonly property real notepadWidth: 480
+    readonly property real notepadExpandedWidth: 960
+    readonly property real notepadEdgeGap: 4        // gap to the screen edge and the bar
+    readonly property bool notepadMonospace: false  // notepadUseMonospace
+    readonly property real notepadFontSize: 14
 }
