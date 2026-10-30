@@ -61,10 +61,10 @@ shell is left in the system or the dotfiles.
 
 | Path | Role |
 | --- | --- |
-| `shell.qml` | `ShellRoot`: `Variants` of `Background`, `Bar` and `Dock` per screen, plus `Launcher`, `Runner`, `WindowSwitcher`, `ClipboardPanel`, `Notepad`, `ControlCenter`, `ClockFlyout`, `BatteryFlyout`, notification `Popups`, `Osd`, `PolkitDialog`, `WhisrsPill` and `SettingsWindow`; starts `NiriBlur`, `ClipboardHistory` and `NightLight` at startup |
+| `shell.qml` | `ShellRoot`: `Variants` of `Background`, `Bar` and `Dock` per screen, plus `Launcher`, `Runner`, `WindowSwitcher`, `ClipboardPanel`, `Notepad`, `ControlCenter`, `ClockFlyout`, `BatteryFlyout`, `TrayFlyout`, notification `Popups`, `Osd`, `PolkitDialog`, `WhisrsPill` and `SettingsWindow`; starts `NiriBlur`, `ClipboardHistory` and `NightLight` at startup |
 | `Common/Theme.qml` | Singleton: palette, sizes, fonts, `barTextSize`/`barIconSize` |
 | `Common/Settings.qml` | Singleton: settings edited from the settings window (power commands), a `FileView` + `JsonAdapter` on `settings.json` in this folder |
-| `Common/Popouts.qml` | Singleton: which popouts are open (`controlCenterScreen`, `clockScreen` + `clockTab`, `settingsOpen`) so per-screen bars can open them; opening one flyout closes the other |
+| `Common/Popouts.qml` | Singleton: which popouts are open (`controlCenterScreen`, `clockScreen` + `clockTab`, `batteryScreen`, `trayScreen` + `trayX`, `settingsOpen`) so per-screen bars can open them; opening one flyout closes the others, `closeFlyouts()` closes all |
 | `Common/Config.qml` | Singleton: fixed settings with no place in the settings window yet |
 | `Services/Niri.qml` | Singleton: niri IPC. An event-stream socket keeps `workspaces`/`windows` maps; a request socket sends actions (`FocusWindow`, `CloseWindow`, `FocusWorkspace {reference:{Id}}`, `FocusWorkspaceUp/Down`) |
 | `Services/Apps.qml` | Singleton: desktop-entry lookups (`iconFor`, `nameFor`) and launcher search/scoring |
@@ -78,7 +78,7 @@ shell is left in the system or the dotfiles.
 | `Services/Audio.qml` | Singleton: default sink/source; IPC target `audio` (`increment`/`decrement`/`mute`/`micmute`) |
 | `Services/Power.qml` | Singleton: runs the lock/sleep/restart/shutdown commands from `Settings` with `sh -c`, no confirmation |
 | `Widgets/` | `StyledText`, `MaterialIcon` (ligature glyphs), `BarPopup` (PopupWindow anchored above an item), `Tooltip`, `IconButton`, `StyledSlider`, `Toggle`, `SegmentButton` (tab bars) |
-| `Bar/` | `Bar.qml` plus one file per widget |
+| `Bar/` | `Bar.qml` plus one file per widget. `TrayFlyout.qml` is the collapsed tray's icons above the chevron, a flyout like the others (Exclusive focus, closes on outside click, Esc, or another flyout); `TrayIcon.qml` is shared by it and the uncollapsed tray. A click anywhere else on the bar closes any flyout on release (a passive `PointHandler`, so cursors and clicks still reach widgets) |
 | `Notepad/Notepad.qml` | Right-edge slide-in PanelWindow (Top layer, OnDemand focus, no exclusive zone) with tabs, autosave, Save As/Open path field; `IpcHandler` target `notepad` |
 | `ControlCenter/ControlCenter.qml` | Flyout from the status icons: full-screen-above-the-bar PanelWindow (Exclusive focus for Wi-Fi passwords), user + settings/lock/power, brightness, volume + output picker, Wi-Fi/Bluetooth list (connected rows: Disconnect text button; a network's right-click or the connected row's gear opens `netMenu` with Disconnect / Forget = `Network.forget`); IPC target `controlcenter` |
 | `Settings/SettingsWindow.qml` | "Shell Settings": a `FloatingWindow` (a normal niri window) in a `LazyLoader`; own title bar (maximize = `niri msg action maximize-window-to-edges`, close); sidebar search over `searchIndex` (add new settings there); Power page edits the commands, Wallpaper page has the folder, matugen scheme and a thumbnail picker; IPC target `settings`. Launcher entry: `dot_local/share/applications/org.quickshell.desktop` (named after Quickshell's app id so the taskbar/dock show it too), icon Tela's grey gear (`preferences`) |

@@ -59,6 +59,7 @@ ShellRoot {
     ControlCenter {}
     ClockFlyout {}
     BatteryFlyout {}
+    TrayFlyout {}
     Popups {}
     Osd {}
     PolkitDialog {}

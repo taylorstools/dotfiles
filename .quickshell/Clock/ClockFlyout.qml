@@ -100,7 +100,11 @@ Scope {
 
         WlrLayershell.namespace: "qstest:clock"
         WlrLayershell.layer: WlrLayer.Top
-        WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+        // Exclusive, like the control center: with on-demand focus, a press on
+        // the bar takes the keyboard away from the flyout, the shell has no
+        // focused window for a moment, and Qt cancels the press - so clicking
+        // another bar button while this was open needed a second click.
+        WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
         onVisibleChanged: {
             if (visible)

@@ -106,6 +106,7 @@ PanelWindow {
         // The gaps between these widgets were measured against Taylor's old bar on
         // this screen (in physical pixels), since they don't follow one rule.
         SystemTray {
+            id: systemTray
             anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -141,11 +142,14 @@ PanelWindow {
         }
     }
 
-    // A press anywhere on the bar closes the control center, calendar or
-    // battery flyout, except on the status icons, the clock and the battery,
-    // which toggle their own. A PointHandler only watches (a passive grab):
+    // A click anywhere on the bar closes the control center, calendar,
+    // battery or tray flyout, except on the status icons, the clock, the
+    // battery and the tray chevron, which toggle their own. A PointHandler only watches (a passive grab):
     // the press, scrolling, hover and each widget's hand cursor all go on to
     // the widget underneath. (A MouseArea here hid every widget's cursor.)
+    // It closes on release, after the widget has had its click: closing on
+    // the press took the keyboard from the flyout mid-click, and Qt then
+    // cancelled the click (a running app needed a second click).
     Item {
         id: closer
 
@@ -158,12 +162,16 @@ PanelWindow {
 
         PointHandler {
             acceptedButtons: Qt.AllButtons
+            property bool closeOnRelease: false
+
             onActiveChanged: {
-                if (!active)
-                    return;
-                const p = point.position;
-                if (!closer.over(statusIcons, p) && !closer.over(clock, p) && !closer.over(battery, p))
-                    Popouts.closeFlyouts();
+                if (active) {
+                    const p = point.position;
+                    closeOnRelease = !closer.over(statusIcons, p) && !closer.over(clock, p) && !closer.over(battery, p) && !closer.over(systemTray, p);
+                } else if (closeOnRelease) {
+                    closeOnRelease = false;
+                    Qt.callLater(Popouts.closeFlyouts);
+                }
             }
         }
     }
