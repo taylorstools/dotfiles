@@ -1,10 +1,9 @@
-// Include dms files
-include "dms/colors.kdl"
-include "dms/layout.kdl"
-include "dms/alttab.kdl"
-include "dms/binds.kdl"
-include "dms/outputs.kdl"
-include "dms/cursor.kdl"
+// Colours from the wallpaper, written by the shell (Theming/generate.sh).
+// optional until it first runs.
+include "colors.kdl" optional=true
+// Blur strength (and the settings window's blur rule) from the shell's
+// settings window, Appearance page. optional until the shell first writes it.
+include "~/.local/state/qstest/niri-blur.kdl" optional=true
 
 // Include custom configs
 include "custom/animations.kdl"
@@ -14,9 +13,10 @@ include "custom/layout.kdl"
 include "custom/misc.kdl"
 include "custom/rules.kdl"
 include "custom/startup.kdl"
+include "custom/cursor.kdl"
 
 // Cursor override for the startup splash. Last on purpose: includes are
-// positional, and this has to override dms/cursor.kdl. niri-splash writes
+// positional, and this has to override custom/cursor.kdl. niri-splash writes
 // the transparent theme into it at logout so the next login starts with no
 // visible cursor, and puts it back the moment the splash lifts. At rest the
 // file is a single comment. optional=true so a missing file is a warning,

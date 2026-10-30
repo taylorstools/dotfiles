@@ -11,12 +11,12 @@ in
   imports = [
     ./components/claude-desktop.nix
     ./components/davinci-resolve.nix
-    ./components/dms.nix
     ./components/greetd.nix
     ./components/howdy.nix
     ./components/llm-chat.nix
     ./components/niri.nix
     ./components/niri-splash
+    ./components/quickshell.nix
     ./components/power-management.nix
     ./components/roland.nix
     ./components/thunar.nix
@@ -36,8 +36,6 @@ in
       passwordStore = "gnome-libsecret";
     };
 
-    dms.source = "git";
-
     quickshell.source = "git";
 
     whisrs = {
@@ -53,11 +51,12 @@ in
     # power-button press. Turn it off instead of cooking the battery.
     luksIdlePoweroff.enable = true;
 
+    # Off for now: it holds the desktop until the shell's bar and dock exist.
+    # Plymouth's boot spinner is separate and unaffected.
     niri-splash = {
-      enable = true;
-      # The dock is a separate DMS surface and comes up a second or two
-      # after the bar; hold the splash for it too.
-      namespaces = [ "dms:bar" "dms:dock" ];
+      enable = false;
+      # The dock comes up a moment after the bar; hold the splash for it too.
+      namespaces = [ "qstest:bar" "qstest:dock" ];
     } // splashLogo;
     
     # The theme's defaults are the laptop case: black until the passphrase

@@ -1,0 +1,48 @@
+# App themes made from the wallpaper. generate.sh fills in @ROOT@ ($HOME)
+# and @HERE@. The templates were adapted from DankMaterialShell's (MIT).
+# What reads each one: gtk.css imports shell-colors.css, niri's config.kdl
+# includes colors.kdl, Ghostty's `theme = shell-colors`, kitty.conf includes
+# shell-theme.conf and shell-tabs.conf; the KDE schemes and the Zed theme
+# are there to pick in those apps.
+
+[config]
+
+[templates.gtk3]
+input_path = "@HERE@/templates/gtk-colors.css"
+output_path = "@ROOT@/.config/gtk-3.0/shell-colors.css"
+
+[templates.gtk4]
+input_path = "@HERE@/templates/gtk-colors.css"
+output_path = "@ROOT@/.config/gtk-4.0/shell-colors.css"
+
+[templates.niri]
+input_path = "@HERE@/templates/niri-colors.kdl"
+output_path = "@ROOT@/.config/niri/colors.kdl"
+
+[templates.ghostty]
+input_path = "@HERE@/templates/ghostty.conf"
+output_path = "@ROOT@/.config/ghostty/themes/shell-colors"
+
+[templates.kitty]
+input_path = "@HERE@/templates/kitty.conf"
+output_path = "@ROOT@/.config/kitty/shell-theme.conf"
+
+[templates.kitty_tabs]
+input_path = "@HERE@/templates/kitty-tabs.conf"
+output_path = "@ROOT@/.config/kitty/shell-tabs.conf"
+
+[templates.kcolorscheme]
+input_path = "@HERE@/templates/kcolorscheme.colors"
+output_path = "@ROOT@/.local/share/color-schemes/ShellMatugen.colors"
+
+[templates.kcolorscheme_light]
+input_path = "@HERE@/templates/light-kcolorscheme.colors"
+output_path = "@ROOT@/.local/share/color-schemes/ShellMatugenLight.colors"
+
+[templates.kcolorscheme_dark]
+input_path = "@HERE@/templates/dark-kcolorscheme.colors"
+output_path = "@ROOT@/.local/share/color-schemes/ShellMatugenDark.colors"
+
+[templates.zed]
+input_path = "@HERE@/templates/zed.json"
+output_path = "@ROOT@/.config/zed/themes/shell-theme.json"

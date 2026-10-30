@@ -158,7 +158,7 @@ let
   # Started as its own transient unit by notifyFailure: notify-send --wait
   # blocks until the notification is answered, and a critical notification
   # never times out, so waiting inside that oneshot would hold it past its
-  # start timeout. DMS runs the first action on a body click, so the single
+  # start timeout. The shell runs the first action on a body click, so the single
   # "open" action covers both the button and clicking the notification.
   showFailure = pkgs.writeShellApplication {
     name = "upgrade-failure-show";

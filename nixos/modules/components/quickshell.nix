@@ -1,0 +1,55 @@
+{ config, pkgs, inputs, lib, ... }:
+
+# What Taylor's own Quickshell config (~/.dotfiles/.quickshell) needs on the
+# system. The config itself lives in the dotfiles and is started by the
+# chezmoi-managed user unit ~/.config/systemd/user/quickshell.service.
+let
+  cfg = config.myOptions;
+  system = pkgs.stdenv.hostPlatform.system;
+
+  quickshellPkg =
+    if cfg.quickshell.source == "git"
+    then inputs.quickshell.packages.${system}.default
+    else pkgs.quickshell;
+in
+{
+  options.myOptions.quickshell.source = lib.mkOption {
+    type = lib.types.enum [ "stable" "git" ];
+    default = "stable";
+    description = "Where to source the quickshell package from.";
+  };
+
+  config = {
+    environment.systemPackages = with pkgs; [
+      quickshellPkg # qs
+      accountsservice
+      adw-gtk3
+      brightnessctl # backlight and keyboard light
+      fd # runner: searching below a folder
+      fzf # runner: ranking matches
+      hypridle
+      libnotify # notify-send, for scripts' messages
+      matugen # colours from the wallpaper, and the app themes
+      swaybg
+      wl-clipboard # clipboard history
+      wlsunset # night light
+      wtype # clipboard history: paste into the focused app
+    ];
+
+    # The icon font.
+    fonts.packages = [ pkgs.material-symbols ];
+
+    # The control center's profile picture (/var/lib/AccountsService/icons).
+    services.accounts-daemon.enable = true;
+    # The shell is the session's polkit agent (Polkit/PolkitDialog.qml).
+    security.polkit.enable = true;
+
+    # hypridle's dim/restore scripts call brightnessctl, qs and friends.
+    systemd.user.services.hypridle = {
+      overrideStrategy = "asDropin";
+      serviceConfig.Environment = [
+        "PATH=/run/wrappers/bin:/run/current-system/sw/bin"
+      ];
+    };
+  };
+}

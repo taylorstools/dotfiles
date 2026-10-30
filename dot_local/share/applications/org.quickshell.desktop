@@ -1,0 +1,13 @@
+[Desktop Entry]
+# Named after Quickshell's own app id: it replaces the package's hidden
+# org.quickshell.desktop, so the settings window (app id org.quickshell)
+# shows as Shell Settings with this icon in the taskbar and dock too.
+Type=Application
+Name=Shell Settings
+Comment=Settings for the taskbar, dock, panels and wallpaper
+Icon=preferences
+Exec=qs ipc call settings open
+Terminal=false
+Categories=Settings;
+Keywords=quickshell;shell;settings;preferences;appearance;wallpaper;dock;
+StartupNotify=false

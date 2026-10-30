@@ -22,7 +22,7 @@ min_distance = 150
 [[gestures]]
 num_fingers = 1
 kind = "SwipeRight"
-action = "dms ipc call spotlight toggle"
+action = "qs ipc call launcher toggle"
 min_duration = 50
 min_distance = 100
 on_edge = { Left = 100 }

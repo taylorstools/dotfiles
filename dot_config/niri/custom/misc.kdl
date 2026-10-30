@@ -31,6 +31,9 @@ output "eDP-1" {
 }
 
 recent-windows {
+    highlight {
+        corner-radius 12
+    }
     binds {
         Alt+Tab         { next-window scope="output"; }
         Alt+Shift+Tab   { previous-window scope="output"; }

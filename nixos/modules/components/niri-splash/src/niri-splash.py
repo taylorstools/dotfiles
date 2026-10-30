@@ -468,7 +468,7 @@ def main():
     ap.add_argument("--foreground", default="#e6e6e6")
     opts = ap.parse_args()
     if not opts.namespaces:
-        opts.namespaces = ["dms:bar"]
+        opts.namespaces = ["qstest:bar"]
 
     app = Splash(opts)
     # A display that was there at the first look means a live session, not a

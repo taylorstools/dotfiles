@@ -1,0 +1,20 @@
+# Taylor's Quickshell config (~/.config/quickshell -> ~/.dotfiles/.quickshell),
+# started with the niri session. Logs:
+# journalctl --user -u quickshell. Restart: systemctl --user restart quickshell.
+[Unit]
+Description=Quickshell
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+# systemd's environment has NixOS's qt.platformTheme ("gnome"), under which Qt
+# misses icons in ~/.local/share/icons. Use what niri's environment {} block
+# gives the apps it spawns; apps launched from the shell inherit this too.
+Environment=QT_QPA_PLATFORMTHEME=gtk3 QT_QPA_PLATFORMTHEME_QT6=gtk3
+ExecStart=/run/current-system/sw/bin/qs -p %h/.config/quickshell
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=graphical-session.target

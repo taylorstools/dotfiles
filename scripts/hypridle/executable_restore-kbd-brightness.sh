@@ -14,8 +14,8 @@ if [ -f "$PIDFILE" ]; then
     rm -f "$PIDFILE"
 fi
 
-KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
-KBD_STATE="$XDG_RUNTIME_DIR/dms-kbdbacklight"
+KBD_SCRIPT="$HOME/scripts/kbd-backlight.sh"
+KBD_STATE="$XDG_RUNTIME_DIR/kbd-backlight-saved"
 KBD_HOLD="/run/asus-kbd-backlight-shim/hold"
 
 # Lift the hold first, so the level restored below counts as a real one.

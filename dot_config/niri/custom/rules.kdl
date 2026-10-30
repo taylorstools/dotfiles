@@ -1,3 +1,11 @@
+// Every window: rounded corners, clipped to them, drawn as tiled.
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+    tiled-state true
+    draw-border-with-background false
+}
+
 // Put swaybg inside the overview backdrop.
 layer-rule {
     match namespace="^wallpaper$"

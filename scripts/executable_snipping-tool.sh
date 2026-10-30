@@ -97,7 +97,7 @@ wl-copy --type image/png < "$ShotFile"
 #endregion
 
 #region Notification
-# Blocks until the notification is answered or closed. DMS also runs the first
+# Blocks until the notification is answered or closed. The shell also runs the first
 # action when the notification body is clicked, so that saves too.
 Action=$(notify-send \
     --app-name="Snipping Tool" \

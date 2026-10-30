@@ -14,8 +14,8 @@ binds {
     Ctrl+Print  { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh --region"; }
     Mod+Shift+O { spawn "sh" "-c" "$HOME/scripts/ocr-snip.sh"; }
 
-    // Dictation. whisrs fires its own hook into the DMS pill, so these call
-    // it directly - and Super+Shift+V from its [hotkeys] does the same.
+    // Dictation. whisrs fires its own hook into the shell's pill, so these
+    // call it directly - and Super+Shift+V from its [hotkeys] does the same.
     Mod+Y       { spawn "whisrs" "toggle"; }
     Mod+Shift+Y { spawn "whisrs" "cancel"; }
 
@@ -50,19 +50,19 @@ binds {
     Mod+8       { focus-workspace 8; }
     Mod+9       { focus-workspace 9; }
 
-    // DMS
-    Mod+D   { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
-    Mod+V   { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
-    Mod+N   { spawn "dms" "ipc" "call" "notepad" "toggle"; }
+    // Shell (the Quickshell config in ~/.dotfiles/.quickshell)
+    Mod+D   { spawn "qs" "ipc" "call" "launcher" "toggle"; }
+    Mod+V   { spawn "qs" "ipc" "call" "clipboard" "toggle"; }
+    Mod+N   { spawn "qs" "ipc" "call" "notepad" "toggle"; }
 
     // Overview
     Mod+Space   { toggle-overview; }
 
     // Runner
-    Mod+R   { spawn "sh" "-c" "exec $HOME/scripts/runner.sh"; }
+    Mod+R   { spawn "qs" "ipc" "call" "runner" "toggle"; }
 
     // Window switcher
-    Mod+Tab { spawn "sh" "-c" "exec $HOME/scripts/niri_window-switcher.sh"; }
+    Mod+Tab { spawn "qs" "ipc" "call" "switcher" "toggle"; }
 
     // Lock screen
     // --force: a keybind can only reach niri while the session is unlocked, so
@@ -76,13 +76,13 @@ binds {
     Ctrl+Alt+Delete { spawn "sh" "-c" "pkill wlogout || wlogout --buttons-per-row 6"; }
 
     // Change wallpaper
-    Mod+Shift+W { spawn "sh" "-c" "$HOME/scripts/dms_change-wallpaper.sh"; }
+    Mod+Shift+W { spawn "qs" "ipc" "call" "wallpaper" "random"; }
 
-    // Toggle night mode
-    Mod+Shift+B { spawn "dms" "ipc" "call" "night" "toggle"; }
+    // Toggle night light
+    Mod+Shift+B { spawn "qs" "ipc" "call" "night" "toggle"; }
 
     // Color picker
-    Mod+C   { spawn "dms" "color" "pick" "-a"; }
+    Mod+C   { spawn "sh" "-c" "$HOME/scripts/pick-color.sh"; }
 
     // Secondary menu
     Mod+X   { spawn "sh" "-c" "pkill wlr-which-key || wlr-which-key"; }
@@ -96,15 +96,15 @@ binds {
     Mod+Shift+F23 { spawn "claude-desktop"; } // Copilot key
 
     // Laptop specific keybinds
-    xf86MonBrightnessDown   { spawn "sh" "-c" "$HOME/scripts/dms_change-screen-brightness.sh -decrease"; }
-    xf86MonBrightnessUp     { spawn "sh" "-c" "$HOME/scripts/dms_change-screen-brightness.sh -increase"; }
+    xf86MonBrightnessDown   { spawn "qs" "ipc" "call" "brightness" "decrement" "5"; }
+    xf86MonBrightnessUp     { spawn "qs" "ipc" "call" "brightness" "increment" "5"; }
 
-    XF86KbdLightOnOff       { spawn "sh" "-c" "$HOME/scripts/dms_change-kbd-backlight.sh"; }
+    XF86KbdLightOnOff       { spawn "sh" "-c" "$HOME/scripts/kbd-backlight.sh"; }
 
-    XF86AudioLowerVolume    { spawn "sh" "-c" "dms ipc call audio decrement 5"; }
-    XF86AudioRaiseVolume    { spawn "sh" "-c" "dms ipc call audio increment 5"; }
+    XF86AudioLowerVolume    { spawn "qs" "ipc" "call" "audio" "decrement" "5"; }
+    XF86AudioRaiseVolume    { spawn "qs" "ipc" "call" "audio" "increment" "5"; }
 
-    XF86AudioMute           { spawn "sh" "-c" "dms ipc call audio mute"; }
+    XF86AudioMute           { spawn "qs" "ipc" "call" "audio" "mute"; }
 
-    XF86AudioMicMute        { spawn "sh" "-c" "dms ipc call audio micmute"; }
+    XF86AudioMicMute        { spawn "qs" "ipc" "call" "audio" "micmute"; }
 }

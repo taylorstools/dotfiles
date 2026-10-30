@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-KBD_SCRIPT="$HOME/scripts/dms_change-kbd-backlight.sh"
+KBD_SCRIPT="$HOME/scripts/kbd-backlight.sh"
 # Per-session runtime dir, not /tmp: /tmp survives reboots here, and a stale
 # file would make the next dim skip saving the real level.
-KBD_STATE="$XDG_RUNTIME_DIR/dms-kbdbacklight"
+KBD_STATE="$XDG_RUNTIME_DIR/kbd-backlight-saved"
 
 # Tells the PX13 backlight shim not to persist the dim (absent elsewhere).
 KBD_HOLD="/run/asus-kbd-backlight-shim/hold"

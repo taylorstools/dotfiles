@@ -19,8 +19,8 @@ let
   # Present once this login has had its splash. switch-to-configuration
   # re-starts every active user target, and starting default.target again
   # pulls this (exited, Restart=no) unit back in. When the same switch
-  # restarts DMS, the bar is gone at that moment, already_up() fails, and
-  # the splash covers the screen until DMS comes back. The flag keeps the
+  # restarts the shell, the bar is gone at that moment, already_up() fails,
+  # and the splash covers the screen until the shell comes back. The flag keeps the
   # splash to one showing per login: written when the splash ends, removed
   # at logout, and gone anyway with the runtime dir at reboot.
   shownFlag = "%t/niri-splash.shown";
@@ -79,8 +79,8 @@ in
 
     namespaces = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "dms:bar" ];
-      example = [ "dms:bar" "dms:dock" ];
+      default = [ "qstest:bar" ];
+      example = [ "qstest:bar" "qstest:dock" ];
       description = ''
         Layer-shell namespaces that must all exist before the splash lifts.
         Only list surfaces that always appear; a missing one costs 20s on

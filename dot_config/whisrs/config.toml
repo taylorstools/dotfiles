@@ -14,7 +14,8 @@ audio_feedback = false
 audio_feedback_volume = 0.5
 vocabulary = []
 tray = true
-# Off in favour of the WhisrsPill DMS plugin, which draws with the shell's
+# Off in favour of the shell's whisrs pill (.quickshell/Whisrs/WhisrsPill.qml,
+# ported from Taylor's old WhisrsPill plugin), which draws with the shell's
 # surface, blur and outline. Turning this back on gives you both.
 overlay = false
 llm_post_process = false
@@ -47,9 +48,9 @@ cancel = "Super+Shift+C"
 
 # The pill's event source. These fire on every recording state change,
 # whatever triggered it - hotkey, niri bind, CLI or tray - so the pill never
-# has to poll while you are not dictating. dms resolves because the user
+# has to poll while you are not dictating. qs resolves because the user
 # unit's PATH includes the system profile (components/whisrs.nix).
 [hooks]
-on_record_start = "dms ipc call whisrs started"
-on_record_stop = "dms ipc call whisrs stopped"
+on_record_start = "qs ipc call whisrs started"
+on_record_stop = "qs ipc call whisrs stopped"
 # media_auto_pause = true   # pause playing MPRIS media while dictating, resume it after

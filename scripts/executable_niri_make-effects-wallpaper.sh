@@ -4,11 +4,10 @@ set -uo pipefail
 
 mkdir -p "$HOME/.dotfiles/Wallpapers"
 EFFECTSWALLPAPEROUTPUT="$HOME/.config/.EffectsWallpaper.png"
-STATE="/tmp/dms-current-wallpaper"
+STATE="/tmp/qs-current-wallpaper"
 
 while true; do
-    # Last line only: the 2.0 CLI can print migration warnings before the answer
-    WALLPAPER="$(dms ipc call wallpaper get 2>/dev/null | tail -n 1)" || WALLPAPER=""
+    WALLPAPER="$(qs ipc call wallpaper get 2>/dev/null | tail -n 1)" || WALLPAPER=""
 
     # Anything that isn't an image file on disk ("Target not found." while the
     # shell starts, an ERROR string in per-monitor mode, a #colour wallpaper)

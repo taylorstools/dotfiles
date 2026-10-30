@@ -26,10 +26,10 @@ let
     else
       basePkg;
 
-  # The pill's waveform (dot_config/dms/plugins/WhisrsPill): a
-  # second capture of the same source whisrs records from. cava needs a config
-  # file and a named source, and a QML plugin has no business writing either -
-  # bars here must match barCount in WhisrsDaemon.qml.
+  # The pill's waveform (.quickshell/Whisrs/WhisrsPill.qml): a second capture
+  # of the same source whisrs records from. cava needs a config file and a
+  # named source, and the shell has no business writing either - bars here
+  # must match barCount in WhisrsPill.qml.
   cavaHelper = pkgs.writeShellApplication {
     name = "whisrs-pill-cava";
     runtimeInputs = with pkgs; [
@@ -164,7 +164,7 @@ in
       # whisrsd shells out to `niri msg --json focused-window` for window
       # tracking (and logs a misleading "is Niri running?" when it cannot
       # find the binary), and its [hooks] run through `sh -c` in this same
-      # environment - the pill's `dms ipc call whisrs ...` hooks need dms on
+      # environment - the pill's `qs ipc call whisrs ...` hooks need qs on
       # PATH. The system profile covers both, and whatever hooks come later.
       path = [ "/run/current-system/sw" ];
 

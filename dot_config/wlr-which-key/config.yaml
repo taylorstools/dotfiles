@@ -34,16 +34,16 @@ menu:
     cmd: $HOME/scripts/ocr-snip.sh
   - key: "b"
     desc: Toggle Night Mode
-    cmd: dms ipc call night toggle
+    cmd: qs ipc call night toggle
   - key: "n"
     desc: Night Mode Strength
-    cmd: $HOME/scripts/dms_change-night-mode-temperature.sh
+    cmd: $HOME/scripts/night-light-temperature.sh
   - key: "a"
     desc: Toggle Keep Awake
     cmd: $HOME/scripts/hypridle/toggle-hypridle.sh
   - key: "w"
     desc: Change Wallpaper
-    cmd: $HOME/scripts/dms_change-wallpaper.sh
+    cmd: qs ipc call wallpaper random
   - key: "d"
     desc: Change Refresh Rate
     cmd: $HOME/scripts/niri_change-refresh-rate.sh

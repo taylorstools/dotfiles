@@ -46,7 +46,7 @@ count_wallpaper_surfaces() {
 if (( at_login )); then
     # Anything already running at login belongs to a session that is gone.
     # Done before the wait below, not after: niri_make-effects-wallpaper.sh
-    # starts at the same moment and will call this script itself once DMS
+    # starts at the same moment and will call this script itself once the shell
     # answers, and sweeping up afterwards could take that instance with it.
     pkill -u "$(id -u)" -x swaybg 2>/dev/null
     rm -f "$PIDFILE"

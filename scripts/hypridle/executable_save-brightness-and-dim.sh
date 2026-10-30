@@ -8,7 +8,7 @@ fi
 echo $$ > "$PIDFILE"
 
 cleanup() {
-    dms ipc call settings set osdBrightnessEnabled true || true
+    qs ipc call osd suppress 0 || true
     rm -f "$PIDFILE"
 }
 trap cleanup EXIT INT TERM
@@ -27,7 +27,8 @@ target=$(( max / 10 ))
 step=$(( max * 3 / 100 ))
 (( step < 1 )) && step=1
 
-dms ipc call settings set osdBrightnessEnabled false
+# No brightness OSD while dimming; cleanup turns it back on.
+qs ipc call osd suppress 3600000 || true
 
 while :; do
     cur=$(brightnessctl -c backlight g)

@@ -22,11 +22,10 @@ niri msg action power-on-monitors
 STATE="/tmp/hypridle-dimmed"
 
 if [[ -f "$STATE" ]]; then
-    dms ipc call settings set osdBrightnessEnabled false
-    trap 'dms ipc call settings set osdBrightnessEnabled true || true' EXIT INT TERM
+    # No brightness OSD for the restore. The shell polls the backlight every
+    # 250 ms, so 1.5 s covers the change landing.
+    qs ipc call osd suppress 1500 || true
 
     brightnessctl -c backlight -r || true
     rm -f "$STATE"
-
-    sleep 0.3   # let DMS register the restore while the OSD is still suppressed
 fi

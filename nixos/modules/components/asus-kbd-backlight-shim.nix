@@ -8,7 +8,7 @@ let
   # LED class device is ever registered. The brightness *write* path is fine,
   # so this daemon registers a uleds device under the name the kernel would
   # have used and forwards writes to the keyboard over hidraw. Everything that
-  # speaks to /sys/class/leds (dms, brightnessctl, logind) then works unchanged.
+  # speaks to /sys/class/leds (the shell, brightnessctl, logind) then works unchanged.
   #
   # A uleds LED is a virtual device with no ID_PATH, so systemd's
   # 99-systemd.rules never matches it and systemd-backlight@leds:... is never
@@ -46,7 +46,7 @@ let
 
     # What the LED advertises to userspace. Keep it at HW_MAX to mirror what
     # the kernel driver would have exposed; raise it to 100 if you would rather
-    # dms deal in whole percentages (the daemon scales down to HW_MAX either
+    # the shell deal in whole percentages (the daemon scales down to HW_MAX either
     # way, so nothing else needs to change).
     MAX_BRIGHTNESS = HW_MAX
 
@@ -315,7 +315,7 @@ in
   # arrive only by way of the Howdy module.
   users.users.${config.myOptions.user.name}.extraGroups = [ "video" ];
 
-  # dms/brightnessctl write brightness as your user, not as root.
+  # The shell and brightnessctl write brightness as your user, not as root.
   services.udev.extraRules = ''
     SUBSYSTEM=="leds", KERNEL=="asus::kbd_backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/leds/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/leds/%k/brightness"
   '';
