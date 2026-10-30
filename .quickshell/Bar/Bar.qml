@@ -22,7 +22,9 @@ PanelWindow {
     color: "transparent"
 
     WlrLayershell.namespace: "qstest:bar"
-    WlrLayershell.layer: WlrLayer.Top
+    // Bottom: under windows, so it zooms out with the workspace in niri's
+    // overview (Settings > Taskbar).
+    WlrLayershell.layer: Settings.barZoomsWithOverview ? WlrLayer.Bottom : WlrLayer.Top
 
     Rectangle {
         anchors.fill: parent

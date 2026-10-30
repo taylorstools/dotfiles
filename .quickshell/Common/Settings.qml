@@ -76,6 +76,10 @@ Singleton {
             "overlayOpacity": 1,
             "wallpaperFadeDuration": 500,
             "clipboardClearOnStartup": true,
+            // The taskbar sits under windows (niri's bottom layer), so it
+            // zooms out with the workspace in the overview; floating windows
+            // can cover it. Off keeps it above windows and fixed on screen.
+            "barZoomsWithOverview": true,
             // Taskbar running apps (the Better Running Apps plugin's settings,
             // Taylor's values). Widths in px; a max
             // width of 0 uses the percentage instead.
@@ -129,6 +133,7 @@ Singleton {
     property alias wallpaperFadeDuration: adapter.wallpaperFadeDuration
     property alias clipboardClearOnStartup: adapter.clipboardClearOnStartup
     property alias doNotDisturb: adapter.doNotDisturb
+    property alias barZoomsWithOverview: adapter.barZoomsWithOverview
     property alias runningAppsLargeIcons: adapter.runningAppsLargeIcons
     property alias runningAppsCurrentWorkspaceOnly: adapter.runningAppsCurrentWorkspaceOnly
     property alias runningAppsGroupByApp: adapter.runningAppsGroupByApp
@@ -197,6 +202,7 @@ Singleton {
             property int wallpaperFadeDuration: root.defaults.wallpaperFadeDuration
             property bool clipboardClearOnStartup: root.defaults.clipboardClearOnStartup
             property bool doNotDisturb: false
+            property bool barZoomsWithOverview: root.defaults.barZoomsWithOverview
             property bool runningAppsLargeIcons: root.defaults.runningAppsLargeIcons
             property bool runningAppsCurrentWorkspaceOnly: root.defaults.runningAppsCurrentWorkspaceOnly
             property bool runningAppsGroupByApp: root.defaults.runningAppsGroupByApp

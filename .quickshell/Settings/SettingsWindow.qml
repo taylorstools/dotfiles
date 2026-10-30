@@ -83,6 +83,7 @@ Scope {
         { "page": "wallpaper", "label": "Colourful base colour", "terms": "color saturated seed vivid palette theme" },
         { "page": "wallpaper", "label": "Random wallpaper", "terms": "shuffle background" },
         { "page": "wallpaper", "label": "Choose a wallpaper", "terms": "pick picker background image" },
+        { "page": "taskbar", "label": "Zoom out with the overview", "terms": "taskbar bar layer overview windows above below floating" },
         { "page": "taskbar", "label": "Larger app icons", "terms": "running apps icon size big" },
         { "page": "taskbar", "label": "Current workspace only", "terms": "running apps windows filter" },
         { "page": "taskbar", "label": "Group windows by app", "terms": "running apps combine count badge" },
@@ -1099,6 +1100,15 @@ Scope {
                             StyledText {
                                 text: "Taskbar"
                                 font.pixelSize: Theme.fontSizeXLarge
+                            }
+
+                            SettingRow {
+                                label: "Zoom out with the overview"
+                                description: "Keep the taskbar under your windows, so it shrinks with the workspace in the overview. Floating windows can cover it."
+                                Toggle {
+                                    checked: Settings.barZoomsWithOverview
+                                    onToggled: Settings.barZoomsWithOverview = !Settings.barZoomsWithOverview
+                                }
                             }
 
                             StyledText {

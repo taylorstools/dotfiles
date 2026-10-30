@@ -55,5 +55,6 @@
     "surfaceTintCustom": "#000000",
     "wallpaperFadeDuration": 500,
     "wallpaperFolder": "/home/taylor/.dotfiles/Wallpapers",
-    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/enlarge_907288.jpg"
+    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/enlarge_907288.jpg",
+    "barZoomsWithOverview": true
 }
