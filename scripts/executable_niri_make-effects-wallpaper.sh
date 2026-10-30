@@ -4,7 +4,10 @@ set -uo pipefail
 
 mkdir -p "$HOME/.dotfiles/Wallpapers"
 EFFECTSWALLPAPEROUTPUT="$HOME/.config/.EffectsWallpaper.png"
-STATE="/tmp/qs-current-wallpaper"
+# Which wallpaper the effects image was made from. In the runtime dir, which
+# is emptied every boot, so the first run after login always rebuilds it:
+# /tmp survives reboots here, and an old marker there once kept a stale image.
+STATE="${XDG_RUNTIME_DIR:-/tmp}/qs-current-wallpaper"
 
 while true; do
     WALLPAPER="$(qs ipc call wallpaper get 2>/dev/null | tail -n 1)" || WALLPAPER=""
