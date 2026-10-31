@@ -64,10 +64,8 @@ binds {
     // Window switcher
     Mod+Tab { spawn "qs" "ipc" "call" "switcher" "toggle"; }
 
-    // Lock screen
-    // --force: a keybind can only reach niri while the session is unlocked, so
-    // any hyprlock still alive here is a leftover that failed to exit.
-    Mod+L   { spawn "sh" "-c" "$HOME/scripts/hypridle/lock-session.sh --force"; }
+    // Lock screen (the shell's, via lock-session.sh)
+    Mod+L   { spawn "sh" "-c" "$HOME/scripts/hypridle/lock-session.sh"; }
 
     // Toggle keep awake on/off
     Mod+K   { spawn "sh" "-c" "$HOME/scripts/hypridle/toggle-hypridle.sh"; }

@@ -59,6 +59,9 @@ in
     # The shell is the session's polkit agent (Polkit/PolkitDialog.qml).
     security.polkit.enable = true;
 
+    # The lock screen (Lock/Lock.qml) authenticates against this.
+    security.pam.services.quickshell = { };
+
     # hypridle's dim/restore scripts call brightnessctl, qs and friends.
     systemd.user.services.hypridle = {
       overrideStrategy = "asDropin";

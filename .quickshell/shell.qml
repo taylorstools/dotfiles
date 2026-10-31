@@ -13,6 +13,7 @@ import qs.Clock
 import qs.ControlCenter
 import qs.Dock
 import qs.Launcher
+import qs.Lock
 import qs.Notepad
 import qs.Notifications
 import qs.Osd
@@ -60,6 +61,7 @@ ShellRoot {
     WindowSwitcher {}
     ClipboardPanel {}
     PowerMenu {}
+    Lock {}
     Notepad {}
     ControlCenter {}
     ClockFlyout {}

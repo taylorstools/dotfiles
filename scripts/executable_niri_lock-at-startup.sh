@@ -34,20 +34,20 @@ if (( STATUS == 0 )); then
     exit 0
 fi
 
-# hyprlock never got a lock surface up. Quitting niri hands greetd a fresh
-# session to try again - but only if the last failure was a while ago. A
-# hyprlock that is broken rather than unlucky would otherwise quit niri over
-# and over with nothing on screen to say so.
+# The lock screen never came up. Quitting niri hands greetd a fresh session
+# to try again - but only if the last failure was a while ago. A lock that is
+# broken rather than unlucky would otherwise quit niri over and over with
+# nothing on screen to say so.
 NOW=$(date +%s)
 LAST=0
 [[ -r "$FAILURESTAMP" ]] && LAST=$(<"$FAILURESTAMP")
 
 if (( NOW - LAST < RETRYWINDOW )); then
-    echo "hyprlock exited $STATUS, and also failed $((NOW - LAST))s ago; leaving this session unlocked rather than looping"
+    echo "locking failed ($STATUS), and also failed $((NOW - LAST))s ago; leaving this session unlocked rather than looping"
     exit 1
 fi
 
 mkdir -p "$(dirname "$FAILURESTAMP")"
 echo "$NOW" > "$FAILURESTAMP"
-echo "hyprlock exited $STATUS; quitting niri so greetd starts a fresh session"
+echo "locking failed ($STATUS); quitting niri so greetd starts a fresh session"
 niri msg action quit --skip-confirmation

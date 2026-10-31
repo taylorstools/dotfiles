@@ -311,8 +311,7 @@ in
     "d /run/asus-kbd-backlight-shim 0775 root video -"
   ];
 
-  # Both the hold directory and the udev rule below rely on this. It used to
-  # arrive only by way of the Howdy module.
+  # Both the hold directory and the udev rule below rely on this.
   users.users.${config.myOptions.user.name}.extraGroups = [ "video" ];
 
   # The shell and brightnessctl write brightness as your user, not as root.

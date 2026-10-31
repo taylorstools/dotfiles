@@ -12,7 +12,6 @@ in
     ./components/claude-desktop.nix
     ./components/davinci-resolve.nix
     ./components/greetd.nix
-    ./components/howdy.nix
     ./components/llm-chat.nix
     ./components/niri.nix
     ./components/niri-splash

@@ -141,32 +141,6 @@ Do not run `--enable` anywhere. The keyslot still works without the crypttab opt
 
 What is left once the system is otherwise finished, meaning Secure Boot keys enrolled and, on the HTPCs, network-bound unlock set up. Each of these is state no rebuild can produce: enrollment data, credentials and pairings that live outside both the Nix store and chezmoi, so a reinstall starts with none of it.
 
-### Howdy face enrollment
-
-`taylorpc` only.
-
-`myOptions.howdy` sets up the daemon, the PAM opt-in for hyprlock and camera group access. It cannot supply your face. Enrolled models live in `/var/lib/howdy/models/<user>.dat`, which a reinstall takes with it.
-
-Confirm the IR sensor first. `devicePath` names a bare `/dev/videoN` node, and those are handed out in probe order, so the number can move on a fresh install:
-
-```sh
-ls -l /dev/v4l/by-path/         # the IR sensor, not the RGB one
-sudo howdy -U taylor test       # live view; a detected face gets boxed
-```
-
-If it moved, point `myOptions.howdy.devicePath` at the matching `/dev/v4l/by-path/...` path rather than chasing the new number.
-
-Then enroll, three or four times:
-
-```sh
-sudo howdy -U taylor add        # repeat: straight on, angled, closer, further back
-sudo howdy -U taylor list
-```
-
-One model is not enough. Howdy matches against the smallest distance across every enrolled model, and a single model from a grayscale IR sensor sits close enough to the threshold that ordinary variation (head turned, sitting further back) is rejected. Adding models is the fix for that. Raising `certainty` is letting other faces in to solve a problem only your own face has.
-
-Failure is quiet by design: `pam_howdy`'s output goes to hyprlock, which swallows it, and "Failure, timeout reached" covers both "never saw a face" and "saw one that never matched". To watch an attempt with its output attached to a terminal, add `"su"` to `myOptions.howdy.services`, rebuild, and run `su - taylor`.
-
 ### Login keyring
 
 `taylorpc` only. The HTPCs authenticate against KWallet under Plasma, and gnome-keyring is not enabled there at all.
@@ -188,7 +162,7 @@ To reset an existing keyring instead of deleting it:
 nix run nixpkgs#seahorse     # right-click Login > Change Password, leave the new one blank
 ```
 
-The trade is real but small here: an empty password means the keyring is encrypted with nothing, so anything that can read your home directory can read your tokens. That is the bargain autologin already struck. On these hosts the LUKS passphrase at boot is the authentication boundary, and hyprlock is what guards the session after it.
+The trade is real but small here: an empty password means the keyring is encrypted with nothing, so anything that can read your home directory can read your tokens. That is the bargain autologin already struck. On these hosts the LUKS passphrase at boot is the authentication boundary, and the shell's lock screen is what guards the session after it.
 
 ### KWallet
 
