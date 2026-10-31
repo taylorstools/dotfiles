@@ -73,7 +73,7 @@ binds {
     Mod+K   { spawn "sh" "-c" "$HOME/scripts/hypridle/toggle-hypridle.sh"; }
 
     // Wlogout
-    Ctrl+Alt+Delete { spawn "sh" "-c" "pkill wlogout || wlogout --buttons-per-row 6"; }
+    Ctrl+Alt+Delete { spawn "qs" "ipc" "call" "powermenu" "toggle"; }
 
     // Change wallpaper
     Mod+Shift+W { spawn "qs" "ipc" "call" "wallpaper" "random"; }

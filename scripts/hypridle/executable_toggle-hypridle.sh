@@ -8,9 +8,9 @@
 if systemctl --user is-active --quiet hypridle.service; then
     # Toggle keep awake on
     systemctl --user stop hypridle.service
-    notify-send -a hypridle "PC will now stay awake"
+    qs ipc call toast icon coffee "PC will now stay awake"
 else
     # Toggle keep awake off
     systemctl --user start hypridle.service
-    notify-send -a hypridle "PC will now dim, lock, and sleep"
+    qs ipc call toast icon bedtime "PC will now dim, lock, and sleep"
 fi

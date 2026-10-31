@@ -91,6 +91,17 @@ window-rule {
     open-floating true
 }
 
+// The notepad's Open and Save As dialogs (GTK's file chooser in the shell),
+// at Mission Center's size.
+window-rule {
+    match app-id=r#"^quickshell$"# title=r#"^(Open|Save As)$"#
+    open-floating true
+    min-width 1000
+    max-width 1000
+    min-height 650
+    max-height 650
+}
+
 window-rule {
     match app-id=r#"^resolve$"#
     exclude title=r#"DaVinci Resolve Studio"#

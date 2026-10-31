@@ -239,13 +239,6 @@ Scope {
                         color: Theme.primary
                     }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        Layout.topMargin: 4
-                        color: Theme.surfaceContainerHighest
-                    }
-
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.leftMargin: 4
@@ -346,12 +339,9 @@ Scope {
                         Layout.fillWidth: true
                         spacing: 6
 
-                        StyledText {
+                        // The tab below names this page; this keeps the buttons right.
+                        Item {
                             Layout.fillWidth: true
-                            Layout.leftMargin: 4
-                            text: "Notifications"
-                            color: Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
                         }
 
                         // Do not disturb: a red bell with a slash while it's on.
@@ -372,6 +362,7 @@ Scope {
 
                         IconButton {
                             implicitHeight: 28
+                            icon: "clear_all"
                             text: "Clear all"
                             restColor: Theme.surfaceContainerHigh
                             visible: Notifications.list.length > 0

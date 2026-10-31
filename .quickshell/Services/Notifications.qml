@@ -22,6 +22,12 @@ Singleton {
     readonly property bool dnd: Settings.doNotDisturb
     // Arrival times by notification id; the server doesn't keep them.
     property var _received: ({})
+    // Pop-ups slide in from the screen's right edge and back out to it.
+    readonly property int popupSlideDuration: Theme.animDuration * 2
+    // Pop-ups sliding out; they leave `popups` once they're off screen.
+    property var leaving: []
+    // What closePopup() runs once its pop-up has slid out.
+    property var _afterSlide: []
 
     function toggleDnd() {
         Settings.doNotDisturb = !Settings.doNotDisturb;
@@ -35,6 +41,25 @@ Singleton {
 
     function hidePopup(notification) {
         popups = popups.filter(n => n !== notification);
+        leaving = leaving.filter(n => n !== notification);
+    }
+
+    // Slides a pop-up out, then takes it off the list and runs `then` (if
+    // given). The pop-up slides itself rather than through the list's remove
+    // animation, which doesn't run when the last one goes. Dismissing or
+    // running an action destroys the notification, so those wait too, or the
+    // card would slide out blank.
+    function closePopup(notification, then) {
+        if (leaving.includes(notification))
+            return;
+        leaving = leaving.concat([notification]);
+        _afterSlide = _afterSlide.concat([
+            {
+                notification: notification,
+                then: then
+            }
+        ]);
+        afterSlide.restart();
     }
 
     function receivedAt(notification) {
@@ -73,6 +98,19 @@ Singleton {
             action.invoke();
         else
             notification.dismiss();
+    }
+
+    Timer {
+        id: afterSlide
+        interval: root.popupSlideDuration
+        onTriggered: {
+            const queued = root._afterSlide;
+            root._afterSlide = [];
+            for (const entry of queued) {
+                root.hidePopup(entry.notification);
+                entry.then?.();
+            }
+        }
     }
 
     NotificationServer {

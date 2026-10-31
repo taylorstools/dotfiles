@@ -80,6 +80,8 @@ Singleton {
             // zooms out with the workspace in the overview; floating windows
             // can cover it. Off keeps it above windows and fixed on screen.
             "barZoomsWithOverview": true,
+            // Notification pop-ups: "bottom-right" (above the taskbar) or "top-right".
+            "notificationPosition": "bottom-right",
             // Taskbar running apps (the Better Running Apps plugin's settings,
             // Taylor's values). Widths in px; a max
             // width of 0 uses the percentage instead.
@@ -134,6 +136,7 @@ Singleton {
     property alias clipboardClearOnStartup: adapter.clipboardClearOnStartup
     property alias doNotDisturb: adapter.doNotDisturb
     property alias barZoomsWithOverview: adapter.barZoomsWithOverview
+    property alias notificationPosition: adapter.notificationPosition
     property alias runningAppsLargeIcons: adapter.runningAppsLargeIcons
     property alias runningAppsCurrentWorkspaceOnly: adapter.runningAppsCurrentWorkspaceOnly
     property alias runningAppsGroupByApp: adapter.runningAppsGroupByApp
@@ -203,6 +206,7 @@ Singleton {
             property bool clipboardClearOnStartup: root.defaults.clipboardClearOnStartup
             property bool doNotDisturb: false
             property bool barZoomsWithOverview: root.defaults.barZoomsWithOverview
+            property string notificationPosition: root.defaults.notificationPosition
             property bool runningAppsLargeIcons: root.defaults.runningAppsLargeIcons
             property bool runningAppsCurrentWorkspaceOnly: root.defaults.runningAppsCurrentWorkspaceOnly
             property bool runningAppsGroupByApp: root.defaults.runningAppsGroupByApp

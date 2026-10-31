@@ -47,7 +47,13 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: Notifications.activate(root.notification)
+        onClicked: {
+            const n = root.notification;
+            if (root.popup)
+                Notifications.closePopup(n, () => Notifications.activate(n));
+            else
+                Notifications.activate(n);
+        }
     }
 
     RowLayout {
@@ -116,7 +122,13 @@ Rectangle {
                     icon: "close"
                     iconSize: 15
                     contentColor: Theme.surfaceVariantText
-                    onClicked: root.notification.dismiss()
+                    onClicked: {
+                        const n = root.notification;
+                        if (root.popup)
+                            Notifications.closePopup(n, () => n.dismiss());
+                        else
+                            n.dismiss();
+                    }
                 }
             }
 
@@ -194,7 +206,13 @@ Rectangle {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: actionButton.modelData.invoke()
+                            onClicked: {
+                                const action = actionButton.modelData;
+                                if (root.popup)
+                                    Notifications.closePopup(root.notification, () => action.invoke());
+                                else
+                                    action.invoke();
+                            }
                         }
                     }
                 }

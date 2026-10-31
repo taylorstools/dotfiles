@@ -19,7 +19,7 @@ mapfile -t ALL_MODES < <(
 )
 
 if [[ ${#ALL_MODES[@]} -eq 0 ]]; then
-    notify-send -a Display "No modes found for $OUTPUT"
+    qs ipc call toast error "No modes found for $OUTPUT"
     exit 1
 fi
 
@@ -45,7 +45,7 @@ for mode in "${ALL_MODES[@]}"; do
 done
 
 if [[ ${#MODES[@]} -lt 2 ]]; then
-    notify-send -a Display "Only one refresh rate available for $MAX_RESOLUTION"
+    qs ipc call toast warn "Only one refresh rate available for $MAX_RESOLUTION"
     exit 0
 fi
 
@@ -70,7 +70,7 @@ for i in "${!MODES[@]}"; do
 done
 
 if [[ -z "$NEXT_MODE" ]]; then
-    notify-send -a Display "Current mode not found among max-resolution modes"
+    qs ipc call toast error "Current mode not found among max-resolution modes"
     exit 1
 fi
 
@@ -80,4 +80,4 @@ NEXT_REFRESHRATE="$(awk "BEGIN { printf \"%d\", (${NEXT_MODE##*@}) + 0.5 }")Hz"
 niri msg output $OUTPUT mode $NEXT_MODE
 
 sleep 1
-notify-send -a Display "Refresh rate set to $NEXT_REFRESHRATE"
+qs ipc call toast info "Refresh rate set to $NEXT_REFRESHRATE"

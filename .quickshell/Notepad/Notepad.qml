@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
@@ -10,8 +11,8 @@ import qs.Widgets
 // Notepad that slides in from the right edge.
 //   qs ipc -p <this folder> call notepad toggle      (or ./run.sh notepad)
 // Text is written to disk shortly after you stop typing, for scratch tabs and
-// opened files alike. Esc closes, Ctrl+S saves (asks for a path on a scratch
-// tab), Ctrl+O opens, Ctrl+N / Ctrl+W add and close tabs, Ctrl+Tab and
+// opened files alike. Esc closes, Ctrl+S saves (a scratch tab asks where, in
+// a file chooser), Ctrl+O opens files, Ctrl+N / Ctrl+W add and close tabs, Ctrl+Tab and
 // Ctrl+Shift+Tab switch. Double-click a scratch tab to rename it, middle-click
 // to close it. Opens on the monitor niri has focused.
 Scope {
@@ -28,10 +29,6 @@ Scope {
     readonly property bool dirty: editor.text !== savedText
     property string errorText: ""
 
-    // "save" or "open" while the path field is showing.
-    property string pathPrompt: ""
-    // A Save As target that already exists; a second Enter replaces it.
-    property string confirmOverwritePath: ""
     property int renamingIndex: -1
 
     function show() {
@@ -50,7 +47,6 @@ Scope {
             return;
         flush();
         rememberPosition();
-        closePrompt();
         renamingIndex = -1;
         shown = false;
     }
@@ -131,64 +127,47 @@ Scope {
     // Scratch tabs need a path first; opened files are just written now.
     function save() {
         if (NotepadStore.currentTab?.isTemporary)
-            openPrompt("save");
+            pickFile("save");
         else
             flush();
     }
 
-    function openPrompt(kind) {
-        const title = NotepadStore.currentTab?.title ?? "Untitled";
-        pathPrompt = kind;
-        promptInput.text = kind === "save" ? "~/Documents/" + (title.includes(".") ? title : title + ".txt") : "~/";
-        promptInput.cursorPosition = promptInput.text.length;
-        promptInput.forceActiveFocus();
+    // Qt's file dialog, which the gtk3 platform theme (quickshell.service)
+    // shows as GTK's file chooser. It's a normal window and the notepad sits
+    // on the layer above windows, so the notepad slides away until it closes.
+    function pickFile(kind) {
+        if (openDialog.visible || saveDialog.visible)
+            return;
+        // GTK aborts the whole shell without its GSettings schemas, which
+        // quickshell.nix's wrapper around qs adds.
+        if (!(Quickshell.env("XDG_DATA_DIRS") ?? "").includes("/gsettings-schemas/gtk+3")) {
+            errorText = "No file chooser: qs is missing GTK's schemas (quickshell.nix)";
+            return;
+        }
+        flush();
+        rememberPosition();
+        renamingIndex = -1;
         errorText = "";
-        confirmOverwritePath = "";
-    }
-
-    function closePrompt() {
-        if (pathPrompt === "")
-            return;
-        pathPrompt = "";
-        confirmOverwritePath = "";
-        editor.forceActiveFocus();
-    }
-
-    function submitPrompt(text) {
-        const trimmed = text.trim();
-        if (trimmed === "" || trimmed.endsWith("/"))
-            return;
-        const path = NotepadStore.resolvePath(trimmed);
-        if (pathPrompt === "open") {
-            flush();
-            rememberPosition();
-            NotepadStore.openFile(path);
-            closePrompt();
-        } else {
-            saveAs(path);
+        if (kind === "save") {
+            const title = NotepadStore.currentTab?.title ?? "Untitled";
+            const name = title.includes(".") ? title : title + ".txt";
+            saveDialog.currentFolder = "file://" + NotepadStore.home + "/Documents";
+            saveDialog.selectedFile = "file://" + NotepadStore.home + "/Documents/" + name;
         }
+        shown = false;
+        (kind === "save" ? saveDialog : openDialog).open();
     }
 
-    // Checks the target doesn't exist (or that you pressed Enter twice) first.
-    function saveAs(path) {
-        if (path === confirmOverwritePath) {
-            writeTo(path);
+    // The dialog asks before replacing a file.
+    function pickDone(kind, urls) {
+        show();
+        const paths = urls.map(url => decodeURIComponent(url.toString().replace(/^file:\/\//, "")));
+        if (paths.length === 0)
             return;
-        }
-        const probe = probeComponent.createObject(root);
-        probe.loaded.connect(() => {
-            probe.destroy();
-            root.confirmOverwritePath = path;
-            root.errorText = "File exists. Press Enter again to replace it.";
-        });
-        probe.loadFailed.connect(error => {
-            probe.destroy();
-            if (error === FileViewError.FileNotFound)
-                root.writeTo(path);
-            else
-                root.errorText = "Can't save to " + path;
-        });
-        probe.path = path;
+        if (kind === "open")
+            paths.forEach(path => NotepadStore.openFile(path));
+        else
+            writeTo(paths[0]);
     }
 
     function writeTo(path) {
@@ -200,7 +179,6 @@ Scope {
             root.savedText = text;
             root.errorText = "";
             NotepadStore.saveTabAs(index, path);
-            root.closePrompt();
         });
         writer.saveFailed.connect(() => {
             writer.destroy();
@@ -248,11 +226,22 @@ Scope {
         onSaveFailed: root.errorText = "Couldn't write " + path
     }
 
-    Component {
-        id: probeComponent
-        FileView {
-            printErrors: false
-        }
+    // Two dialogs: GTK won't switch one from picking several files to saving.
+    FileDialog {
+        id: openDialog
+        title: "Open"
+        fileMode: FileDialog.OpenFiles
+        currentFolder: "file://" + NotepadStore.home
+        onAccepted: root.pickDone("open", Array.from(selectedFiles))
+        onRejected: root.pickDone("open", [])
+    }
+
+    FileDialog {
+        id: saveDialog
+        title: "Save As"
+        fileMode: FileDialog.SaveFile
+        onAccepted: root.pickDone("save", [selectedFile])
+        onRejected: root.pickDone("save", [])
     }
 
     Component {
@@ -347,8 +336,6 @@ Scope {
                 if (root.renamingIndex >= 0) {
                     root.renamingIndex = -1;
                     editor.forceActiveFocus();
-                } else if (root.pathPrompt !== "") {
-                    root.closePrompt();
                 } else {
                     root.hide();
                 }
@@ -362,7 +349,7 @@ Scope {
         Shortcut {
             sequences: [StandardKey.Open]
             enabled: root.shown
-            onActivated: root.openPrompt("open")
+            onActivated: root.pickFile("open")
         }
         Shortcut {
             sequences: ["Ctrl+N", "Ctrl+T"]
@@ -614,43 +601,6 @@ Scope {
                     }
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 40
-                    visible: root.pathPrompt !== ""
-                    radius: Theme.cornerRadius
-                    color: Theme.overlay(Theme.surfaceContainerHigh, 0.9)
-
-                    MaterialIcon {
-                        id: promptIcon
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.spacingM
-                        anchors.verticalCenter: parent.verticalCenter
-                        name: root.pathPrompt === "open" ? "folder_open" : "save"
-                        size: 20
-                        color: Theme.surfaceVariantText
-                    }
-
-                    TextInput {
-                        id: promptInput
-                        anchors.left: promptIcon.right
-                        anchors.leftMargin: Theme.spacingS
-                        anchors.right: parent.right
-                        anchors.rightMargin: Theme.spacingM
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: Theme.surfaceText
-                        selectionColor: Theme.primarySelected
-                        selectedTextColor: Theme.surfaceText
-                        font.family: Theme.fontFamily
-                        font.weight: Theme.fontWeight
-                        font.pixelSize: Theme.fontSizeMedium
-                        clip: true
-
-                        onAccepted: root.submitPrompt(text)
-                        onTextChanged: root.confirmOverwritePath = ""
-                    }
-                }
-
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: false
@@ -665,7 +615,7 @@ Scope {
                     IconButton {
                         icon: "folder_open"
                         text: "Open"
-                        onClicked: root.openPrompt("open")
+                        onClicked: root.pickFile("open")
                     }
 
                     IconButton {

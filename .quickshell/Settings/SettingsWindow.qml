@@ -47,6 +47,11 @@ Scope {
             "id": "clipboard",
             "title": "Clipboard",
             "icon": "content_paste"
+        },
+        {
+            "id": "notifications",
+            "title": "Notifications",
+            "icon": "notifications"
         }
     ]
 
@@ -101,7 +106,8 @@ Scope {
         { "page": "dock", "label": "Pinned apps", "terms": "pin unpin favourites favorites order" },
         { "page": "clipboard", "label": "Clear all also removes pinned items", "terms": "clipboard history pins delete" },
         { "page": "clipboard", "label": "Clear history at login", "terms": "clipboard startup boot delete" },
-        { "page": "clipboard", "label": "Paste into apps", "terms": "wtype ctrl+v clipboard" }
+        { "page": "clipboard", "label": "Paste into apps", "terms": "wtype ctrl+v clipboard" },
+        { "page": "notifications", "label": "Pop-up position", "terms": "notifications popups corner top bottom right" }
     ]
 
     property string query: ""
@@ -1072,6 +1078,68 @@ Scope {
                             color: Theme.outline
                             font.pixelSize: Theme.fontSizeSmall
                             wrapMode: Text.Wrap
+                        }
+
+                        Item {
+                            Layout.fillHeight: true
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.margins: Theme.spacingXL
+                        spacing: Theme.spacingM
+                        visible: root.page === "notifications"
+
+                        StyledText {
+                            text: "Notifications"
+                            font.pixelSize: Theme.fontSizeXLarge
+                        }
+
+                        SettingRow {
+                            label: "Pop-up position"
+                            description: "Where new notifications appear. They slide in from the right edge of the screen."
+                            Repeater {
+                                model: [
+                                    {
+                                        "id": "bottom-right",
+                                        "title": "Bottom right"
+                                    },
+                                    {
+                                        "id": "top-right",
+                                        "title": "Top right"
+                                    }
+                                ]
+
+                                delegate: Rectangle {
+                                    id: positionChip
+
+                                    required property var modelData
+                                    readonly property bool current: (Settings.notificationPosition || "bottom-right") === modelData.id
+
+                                    implicitWidth: positionText.implicitWidth + Theme.spacingM * 2
+                                    implicitHeight: 28
+                                    radius: height / 2
+                                    color: current ? Theme.primary : (positionMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
+
+                                    StyledText {
+                                        id: positionText
+                                        anchors.centerIn: parent
+                                        text: positionChip.modelData.title
+                                        color: positionChip.current ? Theme.onPrimary : Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                    }
+
+                                    MouseArea {
+                                        id: positionMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: Settings.notificationPosition = positionChip.modelData.id
+                                    }
+                                }
+                            }
                         }
 
                         Item {

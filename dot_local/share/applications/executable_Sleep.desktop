@@ -2,8 +2,8 @@
 Name=Sleep
 Comment=Sleep system
 Icon=vm-suspend
-Exec=sh -c 'pkill wlogout || wlogout --buttons-per-row 6'
-TryExec=wlogout
+Exec=qs ipc call powermenu toggle
+TryExec=qs
 Terminal=false
 Type=Application
 Categories=Settings;

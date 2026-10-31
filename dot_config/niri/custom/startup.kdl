@@ -11,7 +11,7 @@ spawn-sh-at-startup "$HOME/scripts/niri_lock-at-startup.sh"
 // installed. See myOptions.niri-splash.
 spawn-sh-at-startup "$HOME/scripts/niri_set-wallpaper.sh --at-login &"
 
-// Script that makes background image for hyprlock and wlogout
+// Script that makes background image for hyprlock and the power menu
 spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
 
 // libinput-gestures

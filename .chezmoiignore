@@ -113,7 +113,6 @@ Wallpapers{,/**}
   .config/remmina{,/**}
   .config/Thunar{,/**}
   .config/VSCodium{,/**}
-  .config/wlogout{,/**}
   .config/wlr-which-key{,/**}
   .config/xdg-desktop-portal{,/**}
   .config/xfce4{,/**}

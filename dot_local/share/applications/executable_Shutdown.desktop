@@ -2,8 +2,8 @@
 Name=Shutdown
 Comment=Shutdown system
 Icon=system-shutdown-panel
-Exec=sh -c 'pkill wlogout || wlogout --buttons-per-row 6'
-TryExec=wlogout
+Exec=qs ipc call powermenu toggle
+TryExec=qs
 Terminal=false
 Type=Application
 Categories=Settings;

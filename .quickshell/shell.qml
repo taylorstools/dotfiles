@@ -17,6 +17,7 @@ import qs.Notepad
 import qs.Notifications
 import qs.Osd
 import qs.Polkit
+import qs.PowerMenu
 import qs.Runner
 import qs.Services
 import qs.Settings
@@ -55,6 +56,7 @@ ShellRoot {
     Runner {}
     WindowSwitcher {}
     ClipboardPanel {}
+    PowerMenu {}
     Notepad {}
     ControlCenter {}
     ClockFlyout {}

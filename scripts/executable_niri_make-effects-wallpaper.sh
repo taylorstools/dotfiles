@@ -27,7 +27,7 @@ while true; do
 
     echo "New wallpaper detected: $WALLPAPER"
 
-    # Create wallpaper for hyprlock and wlogout; state is recorded only on success
+    # Create wallpaper for hyprlock and the power menu; state is recorded only on success
     if ! magick "$WALLPAPER" -fill black -colorize 70% -blur 0x15 "$EFFECTSWALLPAPEROUTPUT"; then
         echo "magick failed on $WALLPAPER, retrying in 5s" >&2
         sleep 5
@@ -39,7 +39,4 @@ while true; do
     # Via the helper, which replaces the running swaybg instead of adding
     # another one to the pile.
     "$HOME/scripts/niri_set-wallpaper.sh" "$EFFECTSWALLPAPEROUTPUT" || true
-
-    # Recolour the wlogout icons
-    "$HOME/scripts/wlogout_make-icons.sh" || echo "wlogout_make-icons.sh failed" >&2
 done

@@ -67,4 +67,4 @@ NEW_SCALE="${SCALES[$NEW_INDEX]}"
 
 niri msg output "$OUTPUT" scale "$NEW_SCALE"
 
-notify-send -a Display "Scale set to $NEW_SCALE"
+qs ipc call toast info "Scale set to $NEW_SCALE"

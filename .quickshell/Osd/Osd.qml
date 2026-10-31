@@ -13,10 +13,16 @@ import qs.Widgets
 // center is open, since its sliders already show the level, and for a moment
 // after startup or a device switch, when levels arrive without anyone
 // changing them.
+//
+// Scripts show toasts in the same pill, an icon and a line of text. They
+// aren't notifications, so they never reach the notification tray:
+//   qs ipc call toast info "Refresh rate set to 120Hz"
+//   qs ipc call toast warn "..."     qs ipc call toast error "..."
+//   qs ipc call toast icon coffee "PC will now stay awake"   (any Material icon)
 Scope {
     id: root
 
-    // "volume", "brightness" or "mic"
+    // "volume", "brightness", "mic" or "toast"
     property string kind: ""
     property bool shown: false
     property bool settled: false
@@ -24,9 +30,19 @@ Scope {
     readonly property var sinkAudio: Audio.sink?.audio ?? null
     readonly property var sourceAudio: Audio.source?.audio ?? null
 
-    readonly property bool muted: kind === "mic" ? (sourceAudio?.muted ?? false) : (sinkAudio?.muted ?? false)
+    property string toastText: ""
+    property string toastIcon: ""
+    property bool toastError: false
+
+    readonly property bool muted: {
+        if (kind === "toast")
+            return false;
+        return kind === "mic" ? (sourceAudio?.muted ?? false) : (sinkAudio?.muted ?? false);
+    }
     readonly property real level: kind === "brightness" ? Brightness.value : (sinkAudio?.volume ?? 0)
     readonly property string icon: {
+        if (kind === "toast")
+            return toastIcon;
         if (kind === "brightness")
             return level < 0.5 ? "brightness_low" : "light_mode";
         if (kind === "mic")
@@ -51,6 +67,16 @@ Scope {
         hideTimer.restart();
     }
 
+    // Unlike the level OSD, always shown: nothing else on screen says it.
+    function toast(icon, text, error) {
+        toastIcon = icon;
+        toastText = text;
+        toastError = error;
+        kind = "toast";
+        shown = true;
+        hideTimer.restart();
+    }
+
     function unsettle() {
         settled = false;
         settleTimer.restart();
@@ -69,6 +95,23 @@ Scope {
         }
     }
 
+    IpcHandler {
+        target: "toast"
+
+        function info(text: string): void {
+            root.toast("info", text, false);
+        }
+        function warn(text: string): void {
+            root.toast("warning", text, false);
+        }
+        function error(text: string): void {
+            root.toast("error", text, true);
+        }
+        function icon(name: string, text: string): void {
+            root.toast(name, text, false);
+        }
+    }
+
     Timer {
         id: settleTimer
         interval: 1000
@@ -77,7 +120,7 @@ Scope {
 
     Timer {
         id: hideTimer
-        interval: 1500
+        interval: root.kind === "toast" ? Config.toastDuration : 1500
         onTriggered: root.shown = false
     }
 
@@ -159,12 +202,17 @@ Scope {
         Rectangle {
             id: pill
 
-            width: root.kind === "mic" ? micRow.implicitWidth + 36 : Config.osdWidth
+            // Sized to whole screen pixels, or the window clips the right edge.
+            width: {
+                if (root.kind === "toast")
+                    return Theme.wholeSize(toastRow.implicitWidth + 36);
+                return root.kind === "mic" ? Theme.wholeSize(micRow.implicitWidth + 36) : Config.osdWidth;
+            }
             height: 48
             radius: height / 2
             color: Theme.popupBackground
             border.width: 1
-            border.color: root.kind === "mic" && root.muted ? Theme.error : Theme.blurBorder
+            border.color: (root.kind === "mic" && root.muted) || (root.kind === "toast" && root.toastError) ? Theme.error : Theme.blurBorder
             opacity: root.shown ? 1 : 0
 
             Behavior on opacity {
@@ -178,7 +226,7 @@ Scope {
                 anchors.leftMargin: 18
                 anchors.rightMargin: 18
                 spacing: 12
-                visible: root.kind !== "mic"
+                visible: root.kind !== "mic" && root.kind !== "toast"
 
                 MaterialIcon {
                     name: root.icon
@@ -233,6 +281,30 @@ Scope {
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.muted ? "Microphone muted" : "Microphone on"
+                    font.pixelSize: 13
+                }
+            }
+
+            Row {
+                id: toastRow
+                anchors.centerIn: parent
+                spacing: 12
+                visible: root.kind === "toast"
+
+                MaterialIcon {
+                    id: toastIconItem
+                    anchors.verticalCenter: parent.verticalCenter
+                    name: root.toastIcon
+                    size: 22
+                    filled: true
+                    color: root.toastError ? Theme.error : Theme.primary
+                }
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Math.min(implicitWidth, Config.toastMaxWidth - 36 - toastIconItem.width - parent.spacing)
+                    text: root.toastText
+                    elide: Text.ElideRight
                     font.pixelSize: 13
                 }
             }

@@ -7,10 +7,25 @@ let
   cfg = config.myOptions;
   system = pkgs.stdenv.hostPlatform.system;
 
-  quickshellPkg =
+  quickshellUnwrapped =
     if cfg.quickshell.source == "git"
     then inputs.quickshell.packages.${system}.default
     else pkgs.quickshell;
+
+  # The notepad's Open/Save As use Qt's file dialog, which the gtk3 platform
+  # theme shows as GTK's file chooser inside the shell. Without GTK's
+  # GSettings schemas that aborts the whole shell. Appended, not prepended:
+  # apps the shell launches inherit this and keep their own schemas first.
+  quickshellPkg = pkgs.symlinkJoin {
+    name = "quickshell-with-gtk-schemas";
+    paths = [ quickshellUnwrapped ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      for bin in $out/bin/qs $out/bin/quickshell; do
+        wrapProgram "$bin" --suffix XDG_DATA_DIRS : "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"
+      done
+    '';
+  };
 in
 {
   options.myOptions.quickshell.source = lib.mkOption {

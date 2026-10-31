@@ -26,6 +26,10 @@ Singleton {
 
     // OSD (volume / brightness / mic)
     readonly property real osdWidth: 280
+    // Toasts share the OSD's pill and spot; they stay up longer and grow to
+    // fit their text, up to this width.
+    readonly property int toastDuration: 3000
+    readonly property real toastMaxWidth: 560
 
     // Runner
     readonly property real runnerWidth: 720

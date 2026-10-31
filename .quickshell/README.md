@@ -43,12 +43,13 @@ else goes through `qs ipc call <target> <function>`; `qs ipc show` lists them.
 | `Runner/Runner.qml` | Win+R-style runner; IPC `runner` |
 | `Switcher/WindowSwitcher.qml` | Mod+Tab window switcher with hint letters and search; IPC `switcher` |
 | `Clipboard/` | Clipboard history with search and pins; pastes with wtype; IPC `clipboard` |
-| `Notepad/Notepad.qml` | Notepad sliding in from the right; IPC `notepad` |
+| `Notepad/Notepad.qml` | Notepad sliding in from the right, with Open and Save As file choosers; IPC `notepad` |
 | `ControlCenter/` | Wi-Fi, Bluetooth, volume, brightness, audio output, power; IPC `controlcenter` |
 | `Clock/` | Calendar, notification tray and wallpapers; IPC `clock` |
 | `Battery/` | Battery flyout: charge, power mode (power-profiles-daemon), battery health; IPC `battery` |
 | `Notifications/` | The notification daemon: pop-ups and the card shared with the tray |
-| `Osd/Osd.qml` | Volume, brightness and mic OSD; IPC `osd suppress <ms>` |
+| `Osd/Osd.qml` | Volume, brightness and mic OSD; IPC `osd suppress <ms>`. Toasts for scripts in the same spot: `qs ipc call toast info/warn/error <text>` or `toast icon <name> <text>` |
+| `PowerMenu/` | Full-screen power menu (lock, log out, sleep, shut down, reboot, Windows), styled like the wlogout it replaced; IPC `powermenu` |
 | `Polkit/PolkitDialog.qml` | Polkit password prompt (pkexec, "unlock" buttons) |
 | `Whisrs/WhisrsPill.qml` | whisrs dictation pill; IPC `whisrs started` / `stopped` |
 | `Wallpaper/` | Wallpaper per screen and the picker shared by the clock flyout and settings; IPC `wallpaper` |

@@ -32,6 +32,9 @@ Singleton {
     readonly property color onPrimary: pick("on_primary", "#21314a")
     readonly property color secondary: pick("secondary", "#bfc6d4")
     readonly property color tertiary: pick("tertiary", "#dcbce0")
+    // The light scheme's tertiary whatever the mode: the power menu's resting
+    // colour (wlogout's @light, which matugen's own templates still use).
+    readonly property color tertiaryLightScheme: root._palette?.colors?.tertiary?.light?.color ?? "#535f70"
     // Backgrounds get Settings.surfaceTint of the tint colour mixed in.
     readonly property color surface: tint(pick("surface", "#111418"))
     readonly property color surfaceText: pick("on_background", "#e1e2e8")
@@ -158,6 +161,17 @@ Singleton {
 
     function snap(value) {
         return Math.round(value * dpr) / dpr;
+    }
+
+    // The smallest size at or above `value` that's whole in both logical and
+    // physical pixels (a multiple of 8 at scale 1.875). A layer window's size
+    // is whole logical pixels; one that isn't whole on screen gets its right
+    // or bottom edge shaved off.
+    function wholeSize(value) {
+        let size = Math.ceil(value - 0.001);
+        while (Math.abs(size * dpr - Math.round(size * dpr)) > 0.01 && size < value + 16)
+            size++;
+        return size;
     }
 
     function snapEven(value) {

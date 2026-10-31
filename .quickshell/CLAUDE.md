@@ -18,7 +18,9 @@ shell is left in the system or the dotfiles.
   Qt misses icons in `~/.local/share/icons`, and launched apps inherit it.
   Plain `qs ipc call <target> <fn>` reaches it.
 - NixOS: `nixos/modules/components/quickshell.nix` installs `qs`
-  (`myOptions.quickshell.source`, "git" on the laptop = Quickshell master) and
+  (`myOptions.quickshell.source`, "git" on the laptop = Quickshell master,
+  wrapped to append gtk3's GSettings schemas to `XDG_DATA_DIRS`: GTK's file
+  chooser aborts the whole shell without them) and
   what the shell runs (wtype, wlsunset, matugen, fd, fzf, wl-clipboard,
   brightnessctl, libnotify, hypridle, swaybg, adw-gtk3), the Material Symbols
   font, accounts-daemon (the avatar) and polkit (the shell is the agent).
@@ -49,6 +51,8 @@ shell is left in the system or the dotfiles.
   `run.sh`, with file and line. A hot reload doesn't pick up a *new* type
   (a new inline `component`, or a new file in a module folder): it fails
   with "X is not a type" until `./run.sh restart`.
+- `FileView` has a `loaded` property as well as a `loaded` signal, so
+  `view.loaded.connect()` fails from JS; put `onLoaded` on the FileView.
 - Testing tips: `QSTEST_THEME_ROOT=/some/dir` sends the app themes there
   instead of `$HOME` (so a test run doesn't recolour his terminals);
   `QSTEST_COLORS_FILE` points the theme at another palette file.
@@ -61,7 +65,7 @@ shell is left in the system or the dotfiles.
 
 | Path | Role |
 | --- | --- |
-| `shell.qml` | `ShellRoot`: `Variants` of `Background`, `Bar` and `Dock` per screen, plus `Launcher`, `Runner`, `WindowSwitcher`, `ClipboardPanel`, `Notepad`, `ControlCenter`, `ClockFlyout`, `BatteryFlyout`, `TrayFlyout`, notification `Popups`, `Osd`, `PolkitDialog`, `WhisrsPill` and `SettingsWindow`; starts `NiriBlur`, `ClipboardHistory` and `NightLight` at startup |
+| `shell.qml` | `ShellRoot`: `Variants` of `Background`, `Bar` and `Dock` per screen, plus `Launcher`, `Runner`, `WindowSwitcher`, `ClipboardPanel`, `PowerMenu`, `Notepad`, `ControlCenter`, `ClockFlyout`, `BatteryFlyout`, `TrayFlyout`, notification `Popups`, `Osd`, `PolkitDialog`, `WhisrsPill` and `SettingsWindow`; starts `NiriBlur`, `ClipboardHistory` and `NightLight` at startup |
 | `Common/Theme.qml` | Singleton: palette, sizes, fonts, `barTextSize`/`barIconSize` |
 | `Common/Settings.qml` | Singleton: settings edited from the settings window (power commands), a `FileView` + `JsonAdapter` on `settings.json` in this folder |
 | `Common/Popouts.qml` | Singleton: which popouts are open (`controlCenterScreen`, `clockScreen` + `clockTab`, `batteryScreen`, `trayScreen` + `trayX`, `settingsOpen`) so per-screen bars can open them; opening one flyout closes the others, `closeFlyouts()` closes all |
@@ -79,21 +83,22 @@ shell is left in the system or the dotfiles.
 | `Services/Power.qml` | Singleton: runs the lock/sleep/restart/shutdown commands from `Settings` with `sh -c`, no confirmation |
 | `Widgets/` | `StyledText`, `MaterialIcon` (ligature glyphs), `BarPopup` (PopupWindow anchored above an item), `Tooltip`, `IconButton`, `StyledSlider`, `Toggle`, `SegmentButton` (tab bars) |
 | `Bar/` | `Bar.qml` plus one file per widget. `TrayFlyout.qml` is the collapsed tray's icons above the chevron, a flyout like the others (Exclusive focus, closes on outside click, Esc, or another flyout); `TrayIcon.qml` is shared by it and the uncollapsed tray. A click anywhere else on the bar closes any flyout on release (a passive `PointHandler`, so cursors and clicks still reach widgets) |
-| `Notepad/Notepad.qml` | Right-edge slide-in PanelWindow (Top layer, OnDemand focus, no exclusive zone) with tabs, autosave, Save As/Open path field; `IpcHandler` target `notepad` |
+| `Notepad/Notepad.qml` | Right-edge slide-in PanelWindow (Top layer, OnDemand focus, no exclusive zone) with tabs and autosave; Open/Save As are Qt `FileDialog`s (GTK's file chooser under the gtk3 theme; `rules.kdl` floats them at Mission Center's 1000×650). niri draws the notepad's layer above every window, so it slides away while one is open and comes back (with the keyboard) after; `IpcHandler` target `notepad` |
 | `ControlCenter/ControlCenter.qml` | Flyout from the status icons: full-screen-above-the-bar PanelWindow (Exclusive focus for Wi-Fi passwords), user + settings/lock/power, brightness, volume + output picker, Wi-Fi/Bluetooth list (connected rows: Disconnect text button; a network's right-click or the connected row's gear opens `netMenu` with Disconnect / Forget = `Network.forget`); IPC target `controlcenter` |
 | `Settings/SettingsWindow.qml` | "Shell Settings": a `FloatingWindow` (a normal niri window) in a `LazyLoader`; own title bar (maximize = `niri msg action maximize-window-to-edges`, close); sidebar search over `searchIndex` (add new settings there); Power page edits the commands, Wallpaper page has the folder, matugen scheme and a thumbnail picker; IPC target `settings`. Launcher entry: `dot_local/share/applications/org.quickshell.desktop` (named after Quickshell's app id so the taskbar/dock show it too), icon Tela's grey gear (`preferences`) |
 | `Battery/BatteryFlyout.qml` + `Services/BatteryInfo.qml` | Flyout from the bar's battery: charge, state, time left and watts (UPower), power mode switcher (`PowerProfiles` = power-profiles-daemon, what powerprofilesctl sets; Performance hidden if unsupported), and a small "Battery health N%" line (UPower's health, else sysfs energy_full / energy_full_design). `BatteryInfo` also feeds `Bar/Battery.qml`. IPC target `battery` (`toggle`/`close`/`setMode`/`getMode`) |
 | `Clock/ClockFlyout.qml` | Flyout from the clock, tabs at the bottom: Overview (time to the second, six-week calendar), Notifications (tray, DND bell, clear all), Wallpapers (`WallpaperPicker`); IPC target `clock` |
-| `Notifications/` | `NotificationCard` (shared by tray and pop-ups; `notify-send -i name` arrives as `image://icon/name` and is treated as the app icon) and `Popups` (bottom right, Overlay layer, `ScriptModel` so timers survive new arrivals) |
+| `Notifications/` | `NotificationCard` (shared by tray and pop-ups; `notify-send -i name` arrives as `image://icon/name` and is treated as the app icon) and `Popups` (Overlay layer, `ScriptModel` so timers survive new arrivals): bottom or top right (`Settings.notificationPosition`, Notifications page), 16px in so cards sit inside niri's 8px window gaps. Cards slide themselves in, and back out (`Notifications.closePopup`) before leaving the list, since the list's own add and remove animations don't run for the first and last card; dismissing or running an action waits for the slide, because it destroys the notification. The window spans the screen's height with an input mask over the cards, and unmaps when empty (mapped but empty, niri blurs all of it); mapping takes about as long as the slide, so a card that arrives with the window waits for its first frame (`frameSwapped`) before sliding in. The slide moves a `Translate`, not `x`: the list sets a new card's `x` to 0 when laying it out, which drew it in place for a frame |
 | `Wallpaper/WallpaperPicker.qml` | Thumbnail grid shared by the clock flyout and the settings page |
 | `Runner/Runner.qml` | Port of `~/scripts/runner.sh` (Win+R): overlay panel, same keys; ranking by `fzf --filter --scheme path --nth 2` over a per-reload list file in `$XDG_RUNTIME_DIR`; IPC target `runner` |
 | `Switcher/WindowSwitcher.qml` | Mod+Tab window switcher, port of `~/scripts/niri_window-switcher.sh` (still in `scripts/`, no longer bound): windows from `Niri.sortedWindows`, workspace gutter, a dot on the window you came from, one hint letter per window (app name first, then title, then any free key; kept per niri session in `$XDG_RUNTIME_DIR/qstest-switcher-letters.<socket>.json`), `/` for in-order fuzzy search, Delete closes, Esc quits. Closes when another real window gets focus (taking the keyboard reports focus on no window, which doesn't count). IPC target `switcher` |
 | `Runner/runner-helper.sh` | The script's shell parts kept as-is: `list-dir`, `list-below` (fd), `dir`, `kind` (the xed/VSCodium text check), `run` (Alt+Enter rules) |
-| `Osd/Osd.qml` | Bottom-center OSD for volume, brightness and mic mute; reacts to level changes from any source, quiet while the control center is open, for 1 s after startup or a device switch, and while `qs ipc call osd suppress <ms>` says (hypridle's dim/restore scripts) |
+| `Osd/Osd.qml` | Bottom-center OSD for volume, brightness and mic mute; reacts to level changes from any source, quiet while the control center is open, for 1 s after startup or a device switch, and while `qs ipc call osd suppress <ms>` says (hypridle's dim/restore scripts). Also toasts: scripts' short messages in the same pill and spot, sized to the text (`Config.toastMaxWidth`), 3 s, never in the notification tray; IPC target `toast` (`info`/`warn`/`error <text>`, `icon <material icon> <text>`), used by the refresh-rate, scale and hypridle-toggle scripts |
 | `Dock/Dock.qml` | Per-screen vertical dock (left, 30px icons, 8px spacing, 1px border in the panel border colour, circle indicators, auto-hide via an input `mask` that shrinks to a 2px edge strip, also shown during niri overview); right-click menu via `DockPopup`. Settings page: Dock |
 | `Services/ClipboardHistory.qml` + `Clipboard/clip-helper.sh` | Clipboard history: `wl-paste --watch` runs the helper per copy (skips `CLIPBOARD_STATE=sensitive`), files + `index.json` in `~/.local/state/qstest/clipboard`, dedupe by sha1, 100 unpinned / 5 MB. Paste = copy, close, 200 ms, then Ctrl+V (Ctrl+Shift+V for terminals) via `wtype` only; without wtype it only copies. Clear-at-login uses a marker in `$XDG_RUNTIME_DIR` so config reloads don't clear |
 | `Clipboard/ClipboardPanel.qml` | Launcher-style panel; IPC targets `clipboard` (panel) and `cliphistory` (`clear`) |
 | `Services/NightLight.qml` | Singleton: night light through `wlsunset` (day/night temperatures 1K apart, so it stays put); `Settings.nightLight`/`nightLightTemperature`; IPC target `night` (`toggle`/`enable`/`disable`/`status`/`getTemp`/`setTemp`) |
+| `PowerMenu/PowerMenu.qml` | Full-screen power menu that replaced wlogout and copies its look (measured against wlogout screenshots): the effects wallpaper (`~/.config/.EffectsWallpaper.png`, made by `scripts/niri_make-effects-wallpaper.sh`), six buttons each its label's width plus an equal share of the row, wlogout's own white icons in `PowerMenu/icons/` tinted with `MultiEffect` in `Theme.tertiaryLightScheme` (matugen's light-scheme tertiary) and `Theme.tertiary` on hover, growing 60 to 85px with wlogout's overshoot curve. Keys L/E/Z/S/R/W, Esc or a click outside closes. Lock, sleep, reboot and shut down use the Settings commands (`Services/Power.qml`). Ctrl+Alt+Delete, the which-key menu and the Lock/Sleep/Logout/Shutdown/Reboot launcher entries open it; IPC target `powermenu` |
 | `Polkit/PolkitDialog.qml` | The polkit authentication agent (`Quickshell.Services.Polkit`); can't register while another agent runs |
 | `Whisrs/WhisrsPill.qml` | Port of Taylor's old WhisrsPill plugin; IPC target `whisrs` (`started`/`stopped`, called by whisrs's hooks) |
 | `Theming/` | `generate.sh` (run by `Services/Wallpaper.qml`): the shell palette, a 16-colour terminal palette (`term16.py`, imported as `term16`), app templates adapted from DankMaterialShell's (MIT; `templates.toml` + `templates/`) written to `shell-*` names the app configs include, then Taylor's own `~/.config/matugen` templates, then kitty/Ghostty reload |
@@ -151,8 +156,8 @@ rows emit `clicked` and the code that uses them does the outer work.
   `Widgets/PanelMotion.qml`: bind `shown`, animate with `progress`, and use
   `mapped` as the window's `visible` so it stays up through the close. Centred
   panels fade and grow from 95%, bar flyouts rise 16px, the notepad slides,
-  notification pop-ups are a `ListView` with add/remove/displaced
-  transitions. The wallpaper crossfade has its own `wallpaperFadeDuration`.
+  notification pop-ups slide in and out from the screen edge at twice the
+  duration (`Notifications.popupSlideDuration`). The wallpaper crossfade has its own `wallpaperFadeDuration`.
 - **Opacity and blur are global settings** (Appearance page):
   `Settings.surfaceOpacity` feeds `Theme.barBackground`/`popupBackground`, which
   every panel uses; `Settings.blur` switches the `BackgroundEffect` region on
