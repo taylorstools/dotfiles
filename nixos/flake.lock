@@ -376,11 +376,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793344079,
-        "narHash": "sha256-usBaJUpyggGJE5C96/RklPhWNoli/6fcGnsIjMEDroI=",
+        "lastModified": 1793451561,
+        "narHash": "sha256-Psx9H9dkypuFfajF41ahZt8PiVoRhydJQq2S09oto6o=",
         "owner": "y0sif",
         "repo": "whisrs",
-        "rev": "c0e743dbfec19350203093533a0abec036652b64",
+        "rev": "20ef8c27c3dc28f81de0e8a254c84926f0e70c3f",
         "type": "github"
       },
       "original": {
