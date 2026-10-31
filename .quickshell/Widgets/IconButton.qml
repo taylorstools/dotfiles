@@ -12,6 +12,9 @@ Rectangle {
     property bool filled: false
     property color contentColor: Theme.surfaceText
     property color restColor: "transparent"
+    // Filled buttons (a primary restColor) set a lighter shade here; the
+    // default darkens them.
+    property color hoverColor: Theme.widgetHover
     readonly property bool hovered: mouse.containsMouse
 
     signal clicked
@@ -19,7 +22,7 @@ Rectangle {
     implicitHeight: 32
     implicitWidth: text !== "" ? row.implicitWidth + (icon !== "" ? Theme.spacingS : Theme.spacingM) * 2 : implicitHeight
     radius: Theme.cornerRadius / 2
-    color: hovered ? Theme.widgetHover : restColor
+    color: hovered ? hoverColor : restColor
 
     Row {
         id: row

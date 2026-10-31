@@ -22,8 +22,10 @@ mkdir -p "$(dirname -- "$File")"
 
 case "$Mode" in
     Region)
-        # Esc in slurp cancels the whole thing.
-        Geometry=$(slurp) || exit 2
+        # Esc in slurp cancels the whole thing. Its stdin must be empty: slurp
+        # reads boxes to choose from when stdin isn't a terminal, and the
+        # shell's pipe never closes, so it would wait there forever.
+        Geometry=$(slurp </dev/null) || exit 2
         grim -g "$Geometry" "$File" || exit 1
         ;;
     Screen)

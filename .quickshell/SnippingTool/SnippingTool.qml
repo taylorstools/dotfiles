@@ -126,7 +126,9 @@ Scope {
     Component {
         id: shotComponent
 
-        Item {
+        // Not drawn: a Scope, so creating one isn't a visual item with no
+        // window to sit in.
+        Scope {
             id: shot
 
             required property string file
@@ -430,6 +432,7 @@ Scope {
                         icon: "screenshot_region"
                         text: "Take"
                         restColor: Theme.primary
+                        hoverColor: Qt.lighter(Theme.primary, 1.12)
                         contentColor: Theme.onPrimary
                         onClicked: root.take(root.mode, root.delay)
                     }
