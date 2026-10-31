@@ -169,7 +169,7 @@ let
       Action="$(notify-send \
         --app-name="NixOS Upgrade" \
         --urgency=critical \
-        --icon=dialog-error \
+        --hint=string:x-material-symbol:sync_problem \
         --action=open="Open log" \
         --wait \
         "Last automatic upgrade failed" \

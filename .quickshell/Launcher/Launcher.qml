@@ -161,8 +161,10 @@ Scope {
                 anchors.right: parent.right
                 anchors.margins: panel.pad
                 height: 44
-                radius: Theme.cornerRadius - panel.pad / 2
-                color: Theme.overlay(Theme.surfaceContainerHigh, 0.9)
+                // On the panel's own background, underlined.
+                color: "transparent"
+
+                InputUnderline {}
 
                 MaterialIcon {
                     id: searchIcon

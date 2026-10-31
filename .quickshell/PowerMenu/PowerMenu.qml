@@ -8,7 +8,7 @@ import qs.Services
 import qs.Widgets
 
 // Full-screen power menu, a copy of Taylor's wlogout setup: six buttons in a
-// row over the effects wallpaper (the dimmed, blurred one hyprlock uses),
+// row over the effects wallpaper (the dimmed, blurred one the lock uses),
 // icons in matugen's light-scheme tertiary that grow and brighten on hover.
 // Keys as in wlogout: L lock, E log out, Z sleep, S shut down, R reboot,
 // W reboot into Windows; Esc closes. Each button's command, and whether it

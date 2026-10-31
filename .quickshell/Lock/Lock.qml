@@ -298,9 +298,9 @@ Scope {
     PamContext {
         id: pam
 
-        // Its own PAM service (nixos: security.pam.services.quickshell);
-        // hyprlock's until a rebuild has added it, and login's if neither is
-        // there.
+        // Its own PAM service (nixos: security.pam.services.quickshell), or
+        // hyprlock's on a system not yet rebuilt since that was added (the
+        // same rebuild removes hyprlock), or login's if neither is there.
         // Read up front (blockLoading): a shell restarted while locked starts
         // PAM at once, and its service can't change once started.
         config: quickshellPam.text() !== "" ? "quickshell" : (hyprlockPam.text() !== "" ? "hyprlock" : "login")

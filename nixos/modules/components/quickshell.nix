@@ -37,7 +37,6 @@ in
   config = {
     environment.systemPackages = with pkgs; [
       quickshellPkg # qs
-      accountsservice
       adw-gtk3
       brightnessctl # backlight and keyboard light
       fd # runner: searching below a folder

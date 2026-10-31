@@ -102,6 +102,11 @@ Singleton {
             // buttons); 1 keeps them solid.
             "overlayOpacity": 1,
             "wallpaperFadeDuration": 500,
+            // A random wallpaper from the folder at login, and every
+            // wallpaperChangeInterval minutes while wallpaperAutoChange is on.
+            "wallpaperChangeAtStartup": true,
+            "wallpaperAutoChange": true,
+            "wallpaperChangeInterval": 15,
             "clipboardClearOnStartup": true,
             // The taskbar sits under windows (niri's bottom layer), so it
             // zooms out with the workspace in the overview; floating windows
@@ -169,6 +174,9 @@ Singleton {
     property alias nightLightTemperature: adapter.nightLightTemperature
     property alias overlayOpacity: adapter.overlayOpacity
     property alias wallpaperFadeDuration: adapter.wallpaperFadeDuration
+    property alias wallpaperChangeAtStartup: adapter.wallpaperChangeAtStartup
+    property alias wallpaperAutoChange: adapter.wallpaperAutoChange
+    property alias wallpaperChangeInterval: adapter.wallpaperChangeInterval
     property alias clipboardClearOnStartup: adapter.clipboardClearOnStartup
     property alias doNotDisturb: adapter.doNotDisturb
     property alias barZoomsWithOverview: adapter.barZoomsWithOverview
@@ -189,6 +197,10 @@ Singleton {
     property alias dockSpacing: adapter.dockSpacing
     property alias dockPins: adapter.dockPins
 
+    // settings.json has been read (or found missing): until then every
+    // setting is its default.
+    property bool ready: false
+
     function reset(key) {
         root[key] = defaults[key];
     }
@@ -201,9 +213,11 @@ Singleton {
 
         onFileChanged: reload()
         onAdapterUpdated: saveTimer.restart()
+        onLoaded: root.ready = true
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound)
                 writeAdapter();
+            root.ready = true;
         }
 
         JsonAdapter {
@@ -248,6 +262,9 @@ Singleton {
             property int nightLightTemperature: root.defaults.nightLightTemperature
             property real overlayOpacity: root.defaults.overlayOpacity
             property int wallpaperFadeDuration: root.defaults.wallpaperFadeDuration
+            property bool wallpaperChangeAtStartup: root.defaults.wallpaperChangeAtStartup
+            property bool wallpaperAutoChange: root.defaults.wallpaperAutoChange
+            property int wallpaperChangeInterval: root.defaults.wallpaperChangeInterval
             property bool clipboardClearOnStartup: root.defaults.clipboardClearOnStartup
             property bool doNotDisturb: false
             property bool barZoomsWithOverview: root.defaults.barZoomsWithOverview

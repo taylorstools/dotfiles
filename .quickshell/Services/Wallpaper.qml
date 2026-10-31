@@ -12,6 +12,8 @@ import qs.Common
 //   qs ipc -p <this folder> call wallpaper set <path>
 //   qs ipc -p <this folder> call wallpaper random     (from Settings.wallpaperFolder)
 //   qs ipc -p <this folder> call wallpaper get
+// Settings > Wallpaper can also pick a random one at login and every few
+// minutes (wallpaperChangeAtStartup, wallpaperAutoChange, ...Interval).
 Singleton {
     id: root
 
@@ -23,6 +25,15 @@ Singleton {
     // for the login splash (Wallpaper/LoginReady.qml).
     property bool shown: false
     property string lastError: ""
+
+    // At login, while the startup change is being decided: the wallpaper
+    // windows hold off drawing, so the login splash lifts onto the new
+    // wallpaper rather than the old one fading over to it.
+    property bool startupPending: false
+    property string listedFolder: ""
+    // A marker per niri session (its socket names its pid): there on a config
+    // reload or a shell restart, missing at a new login.
+    readonly property string sessionMarker: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/qstest-wallpaper-session." + (Quickshell.env("NIRI_SOCKET") || "none").split("/").pop()
 
     readonly property var schemes: ["scheme-content", "scheme-expressive", "scheme-fidelity", "scheme-fruit-salad", "scheme-monochrome", "scheme-neutral", "scheme-rainbow", "scheme-tonal-spot", "scheme-vibrant"]
 
@@ -53,7 +64,55 @@ Singleton {
     }
 
     onPathChanged: regenerate.restart()
-    Component.onCompleted: rescanFolder()
+    Component.onCompleted: {
+        if (sessionMarkerFile.text() === "") {
+            Quickshell.execDetached(["sh", "-c", 'echo 1 > "$1"', "sh", sessionMarker]);
+            startupPending = true;
+            startupTimeout.start();
+        }
+        rescanFolder();
+    }
+
+    // Once settings are read and the folder listed: change it or not, then
+    // let the wallpaper windows draw.
+    function decideStartup() {
+        if (!startupPending || !Settings.ready || listedFolder !== Settings.wallpaperFolder)
+            return;
+        if (Settings.wallpaperChangeAtStartup)
+            random();
+        startupPending = false;
+        startupTimeout.stop();
+    }
+
+    Connections {
+        target: Settings
+        function onReadyChanged() {
+            root.rescanFolder();
+            root.decideStartup();
+        }
+    }
+
+    FileView {
+        id: sessionMarkerFile
+        path: root.sessionMarker
+        blockLoading: true
+        printErrors: false
+    }
+
+    // Never keep the wallpaper hidden for long.
+    Timer {
+        id: startupTimeout
+        interval: 3000
+        onTriggered: root.startupPending = false
+    }
+
+    // Auto-change.
+    Timer {
+        running: Settings.wallpaperAutoChange
+        repeat: true
+        interval: Math.max(1, Number(Settings.wallpaperChangeInterval) || 15) * 60000
+        onTriggered: root.random()
+    }
 
     Connections {
         target: Settings
@@ -94,9 +153,19 @@ Singleton {
 
     Process {
         id: lister
+        // The folder this listing is of, fixed when it starts.
+        property string folder: ""
+        onRunningChanged: {
+            if (running)
+                folder = Settings.wallpaperFolder;
+        }
         command: ["sh", "-c", 'find "$1" -maxdepth 1 -type f \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort', "sh", Settings.wallpaperFolder]
         stdout: StdioCollector {
-            onStreamFinished: root.images = text.trim().split("\n").filter(l => l)
+            onStreamFinished: {
+                root.images = text.trim().split("\n").filter(l => l);
+                root.listedFolder = lister.folder;
+                root.decideStartup();
+            }
         }
     }
 

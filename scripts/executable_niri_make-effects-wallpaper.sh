@@ -27,7 +27,7 @@ while true; do
 
     echo "New wallpaper detected: $WALLPAPER"
 
-    # Create wallpaper for hyprlock and the power menu; state is recorded only on success
+    # Create wallpaper for the lock screen and the power menu; state is recorded only on success
     if ! magick "$WALLPAPER" -fill black -colorize 70% -blur 0x15 "$EFFECTSWALLPAPEROUTPUT"; then
         echo "magick failed on $WALLPAPER, retrying in 5s" >&2
         sleep 5

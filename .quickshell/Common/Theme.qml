@@ -52,6 +52,8 @@ Singleton {
     readonly property color surfaceContainerHighest: withAlpha(tint(pick("surface_container_highest", "#32353a")), overlayOpacity)
     readonly property color outline: pick("outline", "#8e9099")
     readonly property color error: pick("error", "#ffb4ab")
+    // matugen has no warning role; a soft amber that sits with its palettes.
+    readonly property color warning: "#e6c38a"
 
     // Every panel's background uses the one opacity from the settings window.
     // The taskbar and dock use the same colour as the flyouts and panels

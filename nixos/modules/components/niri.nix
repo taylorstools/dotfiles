@@ -81,23 +81,17 @@
   };
 
   environment.systemPackages = with pkgs; [
-    brightnessctl
-    fd
-    fzf
     ghostty
     gnome-calculator
     gparted
     grim
     gsettings-desktop-schemas
-    libnotify # notify-send, for the snipping tool's clipboard/save notification
-    librsvg # rsvg-convert, for niri_window-switcher.sh's SVG icons
     loupe
     nwg-look
     python3
     showtime
     slurp
     (tesseract.override { enableLanguages = [ "eng" ]; }) # ocr-snip.sh
-    wl-clipboard
     xed-editor
     xsettingsd
     xwayland-satellite

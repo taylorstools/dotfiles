@@ -16,10 +16,13 @@ Text="${Text%"${Text##*[![:space:]]}"}" # trim trailing whitespace/newlines
 
 #region Clipboard and notification
 if [ -z "$Text" ]; then
-    notify-send --app-name="OCR" --icon=dialog-warning "No text found"
+    notify-send --app-name="OCR" \
+        --hint=string:x-material-symbol:search_off \
+        --hint=string:x-material-symbol-tone:warning \
+        "No text found"
     exit 0
 fi
 
 printf "%s" "$Text" | wl-copy
-notify-send --app-name="OCR" "Text copied to clipboard"
+notify-send --app-name="OCR" --hint=string:x-material-symbol:document_scanner "Text copied to clipboard"
 #endregion

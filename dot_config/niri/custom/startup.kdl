@@ -1,17 +1,15 @@
-// hyprlock, on a re-login only. A cold boot is already authenticated by the
+// The shell's lock screen, on a re-login only. A cold boot is already authenticated by the
 // Plymouth LUKS prompt and goes straight to the desktop; a logout quits niri,
 // greetd starts the next session, and that one comes up locked.
 spawn-sh-at-startup "$HOME/scripts/niri_lock-at-startup.sh"
-
-// hyprlock first key press fix
-//spawn-sh-at-startup "$HOME/scripts/send-keypress-at-startup.sh"
 
 // swaybg, held until the startup splash is covering the screen so the
 // wallpaper is never seen being painted. No-ops where niri-splash is not
 // installed. See myOptions.niri-splash.
 spawn-sh-at-startup "$HOME/scripts/niri_set-wallpaper.sh --at-login &"
 
-// Script that makes background image for hyprlock and the power menu
+// Script that makes the dimmed background image for the power menu and the
+// lock screen
 spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
 
 // libinput-gestures

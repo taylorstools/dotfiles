@@ -26,7 +26,8 @@ PanelWindow {
 
     // Decode at the screen's pixel size instead of the image's.
     readonly property size decodeSize: Qt.size(width * (screen?.devicePixelRatio ?? 1), height * (screen?.devicePixelRatio ?? 1))
-    readonly property string source: Wallpaper.path ? "file://" + Wallpaper.path : ""
+    // Nothing until the login's wallpaper is decided (Wallpaper.startupPending).
+    readonly property string source: Wallpaper.path && !Wallpaper.startupPending ? "file://" + Wallpaper.path : ""
 
     onSourceChanged: {
         if (current.source.toString() === source)
@@ -55,13 +56,21 @@ PanelWindow {
         onStatusChanged: {
             if (status === Image.Ready && opacity < 1)
                 fadeIn.restart();
-            if (status !== Image.Loading)
+            if (status !== Image.Loading && !Wallpaper.startupPending)
                 Wallpaper.shown = true;
         }
         // No wallpaper set: nothing will load, so there's nothing to wait for.
         Component.onCompleted: {
-            if (status !== Image.Loading)
+            if (status !== Image.Loading && !Wallpaper.startupPending)
                 Wallpaper.shown = true;
+        }
+
+        Connections {
+            target: Wallpaper
+            function onStartupPendingChanged() {
+                if (!Wallpaper.startupPending && current.status !== Image.Loading && root.source === "")
+                    Wallpaper.shown = true;
+            }
         }
 
         NumberAnimation {

@@ -4,10 +4,6 @@ let
   username = config.myOptions.user.name;
 in
 {
-  imports = [
-    #./ydotool.nix
-  ];
-
   services.greetd = {
     enable = true;
 
@@ -44,7 +40,4 @@ in
       };
     };
   };
-
-  programs.hyprlock.enable = true;
-  #security.pam.services.hyprlock.enableGnomeKeyring = true;
 }

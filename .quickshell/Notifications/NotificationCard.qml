@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Services.Notifications
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
@@ -23,6 +24,14 @@ Rectangle {
     // not a picture to show large.
     readonly property string imageSource: notification?.image ?? ""
     readonly property bool imageIsIcon: imageSource.startsWith("image://icon/") && !imageSource.startsWith("image://icon//")
+    // The shell's own notifications name a Material Symbol for their icon:
+    //   notify-send --hint=string:x-material-symbol:save
+    //               [--hint=string:x-material-symbol-tone:warning]
+    // Critical ones are tinted as errors unless a tone says otherwise.
+    readonly property string symbol: notification?.hints?.["x-material-symbol"] ?? ""
+    readonly property string symbolTone: notification?.hints?.["x-material-symbol-tone"] ?? (notification?.urgency === NotificationUrgency.Critical ? "error" : "")
+    readonly property color symbolColor: symbolTone === "error" ? Theme.error : (symbolTone === "warning" ? Theme.warning : Theme.primary)
+
     readonly property string iconSource: {
         const n = notification;
         if (!n)
@@ -70,20 +79,29 @@ Rectangle {
             Layout.preferredWidth: 32
             Layout.preferredHeight: 32
             radius: 8
-            color: Theme.surfaceContainerHighest
+            color: root.symbol !== "" && root.symbolTone !== "" ? Theme.withAlpha(root.symbolColor, 0.16) : Theme.surfaceContainerHighest
+
+            MaterialIcon {
+                anchors.centerIn: parent
+                visible: root.symbol !== ""
+                name: root.symbol
+                size: 20
+                filled: true
+                color: root.symbolColor
+            }
 
             IconImage {
                 id: appIcon
                 anchors.centerIn: parent
                 implicitSize: 20
-                source: root.iconSource
-                visible: status === Image.Ready
+                source: root.symbol !== "" ? "" : root.iconSource
+                visible: root.symbol === "" && status === Image.Ready
                 asynchronous: true
             }
 
             StyledText {
                 anchors.centerIn: parent
-                visible: !appIcon.visible
+                visible: root.symbol === "" && !appIcon.visible
                 text: (root.notification?.appName || "?").charAt(0).toUpperCase()
                 color: Theme.primary
             }

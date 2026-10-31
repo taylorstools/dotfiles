@@ -8,8 +8,7 @@
 # The shell may be restarting (it comes back within a second or two), so
 # reaching it is retried for a few seconds before that counts as a failure.
 #
-# --force is still accepted: callers pass it from the hyprlock days, when it
-# cleared a hyprlock that had deadlocked after unlocking.
+# --force is still accepted and ignored: older callers passed it.
 
 set -uo pipefail
 

@@ -110,7 +110,7 @@
     "matugenScheme": "scheme-neutral",
     "monoFontFamily": "JetBrainsMono Nerd Font Mono",
     "nightLight": false,
-    "nightLightTemperature": 4600,
+    "nightLightTemperature": 2500,
     "notificationPosition": "bottom-right",
     "overlayOpacity": 0.4,
     "powerMenuShowLock": true,
@@ -134,8 +134,11 @@
     "surfaceTint": 0.5,
     "surfaceTintColor": "custom",
     "surfaceTintCustom": "#000000",
+    "wallpaperAutoChange": true,
+    "wallpaperChangeAtStartup": true,
+    "wallpaperChangeInterval": 15,
     "wallpaperFadeDuration": 500,
     "wallpaperFolder": "/home/taylor/.dotfiles/Wallpapers",
-    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-001-1.png",
+    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-cosmo-1k.png",
     "windowsCommand": "$HOME/scripts/refind_boot-to-windows.sh"
 }

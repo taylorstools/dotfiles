@@ -85,7 +85,8 @@ Singleton {
     function popupTimeout(notification) {
         if (notification.urgency === NotificationUrgency.Critical)
             return 0;
-        return notification.expireTimeout > 0 ? notification.expireTimeout * 1000 : 5000;
+        // expireTimeout is already in milliseconds (notify-send -t 3000 gives 3000).
+        return notification.expireTimeout > 0 ? notification.expireTimeout : 5000;
     }
 
     // Clicking a notification runs its "default" action if it has one.

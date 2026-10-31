@@ -106,7 +106,6 @@ Wallpapers{,/**}
   .config/hypr{,/**}
   .config/krdcrc
   .config/libinput-gestures.conf
-  .config/matugen{,/**}
   .config/mimeapps.list
   .config/niri{,/**}
   .config/nwg-look{,/**}

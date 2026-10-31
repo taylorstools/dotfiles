@@ -94,6 +94,8 @@ Scope {
         { "page": "wallpaper", "label": "Fade between wallpapers", "terms": "crossfade transition animation background" },
         { "page": "wallpaper", "label": "Colourful base colour", "terms": "color saturated seed vivid palette theme" },
         { "page": "wallpaper", "label": "Random wallpaper", "terms": "shuffle background" },
+        { "page": "wallpaper", "label": "Change wallpaper at login", "terms": "startup random shuffle boot" },
+        { "page": "wallpaper", "label": "Change wallpaper automatically", "terms": "auto cycle cycling slideshow rotate interval timer random" },
         { "page": "wallpaper", "label": "Choose a wallpaper", "terms": "pick picker background image" },
         { "page": "taskbar", "label": "Zoom out with the overview", "terms": "taskbar bar layer overview windows above below floating" },
         { "page": "taskbar", "label": "Larger app icons", "terms": "running apps icon size big" },
@@ -739,6 +741,52 @@ Scope {
                             }
                             ValueText {
                                 text: Settings.wallpaperFadeDuration === 0 ? "Off" : (Settings.wallpaperFadeDuration / 1000).toFixed(1) + " s"
+                            }
+                        }
+
+                        SettingRow {
+                            label: "Change wallpaper at login"
+                            description: "A random one from the folder, once per login (not on a shell restart)."
+                            Toggle {
+                                checked: Settings.wallpaperChangeAtStartup
+                                onToggled: Settings.wallpaperChangeAtStartup = !Settings.wallpaperChangeAtStartup
+                            }
+                        }
+
+                        SettingRow {
+                            label: "Change wallpaper automatically"
+                            description: "A random one from the folder, every so often."
+                            Toggle {
+                                checked: Settings.wallpaperAutoChange
+                                onToggled: Settings.wallpaperAutoChange = !Settings.wallpaperAutoChange
+                            }
+                        }
+
+                        SettingRow {
+                            id: intervalRow
+                            label: "Every"
+                            opacity: Settings.wallpaperAutoChange ? 1 : 0.5
+
+                            // Minutes, one per slider step.
+                            readonly property var choices: [1, 2, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 720, 1440]
+                            readonly property int choice: {
+                                const m = Number(Settings.wallpaperChangeInterval) || 15;
+                                let best = 0;
+                                for (let i = 0; i < choices.length; i++)
+                                    if (Math.abs(choices[i] - m) < Math.abs(choices[best] - m))
+                                        best = i;
+                                return best;
+                            }
+
+                            StyledSlider {
+                                Layout.preferredWidth: 200
+                                value: intervalRow.choice / (intervalRow.choices.length - 1)
+                                steps: intervalRow.choices.length - 1
+                                onMoved: v => Settings.wallpaperChangeInterval = intervalRow.choices[Math.round(v * (intervalRow.choices.length - 1))]
+                            }
+                            ValueText {
+                                readonly property int m: Number(Settings.wallpaperChangeInterval) || 15
+                                text: m < 60 ? m + " min" : (m % 60 === 0 ? m / 60 + " h" : (m / 60).toFixed(1) + " h")
                             }
                         }
 

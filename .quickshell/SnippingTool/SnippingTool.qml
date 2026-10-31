@@ -60,8 +60,9 @@ Scope {
         });
     }
 
-    function notifyError(title, body) {
-        Quickshell.execDetached(["notify-send", "--app-name=Snipping Tool", "--urgency=critical", "--icon=dialog-error", title, body]);
+    // symbol: the Material Symbol on the notification (NotificationCard).
+    function notifyError(symbol, title, body) {
+        Quickshell.execDetached(["notify-send", "--app-name=Snipping Tool", "--urgency=critical", "--hint=string:x-material-symbol:" + symbol, title, body]);
     }
 
     function askSave(shot) {
@@ -72,7 +73,7 @@ Scope {
         // GTK's file chooser aborts the whole shell without its GSettings
         // schemas, which quickshell.nix's wrapper around qs adds.
         if (!(Quickshell.env("XDG_DATA_DIRS") ?? "").includes("/gsettings-schemas/gtk+3")) {
-            notifyError("Couldn't save screenshot", "No file chooser: qs is missing GTK's schemas (quickshell.nix)");
+            notifyError("save", "Couldn't save screenshot", "No file chooser: qs is missing GTK's schemas (quickshell.nix)");
             shot.finish();
             return;
         }
@@ -151,7 +152,7 @@ Scope {
                     } else {
                         // 2: Esc in the region select.
                         if (code !== 2)
-                            root.notifyError("Couldn't take screenshot", shot.mode + " capture failed");
+                            root.notifyError("broken_image", "Couldn't take screenshot", shot.mode + " capture failed");
                         shot.finish();
                     }
                 }
@@ -162,7 +163,7 @@ Scope {
             // clicked, so that saves too.
             Process {
                 id: notify
-                command: ["notify-send", "--app-name=Snipping Tool", "--icon=" + shot.file, "--action=save=Save", "--wait", "Screenshot copied to clipboard"]
+                command: ["notify-send", "--app-name=Snipping Tool", "--icon=" + shot.file, "--hint=string:x-material-symbol:screenshot_region", "--action=save=Save", "--wait", "Screenshot copied to clipboard"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         if (text.trim() === "save")
@@ -199,7 +200,7 @@ Scope {
         property string target
         onExited: code => {
             if (code !== 0)
-                root.notifyError("Couldn't save screenshot", target);
+                root.notifyError("save", "Couldn't save screenshot", target);
             root.saveDone();
         }
     }
