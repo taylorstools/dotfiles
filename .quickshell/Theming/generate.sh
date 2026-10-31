@@ -12,6 +12,10 @@
 #   4. your own templates   -> ~/.config/matugen/config.toml
 #   5. kitty and Ghostty are told to reload
 #
+# Nothing is redone when the wallpaper, scheme and seed are the ones last
+# generated and none of this folder, the wallpaper or your matugen config
+# has changed since (the shell runs this on every reload).
+#
 # QSTEST_THEME_ROOT=/some/dir writes the app themes there instead of $HOME
 # and skips steps 4 and 5, for trying it out.
 
@@ -26,6 +30,15 @@ seed=("$@")
 cache=${XDG_CACHE_HOME:-$HOME/.cache}/qstest
 root=${QSTEST_THEME_ROOT:-$HOME}
 mkdir -p "$cache"
+user_config=${XDG_CONFIG_HOME:-$HOME/.config}/matugen/config.toml
+stamp=$cache/generated
+failed=0
+inputs=$(printf '%s\n' "$wall" "$scheme" "${seed[@]}")
+
+if [[ -z ${QSTEST_THEME_ROOT:-} && -f $cache/colors.json && -f $stamp && $(<"$stamp") == "$inputs" ]] &&
+    [[ -z $(find "$here" "$wall" "$user_config" -newer "$stamp" -print -quit 2>/dev/null) ]]; then
+    exit 0
+fi
 
 matugen image "$wall" --type "$scheme" --mode dark --json hex --dry-run "${seed[@]}" >"$cache/colors.json.tmp" || exit 1
 python3 "$here/term16.py" "$cache/colors.json.tmp" >"$cache/term16.json" || exit 1
@@ -33,14 +46,13 @@ python3 "$here/term16.py" "$cache/colors.json.tmp" >"$cache/term16.json" || exit
 sed -e "s|@ROOT@|$root|g" -e "s|@HERE@|$here|g" "$here/templates.toml" >"$cache/matugen-apps.toml"
 matugen image "$wall" --type "$scheme" --mode dark "${seed[@]}" \
     -c "$cache/matugen-apps.toml" --import-json "$cache/term16.json" >/dev/null ||
-    echo "app themes: matugen failed" >&2
+    { echo "app themes: matugen failed" >&2; failed=1; }
 
 if [[ -z ${QSTEST_THEME_ROOT:-} ]]; then
-    user_config=${XDG_CONFIG_HOME:-$HOME/.config}/matugen/config.toml
     if [[ -f $user_config ]]; then
         matugen image "$wall" --type "$scheme" --mode dark "${seed[@]}" \
             -c "$user_config" --import-json "$cache/term16.json" >/dev/null ||
-            echo "your matugen templates: matugen failed" >&2
+            { echo "your matugen templates: matugen failed" >&2; failed=1; }
     fi
     # kitty rereads its config (and the theme it includes) on SIGUSR1,
     # Ghostty on SIGUSR2. niri reloads colors.kdl by itself. NixOS can run
@@ -51,3 +63,7 @@ fi
 
 # Last, so the shell recolours once everything else is written.
 mv "$cache/colors.json.tmp" "$cache/colors.json"
+# A failed step is retried next time.
+if [[ -z ${QSTEST_THEME_ROOT:-} ]] && ((failed == 0)); then
+    printf '%s\n' "$inputs" >"$stamp"
+fi

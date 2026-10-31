@@ -73,7 +73,7 @@ Scope {
     readonly property string batteryText: {
         const percent = Math.round(BatteryInfo.level);
         const icons = ["\u{f0083}", "\u{f007a}", "\u{f007b}", "\u{f007c}", "\u{f007d}", "\u{f007e}", "\u{f007f}", "\u{f0080}", "\u{f0081}", "\u{f0079}", "\u{f0079}"];
-        const icon = BatteryInfo.charging ? "\uf1e6" : icons[Math.min(10, Math.floor(percent / 10))];
+        const icon = BatteryInfo.charging || BatteryInfo.pendingCharge ? "\uf1e6" : icons[Math.min(10, Math.floor(percent / 10))];
         return icon + "  " + percent + "%";
     }
 
@@ -107,6 +107,21 @@ Scope {
         // lock takes over once it's opaque.
         locking = true;
         fade = 0;
+        fadeFallback.restart();
+    }
+
+    // The fade waits for the copy's first frame, which may never come (no
+    // screens mid-hotplug, say). Lock anyway rather than leave the session
+    // open: lock-session.sh would end the session after 5 s.
+    Timer {
+        id: fadeFallback
+        interval: 1500
+        onTriggered: {
+            if (!root.locking || root.locked || fadeIn.running || fadeInDelay.running)
+                return;
+            root.fade = 1;
+            root.engage();
+        }
     }
 
     // The fade starts once the copy is on screen. Its window's first drawn
@@ -126,6 +141,7 @@ Scope {
     }
 
     function engage() {
+        fadeFallback.stop();
         markerFile.setText("locked\n");
         locked = true;
         startAuth();

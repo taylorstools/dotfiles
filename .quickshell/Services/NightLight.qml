@@ -44,15 +44,48 @@ Singleton {
         setTemp.running = true;
     }
 
+    // Set by hand rather than bound: a daemon that exits is started again
+    // below, and assigning `running` from JS would break a binding.
+    onEnabledChanged: {
+        relay.quickExits = 0;
+        relay.running = enabled;
+    }
+    Component.onCompleted: relay.running = enabled
+
     // Starts at 6500K (neutral); this sets the night light's temperature as
     // soon as it's up.
     Process {
         id: relay
-        running: root.enabled
+
+        property double startedAt: 0
+        property int quickExits: 0
+
         command: ["wl-gammarelay-rs", "run"]
         onStarted: {
+            startedAt = Date.now();
             root.applyTries = 0;
             root.apply();
+        }
+        // On a config reload the new daemon starts while the old one still
+        // holds the bus name and quits, then the old one is stopped; a crash
+        // ends it too. Either way, while night light is on, start it again.
+        onExited: {
+            if (!root.enabled)
+                return;
+            quickExits = Date.now() - startedAt < 5000 ? quickExits + 1 : 0;
+            if (quickExits <= 10)
+                relaunch.restart();
+            else
+                console.warn("NightLight: wl-gammarelay-rs keeps exiting; giving up until night light is toggled");
+        }
+    }
+
+    Timer {
+        id: relaunch
+        interval: 1000
+        onTriggered: {
+            if (root.enabled && !relay.running)
+                relay.running = true;
         }
     }
 

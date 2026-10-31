@@ -41,13 +41,15 @@ in
       brightnessctl # backlight and keyboard light
       fd # runner: searching below a folder
       fzf # runner: ranking matches
-      hypridle
+      grim # snipping tool
       libnotify # notify-send, for scripts' messages
       matugen # colours from the wallpaper, and the app themes
-      swaybg
+      python3 # Theming/term16.py
+      slurp # snipping tool: region select
       wl-clipboard # clipboard history
       wl-gammarelay-rs # night light (Services/NightLight.qml)
       wtype # clipboard history: paste into the focused app
+      xdg-utils # runner: xdg-open, xdg-mime
     ];
 
     # The icon font.
@@ -60,13 +62,5 @@ in
 
     # The lock screen (Lock/Lock.qml) authenticates against this.
     security.pam.services.quickshell = { };
-
-    # hypridle's dim/restore scripts call brightnessctl, qs and friends.
-    systemd.user.services.hypridle = {
-      overrideStrategy = "asDropin";
-      serviceConfig.Environment = [
-        "PATH=/run/wrappers/bin:/run/current-system/sw/bin"
-      ];
-    };
   };
 }

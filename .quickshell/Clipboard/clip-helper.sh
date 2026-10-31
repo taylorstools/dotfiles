@@ -27,14 +27,16 @@ capture() {
     types=$(wl-paste --list-types 2>/dev/null) || return 0
     mkdir -p "$dir"
     id=$(date +%s%N)
-    if grep -q '^text/' <<<"$types" || grep -qx 'UTF8_STRING\|STRING\|TEXT' <<<"$types"; then
-        kind=text
-        file=$dir/$id.txt
-        wl-paste --no-newline --type text >"$file" 2>/dev/null || true
-    elif grep -qx 'image/png' <<<"$types"; then
+    # A browser's "Copy image" offers text/html beside the picture, so an
+    # image counts as one unless plain text comes with it.
+    if grep -qx 'image/png' <<<"$types" && ! grep -q '^text/plain' <<<"$types"; then
         kind=image
         file=$dir/$id.png
         wl-paste --type image/png >"$file" 2>/dev/null || true
+    elif grep -q '^text/' <<<"$types" || grep -qx 'UTF8_STRING\|STRING\|TEXT' <<<"$types"; then
+        kind=text
+        file=$dir/$id.txt
+        wl-paste --no-newline --type text >"$file" 2>/dev/null || true
     else
         return 0
     fi

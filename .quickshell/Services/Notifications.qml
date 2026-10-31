@@ -129,7 +129,13 @@ Singleton {
             const received = Object.assign({}, root._received);
             received[notification.id] = new Date();
             root._received = received;
-            notification.closed.connect(() => root.hidePopup(notification));
+            const id = notification.id;
+            notification.closed.connect(() => {
+                root.hidePopup(notification);
+                const left = Object.assign({}, root._received);
+                delete left[id];
+                root._received = left;
+            });
             if (!root.dnd || notification.urgency === NotificationUrgency.Critical)
                 root.popups = root.popups.filter(n => n.id !== notification.id).concat([notification]);
         }

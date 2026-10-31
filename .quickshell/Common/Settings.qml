@@ -7,10 +7,19 @@ import Quickshell.Io
 // Settings changed from the settings window and the wallpaper IPC. They're
 // saved as settings.json in this folder so they live with the rest of the
 // dotfiles. Config.qml is still where the hand-edited settings go.
+//
+// What changes by itself (the wallpaper, every few minutes with auto-change)
+// or by the minute (do not disturb, night light) is state, not settings: it
+// goes to ~/.local/state/qstest/state.json, so settings.json only changes in
+// git when a setting does. Both are read through the same properties here.
 Singleton {
     id: root
 
     readonly property string path: Quickshell.shellDir + "/settings.json"
+    readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/qstest"
+    readonly property string statePath: stateDir + "/state.json"
+    // The keys that live in state.json (and were in settings.json before).
+    readonly property var stateKeys: ["wallpaperPath", "doNotDisturb", "nightLight", "nightLightTemperature"]
 
     // Defaults: Taylor's lock and sleep commands, and plain systemctl for
     // restart and shut down.
@@ -98,6 +107,7 @@ Singleton {
             // Night light: off, and its temperature when turned on.
             "nightLight": false,
             "nightLightTemperature": 3000,
+            "doNotDisturb": false,
             // Opacity of the grey fills inside panels (cards, rows, fields,
             // buttons); 1 keeps them solid.
             "overlayOpacity": 1,
@@ -148,7 +158,7 @@ Singleton {
     property alias powerMenuShowReboot: adapter.powerMenuShowReboot
     property alias powerMenuShowWindows: adapter.powerMenuShowWindows
     property alias keyPressEntries: adapter.keyPressEntries
-    property alias wallpaperPath: adapter.wallpaperPath
+    property alias wallpaperPath: stateAdapter.wallpaperPath
     property alias wallpaperFolder: adapter.wallpaperFolder
     property alias matugenScheme: adapter.matugenScheme
     property alias colorfulSeed: adapter.colorfulSeed
@@ -170,15 +180,15 @@ Singleton {
     property alias blurXray: adapter.blurXray
     property alias clipboardClearPinned: adapter.clipboardClearPinned
     property alias animationDuration: adapter.animationDuration
-    property alias nightLight: adapter.nightLight
-    property alias nightLightTemperature: adapter.nightLightTemperature
+    property alias nightLight: stateAdapter.nightLight
+    property alias nightLightTemperature: stateAdapter.nightLightTemperature
     property alias overlayOpacity: adapter.overlayOpacity
     property alias wallpaperFadeDuration: adapter.wallpaperFadeDuration
     property alias wallpaperChangeAtStartup: adapter.wallpaperChangeAtStartup
     property alias wallpaperAutoChange: adapter.wallpaperAutoChange
     property alias wallpaperChangeInterval: adapter.wallpaperChangeInterval
     property alias clipboardClearOnStartup: adapter.clipboardClearOnStartup
-    property alias doNotDisturb: adapter.doNotDisturb
+    property alias doNotDisturb: stateAdapter.doNotDisturb
     property alias barZoomsWithOverview: adapter.barZoomsWithOverview
     property alias notificationPosition: adapter.notificationPosition
     property alias runningAppsLargeIcons: adapter.runningAppsLargeIcons
@@ -197,9 +207,11 @@ Singleton {
     property alias dockSpacing: adapter.dockSpacing
     property alias dockPins: adapter.dockPins
 
-    // settings.json has been read (or found missing): until then every
-    // setting is its default.
-    property bool ready: false
+    // settings.json and state.json have been read (or found missing): until
+    // then every setting is its default.
+    readonly property bool ready: _settingsRead && _stateRead
+    property bool _settingsRead: false
+    property bool _stateRead: false
 
     function reset(key) {
         root[key] = defaults[key];
@@ -213,11 +225,11 @@ Singleton {
 
         onFileChanged: reload()
         onAdapterUpdated: saveTimer.restart()
-        onLoaded: root.ready = true
+        onLoaded: root._settingsRead = true
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound)
                 writeAdapter();
-            root.ready = true;
+            root._settingsRead = true;
         }
 
         JsonAdapter {
@@ -236,7 +248,6 @@ Singleton {
             property bool powerMenuShowReboot: root.defaults.powerMenuShowReboot
             property bool powerMenuShowWindows: root.defaults.powerMenuShowWindows
             property var keyPressEntries: root.defaults.keyPressEntries
-            property string wallpaperPath: root.defaults.wallpaperPath
             property string wallpaperFolder: root.defaults.wallpaperFolder
             property string matugenScheme: root.defaults.matugenScheme
             property bool colorfulSeed: root.defaults.colorfulSeed
@@ -258,15 +269,12 @@ Singleton {
             property bool blurXray: root.defaults.blurXray
             property bool clipboardClearPinned: root.defaults.clipboardClearPinned
             property int animationDuration: root.defaults.animationDuration
-            property bool nightLight: root.defaults.nightLight
-            property int nightLightTemperature: root.defaults.nightLightTemperature
             property real overlayOpacity: root.defaults.overlayOpacity
             property int wallpaperFadeDuration: root.defaults.wallpaperFadeDuration
             property bool wallpaperChangeAtStartup: root.defaults.wallpaperChangeAtStartup
             property bool wallpaperAutoChange: root.defaults.wallpaperAutoChange
             property int wallpaperChangeInterval: root.defaults.wallpaperChangeInterval
             property bool clipboardClearOnStartup: root.defaults.clipboardClearOnStartup
-            property bool doNotDisturb: false
             property bool barZoomsWithOverview: root.defaults.barZoomsWithOverview
             property string notificationPosition: root.defaults.notificationPosition
             property bool runningAppsLargeIcons: root.defaults.runningAppsLargeIcons
@@ -292,5 +300,58 @@ Singleton {
         id: saveTimer
         interval: 400
         onTriggered: file.writeAdapter()
+    }
+
+    // First run with state.json: take these from settings.json, where they
+    // used to be, so nothing resets.
+    function migrateState() {
+        let old = {};
+        try {
+            old = JSON.parse(file.text()) || {};
+        } catch (e) {}
+        for (const key of stateKeys) {
+            if (old[key] !== undefined)
+                stateAdapter[key] = old[key];
+        }
+    }
+
+    // Read once settings.json has been, so a migration can see it.
+    FileView {
+        id: stateFile
+        path: root._settingsRead ? root.statePath : ""
+        watchChanges: true
+        printErrors: false
+
+        onFileChanged: reload()
+        onAdapterUpdated: stateSaveTimer.restart()
+        onLoaded: root._stateRead = true
+        onLoadFailed: error => {
+            if (error === FileViewError.FileNotFound) {
+                root.migrateState();
+                stateSaveTimer.restart();
+            }
+            root._stateRead = true;
+        }
+
+        JsonAdapter {
+            id: stateAdapter
+
+            property string wallpaperPath: root.defaults.wallpaperPath
+            property bool doNotDisturb: root.defaults.doNotDisturb
+            property bool nightLight: root.defaults.nightLight
+            property int nightLightTemperature: root.defaults.nightLightTemperature
+        }
+    }
+
+    Timer {
+        id: stateSaveTimer
+        interval: 400
+        onTriggered: stateMkdir.running = true
+    }
+
+    Process {
+        id: stateMkdir
+        command: ["mkdir", "-p", root.stateDir]
+        onExited: stateFile.writeAdapter()
     }
 }

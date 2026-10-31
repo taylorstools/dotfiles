@@ -21,7 +21,10 @@ Singleton {
         const p = device.percentage;
         return Math.round(p <= 1 ? p * 100 : p);
     }
-    readonly property bool charging: device && (device.state === UPowerDeviceState.Charging || device.state === UPowerDeviceState.PendingCharge)
+    readonly property bool charging: device && device.state === UPowerDeviceState.Charging
+    // Plugged in but held where it is, e.g. at a charge limit: not charging,
+    // so no time to full and no charging watts, but it still gets the plugged-in icon.
+    readonly property bool pendingCharge: device && device.state === UPowerDeviceState.PendingCharge
     readonly property bool full: device && device.state === UPowerDeviceState.FullyCharged
     readonly property bool onBattery: UPower.onBattery
     // Watts, positive either way. It's the battery's own flow: what the
@@ -46,6 +49,8 @@ Singleton {
             return "Charging";
         if (full)
             return "Fully charged";
+        if (pendingCharge)
+            return "Plugged in, not charging";
         return onBattery ? "On battery" : "Plugged in";
     }
 
@@ -67,7 +72,7 @@ Singleton {
 
     // Material Symbols battery glyphs by level.
     readonly property string icon: {
-        if (charging || (full && !onBattery)) {
+        if (charging || ((full || pendingCharge) && !onBattery)) {
             if (level >= 90)
                 return "battery_charging_full";
             if (level >= 80)

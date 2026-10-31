@@ -54,7 +54,12 @@ Singleton {
             lister.running = true;
     }
 
+    // Not before settings.json is read (the wallpaper would still be the
+    // default) or while the login wallpaper is being picked: either would
+    // theme every app for a wallpaper that's about to change.
     function generateColors() {
+        if (!Settings.ready || startupPending)
+            return;
         if (generator.running) {
             regenerate.restart();
             return;
@@ -64,6 +69,7 @@ Singleton {
     }
 
     onPathChanged: regenerate.restart()
+    onStartupPendingChanged: regenerate.restart()
     Component.onCompleted: {
         if (sessionMarkerFile.text() === "") {
             Quickshell.execDetached(["sh", "-c", 'echo 1 > "$1"', "sh", sessionMarker]);
@@ -87,6 +93,7 @@ Singleton {
     Connections {
         target: Settings
         function onReadyChanged() {
+            regenerate.restart();
             root.rescanFolder();
             root.decideStartup();
         }
@@ -127,7 +134,9 @@ Singleton {
         }
     }
 
-    // Coalesces the startup load and quick clicks through the picker.
+    // Coalesces the startup load and quick clicks through the picker. It
+    // runs on every reload too; generate.sh skips the work when nothing
+    // changed.
     Timer {
         id: regenerate
         interval: 150

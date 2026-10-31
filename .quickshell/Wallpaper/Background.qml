@@ -32,7 +32,11 @@ PanelWindow {
     onSourceChanged: {
         if (current.source.toString() === source)
             return;
-        previous.source = current.source;
+        fadeIn.stop();
+        // Changed again before the last one loaded: keep what's on screen
+        // underneath, not a picture that never showed.
+        if (current.status === Image.Ready)
+            previous.source = current.source;
         current.opacity = 0;
         current.source = source;
     }

@@ -12,7 +12,6 @@
     "clipboardClearOnStartup": true,
     "clipboardClearPinned": true,
     "colorfulSeed": false,
-    "doNotDisturb": false,
     "dockAutoHide": true,
     "dockBorder": false,
     "dockEnabled": true,
@@ -109,8 +108,6 @@
     "logoutCommand": "niri msg action quit --skip-confirmation",
     "matugenScheme": "scheme-neutral",
     "monoFontFamily": "JetBrainsMono Nerd Font Mono",
-    "nightLight": false,
-    "nightLightTemperature": 2500,
     "notificationPosition": "bottom-right",
     "overlayOpacity": 0.4,
     "powerMenuShowLock": true,
@@ -139,6 +136,5 @@
     "wallpaperChangeInterval": 15,
     "wallpaperFadeDuration": 500,
     "wallpaperFolder": "/home/taylor/.dotfiles/Wallpapers",
-    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/alena-aenami-cosmo-1k.png",
     "windowsCommand": "$HOME/scripts/refind_boot-to-windows.sh"
 }

@@ -27,7 +27,11 @@ Singleton {
     // Set when a saved network fails to connect (most often because its
     // password changed); the control center then asks for a new one.
     property string passwordNeeded: ""
-    property var _savedNames: []
+    // Saved Wi-Fi profiles by SSID: ssid -> profile UUID. Matched by SSID,
+    // not profile name, which can differ ("Home", "MyWifi 1").
+    property var _savedBySsid: ({})
+    // An action asked for while another runs; it goes next.
+    property var _queuedAction: null
 
     readonly property string icon: {
         if (!available)
@@ -64,7 +68,7 @@ Singleton {
         if (lister.running)
             return;
         scanning = rescan;
-        lister.command = ["sh", "-c", "nmcli -t -f IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan " + (rescan ? "yes" : "no") + " && echo --- && nmcli -t -f NAME,TYPE connection show"];
+        lister.command = ["sh", "-c", "nmcli -t -f IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan " + (rescan ? "yes" : "no") + ' && echo --- && nmcli -t -f UUID,TYPE connection show | while IFS=: read -r uuid type; do [ "$type" = 802-11-wireless ] && printf "%s:%s\\n" "$uuid" "$(nmcli -t -g 802-11-wireless.ssid connection show uuid "$uuid")"; done; true'];
         lister.running = true;
     }
 
@@ -74,22 +78,21 @@ Singleton {
     function connect(ssid, password) {
         lastError = "";
         passwordNeeded = "";
-        connectingSsid = ssid;
-        const saved = _savedNames.includes(ssid);
-        if (saved && !password) {
+        const uuid = _savedBySsid[ssid] ?? "";
+        if (uuid && !password) {
             // If this fails, ask for the password again.
-            runAction(["nmcli", "connection", "up", "id", ssid], "", ssid);
-        } else if (saved) {
+            runAction(["nmcli", "connection", "up", "uuid", uuid], "", ssid, ssid);
+        } else if (uuid) {
             // A new password for a saved network: update its profile, then
             // connect, so it keeps its other settings.
-            runAction(["sh", "-c", 'nmcli connection modify id "$1" wifi-sec.psk "$2" && nmcli connection up id "$1"', "sh", ssid, password], "", ssid);
+            runAction(["sh", "-c", 'nmcli connection modify uuid "$1" wifi-sec.psk "$2" && nmcli connection up uuid "$1"', "sh", uuid, password], "", ssid, ssid);
         } else {
             const cmd = ["nmcli", "device", "wifi", "connect", ssid];
             if (password)
                 cmd.push("password", password);
             // A failed first connect still leaves a saved profile with the
             // wrong password behind; remove it so the next try asks again.
-            runAction(cmd, ssid, "");
+            runAction(cmd, ssid, "", ssid);
         }
     }
 
@@ -105,7 +108,8 @@ Singleton {
         lastError = "";
         if (passwordNeeded === ssid)
             passwordNeeded = "";
-        runAction(["nmcli", "connection", "delete", "id", ssid], "");
+        const uuid = _savedBySsid[ssid];
+        runAction(["nmcli", "connection", "delete"].concat(uuid ? ["uuid", uuid] : ["id", ssid]), "");
     }
 
     function setWifiEnabled(on) {
@@ -113,12 +117,26 @@ Singleton {
         runAction(["nmcli", "radio", "wifi", on ? "on" : "off"], "");
     }
 
-    function runAction(cmd, forgetOnFailure, askOnFailure) {
+    // `connecting`: the SSID the control center shows as connecting.
+    function runAction(cmd, forgetOnFailure, askOnFailure, connecting) {
+        const job = {
+            cmd: cmd,
+            forgetOnFailure: forgetOnFailure ?? "",
+            askOnFailure: askOnFailure ?? "",
+            connecting: connecting ?? ""
+        };
+        // One nmcli action at a time; the latest one asked for waits.
         if (action.running)
-            return;
-        action.forgetOnFailure = forgetOnFailure;
-        action.askOnFailure = askOnFailure ?? "";
-        action.command = cmd;
+            _queuedAction = job;
+        else
+            startAction(job);
+    }
+
+    function startAction(job) {
+        action.forgetOnFailure = job.forgetOnFailure;
+        action.askOnFailure = job.askOnFailure;
+        connectingSsid = job.connecting;
+        action.command = job.cmd;
         action.running = true;
     }
 
@@ -184,11 +202,11 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const parts = text.split("---\n");
-                const saved = [];
+                const saved = {};
                 for (const line of (parts[1] || "").trim().split("\n")) {
-                    const [name, type] = root.splitTerse(line);
-                    if (type === "802-11-wireless")
-                        saved.push(name);
+                    const [uuid, ssid] = root.splitTerse(line);
+                    if (uuid && ssid)
+                        saved[ssid] = uuid;
                 }
                 // One entry per SSID: access points of the same network are merged.
                 const bySsid = {};
@@ -201,14 +219,14 @@ Singleton {
                         signal: 0,
                         secure: false,
                         active: false,
-                        saved: saved.includes(ssid)
+                        saved: saved[ssid] !== undefined
                     };
                     entry.signal = Math.max(entry.signal, parseInt(signal) || 0);
                     entry.secure = entry.secure || (security !== "" && security !== "--");
                     entry.active = entry.active || inUse === "*";
                     bySsid[ssid] = entry;
                 }
-                root._savedNames = saved;
+                root._savedBySsid = saved;
                 root.networks = Object.values(bySsid).sort((a, b) => (b.active - a.active) || (b.signal - a.signal));
             }
         }
@@ -234,6 +252,10 @@ Singleton {
                     root.passwordNeeded = askOnFailure;
             }
             root.connectingSsid = "";
+            const next = root._queuedAction;
+            root._queuedAction = null;
+            if (next)
+                root.startAction(next);
             root.refresh();
         }
     }
