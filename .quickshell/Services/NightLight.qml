@@ -5,10 +5,11 @@ import Quickshell
 import Quickshell.Io
 import qs.Common
 
-// Night light: a warmer screen through wlsunset, which
-// sets niri's gamma over wlr-gamma-control. wlsunset schedules a day and a
-// night temperature; giving it two only 1K apart keeps the screen at the
-// chosen warmth around the clock, so on/off is just running it or not.
+// Night light: a warmer screen through wl-gammarelay-rs, which sets niri's
+// gamma over wlr-gamma-control and takes a new temperature over D-Bus while
+// running. (wlsunset only read it at start, so every change restarted it
+// and the screen went back to normal colours for a moment.) On/off is
+// running the daemon or not.
 //   qs ipc call night toggle | enable | disable | status
 //   qs ipc call night getTemp | setTemp 3000
 Singleton {
@@ -25,29 +26,57 @@ Singleton {
         Settings.nightLightTemperature = Math.round(Math.max(1000, Math.min(6500, kelvin)));
     }
 
-    // wlsunset reads its temperatures once, so a new one means a restart:
-    // `restarting` stops it for a moment. Never assign sunset.running
-    // directly; that would break its binding to `enabled`, and turning night
-    // light off would then leave wlsunset running.
-    property bool restarting: false
+    onTemperatureChanged: apply()
 
-    onTemperatureChanged: {
-        if (sunset.running) {
-            restarting = true;
-            restart.restart();
+    // Sends the current temperature to the daemon. One call at a time; a
+    // change made meanwhile goes out when it's done.
+    property bool applyAgain: false
+    property int applyTries: 0
+
+    function apply() {
+        if (!relay.running)
+            return;
+        if (setTemp.running) {
+            applyAgain = true;
+            return;
+        }
+        setTemp.command = ["busctl", "--user", "set-property", "rs.wl-gammarelay", "/", "rs.wl.gammarelay", "Temperature", "q", String(temperature)];
+        setTemp.running = true;
+    }
+
+    // Starts at 6500K (neutral); this sets the night light's temperature as
+    // soon as it's up.
+    Process {
+        id: relay
+        running: root.enabled
+        command: ["wl-gammarelay-rs", "run"]
+        onStarted: {
+            root.applyTries = 0;
+            root.apply();
+        }
+    }
+
+    Process {
+        id: setTemp
+        onExited: code => {
+            if (code !== 0 && root.applyTries < 30) {
+                // Not on the bus yet: try again shortly.
+                root.applyTries++;
+                retry.restart();
+                return;
+            }
+            root.applyTries = 0;
+            if (root.applyAgain) {
+                root.applyAgain = false;
+                root.apply();
+            }
         }
     }
 
     Timer {
-        id: restart
+        id: retry
         interval: 100
-        onTriggered: root.restarting = false
-    }
-
-    Process {
-        id: sunset
-        running: root.enabled && !root.restarting
-        command: ["wlsunset", "-t", String(root.temperature), "-T", String(root.temperature + 1), "-S", "06:00", "-s", "18:00", "-d", "1"]
+        onTriggered: root.apply()
     }
 
     IpcHandler {

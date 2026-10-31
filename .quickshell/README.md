@@ -11,7 +11,7 @@ Taylor's desktop shell for niri.
   `graphical-session.target`, runs `qs -p ~/.config/quickshell` when niri
   starts and restarts it if it crashes.
 - **Packages**: `nixos/modules/components/quickshell.nix` installs what the
-  shell calls (matugen, wl-clipboard, wtype, wlsunset, brightnessctl, fd, fzf,
+  shell calls (matugen, wl-clipboard, wtype, wl-gammarelay-rs, brightnessctl, fd, fzf,
   libnotify), the Material Symbols font, and `qs` itself
   (`myOptions.quickshell.source`).
 

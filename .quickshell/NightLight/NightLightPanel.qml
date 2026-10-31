@@ -47,11 +47,11 @@ Scope {
         apply.restart();
     }
 
-    // Every new temperature restarts wlsunset, so a drag sends the latest
-    // one at most every 150 ms rather than one per step.
+    // A drag sends the latest temperature at most every 50 ms rather than
+    // one per step (each is also saved to settings.json).
     Timer {
         id: apply
-        interval: 150
+        interval: 50
         onTriggered: NightLight.setTemperature(root.pending)
     }
 

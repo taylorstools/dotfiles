@@ -47,7 +47,7 @@ in
       matugen # colours from the wallpaper, and the app themes
       swaybg
       wl-clipboard # clipboard history
-      wlsunset # night light
+      wl-gammarelay-rs # night light (Services/NightLight.qml)
       wtype # clipboard history: paste into the focused app
     ];
 
