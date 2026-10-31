@@ -51,12 +51,15 @@ in
     # power-button press. Turn it off instead of cooking the battery.
     luksIdlePoweroff.enable = true;
 
-    # Off for now: it holds the desktop until the shell's bar and dock exist.
-    # Plymouth's boot spinner is separate and unaffected.
+    # Holds the desktop until the shell is drawn. Plymouth's boot spinner is
+    # separate and unaffected.
     niri-splash = {
-      enable = false;
-      # The dock comes up a moment after the bar; hold the splash for it too.
-      namespaces = [ "qstest:bar" "qstest:dock" ];
+      enable = true;
+      # The bar, and the shell's "ready" marker, which appears once the
+      # wallpaper picture has loaded (about 1.5 s after the bar). Not the
+      # dock: auto-hidden it isn't visible at login, and with it turned off
+      # the splash would wait its full 20 s.
+      namespaces = [ "qstest:bar" "qstest:ready" ];
     } // splashLogo;
     
     # The theme's defaults are the laptop case: black until the passphrase

@@ -80,7 +80,7 @@ in
     namespaces = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ "qstest:bar" ];
-      example = [ "qstest:bar" "qstest:dock" ];
+      example = [ "qstest:bar" "qstest:ready" ];
       description = ''
         Layer-shell namespaces that must all exist before the splash lifts.
         Only list surfaces that always appear; a missing one costs 20s on

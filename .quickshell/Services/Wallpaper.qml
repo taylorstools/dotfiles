@@ -19,6 +19,9 @@ Singleton {
     // Images in the wallpaper folder, sorted by name.
     property var images: []
     property bool generating: false
+    // Set once a screen has drawn the wallpaper (or found nothing to draw),
+    // for the login splash (Wallpaper/LoginReady.qml).
+    property bool shown: false
     property string lastError: ""
 
     readonly property var schemes: ["scheme-content", "scheme-expressive", "scheme-fidelity", "scheme-fruit-salad", "scheme-monochrome", "scheme-neutral", "scheme-rainbow", "scheme-tonal-spot", "scheme-vibrant"]

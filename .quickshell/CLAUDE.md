@@ -24,8 +24,10 @@ shell is left in the system or the dotfiles.
   what the shell runs (wtype, wlsunset, matugen, fd, fzf, wl-clipboard,
   brightnessctl, libnotify, hypridle, swaybg, adw-gtk3), the Material Symbols
   font, accounts-daemon (the avatar) and polkit (the shell is the agent).
-  power-profiles-daemon is on in `power-management.nix`. The niri-splash is
-  off; if turned back on it waits for `qstest:bar` and `qstest:dock`.
+  power-profiles-daemon is on in `power-management.nix`. The niri login
+  splash (`laptop.nix`) waits for `qstest:bar` and `qstest:ready`, the
+  1x1 invisible marker `Wallpaper/LoginReady.qml` shows once the wallpaper
+  picture has loaded (`Wallpaper.shown`), about 1.5 s after the bar.
 - niri binds (`dot_config/niri/custom/binds.kdl`), the scripts in `scripts/`,
   wlr-which-key, whisrs and roland call `qs ipc`. niri's `config.kdl` includes
   `colors.kdl` (written by `Theming/`) and the shell's `niri-blur.kdl`, then
@@ -75,7 +77,7 @@ shell is left in the system or the dotfiles.
 | `Services/NotepadStore.qml` | Singleton: notepad tabs, `notepad-session.json` + `notepad-files/` under `~/.local/state/qstest/notepad` |
 | `Services/Network.qml` | Singleton: `nmcli` polling, refreshed by `nmcli monitor`; while `listNetworks` is set it also lists Wi-Fi networks, and does connect/disconnect/radio. A saved network that fails sets `passwordNeeded`, and a new password goes in with `nmcli connection modify … wifi-sec.psk` so the profile keeps its settings. The control center keeps the typed password in `passwordDraft` because the list rebuilds on every NetworkManager change |
 | `Services/Wallpaper.qml` | Singleton: wallpaper path (in `Settings`), folder listing, matugen run on change; IPC target `wallpaper` (`set`/`random`/`get`) |
-| `Wallpaper/Background.qml` | Per-screen PanelWindow on the Background layer (namespace `qstest:wallpaper`), crossfades on change |
+| `Wallpaper/Background.qml` | Per-screen PanelWindow on the Background layer (namespace `qstest:wallpaper`), crossfades on change; sets `Wallpaper.shown` once the first picture is drawn, which shows `LoginReady.qml` (`qstest:ready`) for the login splash |
 | `Services/Notifications.qml` | Singleton: the `NotificationServer` (tracks everything until dismissed), `popups`, do not disturb (in `Settings`), arrival times; IPC target `notifications`. One daemon owns the D-Bus name |
 | `Services/DockApps.qml` | Singleton: dock model (pins from `Settings.dockPins`, then running apps by niri layout order), keyed by desktop entry id; pin/unpin/move, activate (launch, focus, cycle windows) |
 | `Services/Brightness.qml` | Singleton: backlight via `brightnessctl`; sysfs sends no change events, so `brightness` is polled every 250 ms (ignored briefly after our own writes); IPC target `brightness` (`increment`/`decrement`) |

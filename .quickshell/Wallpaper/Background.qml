@@ -55,6 +55,13 @@ PanelWindow {
         onStatusChanged: {
             if (status === Image.Ready && opacity < 1)
                 fadeIn.restart();
+            if (status !== Image.Loading)
+                Wallpaper.shown = true;
+        }
+        // No wallpaper set: nothing will load, so there's nothing to wait for.
+        Component.onCompleted: {
+            if (status !== Image.Loading)
+                Wallpaper.shown = true;
         }
 
         NumberAnimation {

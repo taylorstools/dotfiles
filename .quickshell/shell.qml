@@ -40,6 +40,9 @@ ShellRoot {
         Background {}
     }
 
+    // Tells the login splash the desktop is drawn.
+    LoginReady {}
+
     Variants {
         model: Quickshell.screens
 
