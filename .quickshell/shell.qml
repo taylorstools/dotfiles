@@ -22,8 +22,10 @@ import qs.PowerMenu
 import qs.Runner
 import qs.Services
 import qs.Settings
+import qs.SnippingTool
 import qs.Switcher
 import qs.Wallpaper
+import qs.KeyPressMenu
 import qs.Whisrs
 
 ShellRoot {
@@ -61,6 +63,8 @@ ShellRoot {
     WindowSwitcher {}
     ClipboardPanel {}
     PowerMenu {}
+    KeyPressMenu {}
+    SnippingTool {}
     Lock {}
     Notepad {}
     ControlCenter {}

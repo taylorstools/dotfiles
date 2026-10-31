@@ -12,13 +12,6 @@ layer-rule {
     place-within-backdrop true
 }
 
-layer-rule {
-    match namespace="wlr_which_key"
-    geometry-corner-radius 12
-    background-effect {
-        blur true
-    }
-}
 
 window-rule {
     match title="Runner"

@@ -19,6 +19,33 @@ Singleton {
             "sleepCommand": "$HOME/scripts/hypridle/lock-session.sh & sleep 1; systemctl suspend",
             "restartCommand": "systemctl reboot",
             "shutdownCommand": "systemctl poweroff",
+            "logoutCommand": "niri msg action quit --skip-confirmation",
+            "windowsCommand": "$HOME/scripts/refind_boot-to-windows.sh",
+            // Which of the power menu's buttons show.
+            "powerMenuShowLock": true,
+            "powerMenuShowLogout": true,
+            "powerMenuShowSleep": true,
+            "powerMenuShowShutdown": true,
+            "powerMenuShowReboot": true,
+            "powerMenuShowWindows": true,
+            // The key press menu (Mod+X): a key, what it says, what it runs
+            // (with sh -c). Settings > Key press menu.
+            "keyPressEntries": [
+                { "key": "r", "desc": "Run", "cmd": "qs ipc call runner toggle" },
+                { "key": "t", "desc": "Terminal (Root)", "cmd": "ghostty -e sudo -i" },
+                { "key": "e", "desc": "File Explorer (Root)", "cmd": "sudo -EH thunar" },
+                { "key": "m", "desc": "Task Manager", "cmd": "missioncenter" },
+                { "key": "k", "desc": "Disk Management", "cmd": "sudo -EH gparted" },
+                { "key": "s", "desc": "Snipping Tool", "cmd": "qs ipc call snip open" },
+                { "key": "o", "desc": "OCR Select and Copy", "cmd": "$HOME/scripts/ocr-snip.sh" },
+                { "key": "b", "desc": "Toggle Night Mode", "cmd": "qs ipc call night toggle" },
+                { "key": "n", "desc": "Night Mode Strength", "cmd": "$HOME/scripts/night-light-temperature.sh" },
+                { "key": "a", "desc": "Toggle Keep Awake", "cmd": "$HOME/scripts/hypridle/toggle-hypridle.sh" },
+                { "key": "w", "desc": "Change Wallpaper", "cmd": "qs ipc call wallpaper random" },
+                { "key": "d", "desc": "Change Refresh Rate", "cmd": "$HOME/scripts/niri_change-refresh-rate.sh" },
+                { "key": "y", "desc": "Toggle Voice-to-Text", "cmd": "whisrs toggle" },
+                { "key": "p", "desc": "Power", "cmd": "qs ipc call powermenu toggle" }
+            ],
             // Wallpaper, its folder, and the matugen scheme.
             "wallpaperPath": Quickshell.env("HOME") + "/.dotfiles/Wallpapers/enlarge_1077194.png",
             "wallpaperFolder": Quickshell.env("HOME") + "/.dotfiles/Wallpapers",
@@ -107,6 +134,15 @@ Singleton {
     property alias sleepCommand: adapter.sleepCommand
     property alias restartCommand: adapter.restartCommand
     property alias shutdownCommand: adapter.shutdownCommand
+    property alias logoutCommand: adapter.logoutCommand
+    property alias windowsCommand: adapter.windowsCommand
+    property alias powerMenuShowLock: adapter.powerMenuShowLock
+    property alias powerMenuShowLogout: adapter.powerMenuShowLogout
+    property alias powerMenuShowSleep: adapter.powerMenuShowSleep
+    property alias powerMenuShowShutdown: adapter.powerMenuShowShutdown
+    property alias powerMenuShowReboot: adapter.powerMenuShowReboot
+    property alias powerMenuShowWindows: adapter.powerMenuShowWindows
+    property alias keyPressEntries: adapter.keyPressEntries
     property alias wallpaperPath: adapter.wallpaperPath
     property alias wallpaperFolder: adapter.wallpaperFolder
     property alias matugenScheme: adapter.matugenScheme
@@ -177,6 +213,15 @@ Singleton {
             property string sleepCommand: root.defaults.sleepCommand
             property string restartCommand: root.defaults.restartCommand
             property string shutdownCommand: root.defaults.shutdownCommand
+            property string logoutCommand: root.defaults.logoutCommand
+            property string windowsCommand: root.defaults.windowsCommand
+            property bool powerMenuShowLock: root.defaults.powerMenuShowLock
+            property bool powerMenuShowLogout: root.defaults.powerMenuShowLogout
+            property bool powerMenuShowSleep: root.defaults.powerMenuShowSleep
+            property bool powerMenuShowShutdown: root.defaults.powerMenuShowShutdown
+            property bool powerMenuShowReboot: root.defaults.powerMenuShowReboot
+            property bool powerMenuShowWindows: root.defaults.powerMenuShowWindows
+            property var keyPressEntries: root.defaults.keyPressEntries
             property string wallpaperPath: root.defaults.wallpaperPath
             property string wallpaperFolder: root.defaults.wallpaperFolder
             property string matugenScheme: root.defaults.matugenScheme

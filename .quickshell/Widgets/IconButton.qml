@@ -17,7 +17,7 @@ Rectangle {
     signal clicked
 
     implicitHeight: 32
-    implicitWidth: text !== "" ? row.implicitWidth + Theme.spacingS * 2 : implicitHeight
+    implicitWidth: text !== "" ? row.implicitWidth + (icon !== "" ? Theme.spacingS : Theme.spacingM) * 2 : implicitHeight
     radius: Theme.cornerRadius / 2
     color: hovered ? Theme.widgetHover : restColor
 
@@ -26,8 +26,10 @@ Rectangle {
         anchors.centerIn: parent
         spacing: Theme.spacingS
 
+        // Text-only buttons keep their label centred.
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
+            visible: root.icon !== ""
             name: root.icon
             size: root.iconSize
             rotation: root.iconRotation

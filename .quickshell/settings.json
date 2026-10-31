@@ -34,12 +34,19 @@
     "fontFamily": "Inter",
     "fontWeight": "medium",
     "lockCommand": "$HOME/scripts/hypridle/lock-session.sh --force",
+    "logoutCommand": "niri msg action quit --skip-confirmation",
     "matugenScheme": "scheme-neutral",
     "monoFontFamily": "JetBrainsMono Nerd Font Mono",
     "nightLight": false,
     "nightLightTemperature": 2900,
     "notificationPosition": "bottom-right",
     "overlayOpacity": 0.4,
+    "powerMenuShowLock": true,
+    "powerMenuShowLogout": true,
+    "powerMenuShowReboot": true,
+    "powerMenuShowShutdown": true,
+    "powerMenuShowSleep": true,
+    "powerMenuShowWindows": true,
     "restartCommand": "systemctl reboot",
     "runningAppsCurrentWorkspaceOnly": false,
     "runningAppsFullTitleWidth": 120,
@@ -57,5 +64,78 @@
     "surfaceTintCustom": "#000000",
     "wallpaperFadeDuration": 500,
     "wallpaperFolder": "/home/taylor/.dotfiles/Wallpapers",
-    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/enlarge_alena-aenami-wings-hd.jpg"
+    "wallpaperPath": "/home/taylor/.dotfiles/Wallpapers/enlarge_alena-aenami-wings-hd.jpg",
+    "windowsCommand": "$HOME/scripts/refind_boot-to-windows.sh",
+    "keyPressEntries": [
+        {
+            "cmd": "qs ipc call runner toggle",
+            "desc": "Run",
+            "key": "r"
+        },
+        {
+            "cmd": "ghostty -e sudo -i",
+            "desc": "Terminal (Root)",
+            "key": "t"
+        },
+        {
+            "cmd": "sudo -EH thunar",
+            "desc": "File Explorer (Root)",
+            "key": "e"
+        },
+        {
+            "cmd": "missioncenter",
+            "desc": "Task Manager",
+            "key": "m"
+        },
+        {
+            "cmd": "sudo -EH gparted",
+            "desc": "Disk Management",
+            "key": "k"
+        },
+        {
+            "cmd": "qs ipc call snip open",
+            "desc": "Snipping Tool",
+            "key": "s"
+        },
+        {
+            "cmd": "$HOME/scripts/ocr-snip.sh",
+            "desc": "OCR Select and Copy",
+            "key": "o"
+        },
+        {
+            "cmd": "qs ipc call night toggle",
+            "desc": "Toggle Night Mode",
+            "key": "b"
+        },
+        {
+            "cmd": "$HOME/scripts/night-light-temperature.sh",
+            "desc": "Night Mode Strength",
+            "key": "n"
+        },
+        {
+            "cmd": "$HOME/scripts/hypridle/toggle-hypridle.sh",
+            "desc": "Toggle Keep Awake",
+            "key": "a"
+        },
+        {
+            "cmd": "qs ipc call wallpaper random",
+            "desc": "Change Wallpaper",
+            "key": "w"
+        },
+        {
+            "cmd": "$HOME/scripts/niri_change-refresh-rate.sh",
+            "desc": "Change Refresh Rate",
+            "key": "d"
+        },
+        {
+            "cmd": "whisrs toggle",
+            "desc": "Toggle Voice-to-Text",
+            "key": "y"
+        },
+        {
+            "cmd": "qs ipc call powermenu toggle",
+            "desc": "Power",
+            "key": "p"
+        }
+    ]
 }

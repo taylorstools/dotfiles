@@ -50,6 +50,8 @@ else goes through `qs ipc call <target> <function>`; `qs ipc show` lists them.
 | `Notifications/` | The notification daemon: pop-ups and the card shared with the tray |
 | `Osd/Osd.qml` | Volume, brightness and mic OSD; IPC `osd suppress <ms>`. Toasts for scripts in the same spot: `qs ipc call toast info/warn/error <text>` or `toast icon <name> <text>` |
 | `Lock/` | Lock screen (replaces hyprlock, same look); IPC `lock`, `qs ipc call lock preview` to try it without locking |
+| `KeyPressMenu/` | Key press menu (Mod+X; replaces wlr-which-key), entries edited in Shell Settings; IPC `keypress` |
+| `SnippingTool/` | Snipping tool panel (Print; Ctrl+Print for straight to region); IPC `snip` |
 | `PowerMenu/` | Full-screen power menu (lock, log out, sleep, shut down, reboot, Windows), styled like the wlogout it replaced; IPC `powermenu` |
 | `Polkit/PolkitDialog.qml` | Polkit password prompt (pkexec, "unlock" buttons) |
 | `Whisrs/WhisrsPill.qml` | whisrs dictation pill; IPC `whisrs started` / `stopped` |

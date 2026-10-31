@@ -10,8 +10,8 @@ binds {
     Mod+Shift+T { spawn "ghostty" "-e" "sudo" "-i"; }
 
     // Screenshot
-    Print       { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh"; }
-    Ctrl+Print  { spawn "sh" "-c" "$HOME/scripts/snipping-tool.sh --region"; }
+    Print       { spawn "qs" "ipc" "call" "snip" "open"; }
+    Ctrl+Print  { spawn "qs" "ipc" "call" "snip" "region"; }
     Mod+Shift+O { spawn "sh" "-c" "$HOME/scripts/ocr-snip.sh"; }
 
     // Dictation. whisrs fires its own hook into the shell's pill, so these
@@ -83,7 +83,7 @@ binds {
     Mod+C   { spawn "sh" "-c" "$HOME/scripts/pick-color.sh"; }
 
     // Secondary menu
-    Mod+X   { spawn "sh" "-c" "pkill wlr-which-key || wlr-which-key"; }
+    Mod+X   { spawn "qs" "ipc" "call" "keypress" "toggle"; }
 
     // Change display refresh rate and scale
     Mod+Shift+R { spawn "sh" "-c" "$HOME/scripts/niri_change-refresh-rate.sh"; }

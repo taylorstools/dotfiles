@@ -57,4 +57,7 @@ Singleton {
         clockScreen = null;
         batteryScreen = null;
     }
+
+    // The power menu (PowerMenu/PowerMenu.qml) opens on this.
+    signal powerMenuRequested
 }

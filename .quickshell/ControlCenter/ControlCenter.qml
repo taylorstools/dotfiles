@@ -20,7 +20,6 @@ Scope {
 
     readonly property bool shown: Popouts.controlCenterScreen !== null
     property string tab: "wifi"
-    property bool powerMenuOpen: false
     property bool outputsOpen: false
     // The secured network whose password field is showing, and what's typed
     // in it. Kept here because the network list is rebuilt whenever
@@ -134,7 +133,6 @@ Scope {
             Network.listNetworks = true;
             Network.scan();
         } else {
-            powerMenuOpen = false;
             netMenu = null;
             outputsOpen = false;
             passwordSsid = "";
@@ -256,8 +254,6 @@ Scope {
                     root.netMenu = null;
                 else if (root.passwordSsid !== "")
                     root.passwordSsid = "";
-                else if (root.powerMenuOpen)
-                    root.powerMenuOpen = false;
                 else
                     root.close();
             }
@@ -295,10 +291,9 @@ Scope {
             border.width: Theme.edgePanelBorder ? 1 : 0
             border.color: Theme.blurBorder
 
-            // Swallows clicks so they don't close the panel; closes the power menu.
+            // Swallows clicks so they don't close the panel.
             MouseArea {
                 anchors.fill: parent
-                onClicked: root.powerMenuOpen = false
             }
 
             ColumnLayout {
@@ -380,12 +375,15 @@ Scope {
                         }
                     }
 
+                    // The full-screen power menu (PowerMenu/PowerMenu.qml).
                     IconButton {
-                        id: powerButton
                         implicitHeight: 34
                         icon: "power_settings_new"
-                        restColor: root.powerMenuOpen ? Theme.withAlpha(Theme.primary, 0.25) : Theme.surfaceContainerHigh
-                        onClicked: root.powerMenuOpen = !root.powerMenuOpen
+                        restColor: Theme.surfaceContainerHigh
+                        onClicked: {
+                            root.close();
+                            Popouts.powerMenuRequested();
+                        }
                     }
                 }
 
@@ -996,53 +994,6 @@ Scope {
                 }
             }
 
-            // Power menu, dropped down under the power button.
-            Rectangle {
-                x: panel.width - panel.overshoot - panel.pad - width
-                y: panel.pad + header.height + 6
-                z: 10
-                width: 170
-                height: powerItems.implicitHeight + 8
-                visible: root.powerMenuOpen
-                radius: 10
-                // Solid, so it reads over the panel whatever the overlay opacity.
-                color: Theme.withAlpha(Theme.surfaceContainerHigh, 1)
-                border.width: 1
-                border.color: Theme.withAlpha(Theme.outline, 0.4)
-
-                Column {
-                    id: powerItems
-                    anchors.fill: parent
-                    anchors.margins: 4
-
-                    PowerItem {
-                        icon: "bedtime"
-                        text: "Sleep"
-                        onClicked: {
-                            root.close();
-                            Power.sleep();
-                        }
-                    }
-                    PowerItem {
-                        icon: "restart_alt"
-                        text: "Restart"
-                        onClicked: {
-                            root.close();
-                            Power.restart();
-                        }
-                    }
-                    PowerItem {
-                        icon: "power_settings_new"
-                        text: "Shut down"
-                        contentColor: Theme.error
-                        onClicked: {
-                            root.close();
-                            Power.shutdown();
-                        }
-                    }
-                }
-            }
-
             // Closes the network menu on a click anywhere else in the panel.
             MouseArea {
                 anchors.fill: parent
@@ -1071,7 +1022,7 @@ Scope {
                     anchors.fill: parent
                     anchors.margins: 4
 
-                    PowerItem {
+                    MenuItem {
                         visible: root.netMenu?.active ?? false
                         icon: "link_off"
                         text: "Disconnect"
@@ -1080,7 +1031,7 @@ Scope {
                             Network.disconnect();
                         }
                     }
-                    PowerItem {
+                    MenuItem {
                         visible: root.netMenu?.saved ?? false
                         icon: "delete"
                         text: "Forget"
@@ -1098,9 +1049,9 @@ Scope {
         }
     }
 
-    // A power menu entry.
-    component PowerItem: Rectangle {
-        id: powerItem
+    // An entry in the network menu.
+    component MenuItem: Rectangle {
+        id: menuItem
 
         property string icon
         property string text
@@ -1121,15 +1072,15 @@ Scope {
 
             MaterialIcon {
                 anchors.verticalCenter: parent.verticalCenter
-                name: powerItem.icon
+                name: menuItem.icon
                 size: 18
-                color: powerItem.contentColor
+                color: menuItem.contentColor
             }
 
             StyledText {
                 anchors.verticalCenter: parent.verticalCenter
-                text: powerItem.text
-                color: powerItem.contentColor
+                text: menuItem.text
+                color: menuItem.contentColor
                 font.pixelSize: 13
             }
         }
@@ -1139,7 +1090,7 @@ Scope {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: powerItem.clicked()
+            onClicked: menuItem.clicked()
         }
     }
 }

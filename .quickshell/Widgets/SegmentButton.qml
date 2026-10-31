@@ -22,8 +22,10 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 6
 
+        // Text-only buttons (no icon) keep their label centred.
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
+            visible: root.icon !== ""
             name: root.icon
             size: 18
             color: root.current ? Theme.onPrimary : Theme.surfaceVariantText

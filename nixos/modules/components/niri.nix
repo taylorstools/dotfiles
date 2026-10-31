@@ -89,7 +89,7 @@
     gparted
     grim
     gsettings-desktop-schemas
-    libnotify # notify-send, for snipping-tool.sh's clipboard/save notification
+    libnotify # notify-send, for the snipping tool's clipboard/save notification
     librsvg # rsvg-convert, for niri_window-switcher.sh's SVG icons
     loupe
     nwg-look
@@ -98,7 +98,6 @@
     slurp
     (tesseract.override { enableLanguages = [ "eng" ]; }) # ocr-snip.sh
     wl-clipboard
-    wlr-which-key
     xed-editor
     xsettingsd
     xwayland-satellite

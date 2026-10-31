@@ -4,8 +4,9 @@ import QtQuick
 import Quickshell
 import qs.Common
 
-// Lock / sleep / restart / shut down, using the commands from the settings
-// window. They run right away with no confirmation, like the Windows power menu.
+// Lock / log out / sleep / restart / shut down / reboot into Windows, using
+// the commands from the settings window (Power page). They run right away
+// with no confirmation, like the Windows power menu.
 Singleton {
     function run(command) {
         if (command.trim() !== "")
@@ -23,5 +24,11 @@ Singleton {
     }
     function shutdown() {
         run(Settings.shutdownCommand);
+    }
+    function logout() {
+        run(Settings.logoutCommand);
+    }
+    function windows() {
+        run(Settings.windowsCommand);
     }
 }

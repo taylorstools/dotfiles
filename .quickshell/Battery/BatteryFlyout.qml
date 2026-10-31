@@ -271,7 +271,8 @@ Scope {
 
                             StyledText {
                                 visible: BatteryInfo.rate > 0
-                                text: BatteryInfo.rate.toFixed(1) + " W"
+                                // + into the battery, - out of it.
+                                text: (BatteryInfo.signedRate > 0 ? "+" : BatteryInfo.signedRate < 0 ? "\u2212" : "") + BatteryInfo.rate.toFixed(1) + " W"
                                 color: Theme.surfaceVariantText
                                 font.pixelSize: 13
                             }

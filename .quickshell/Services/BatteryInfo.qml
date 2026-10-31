@@ -24,8 +24,20 @@ Singleton {
     readonly property bool charging: device && (device.state === UPowerDeviceState.Charging || device.state === UPowerDeviceState.PendingCharge)
     readonly property bool full: device && device.state === UPowerDeviceState.FullyCharged
     readonly property bool onBattery: UPower.onBattery
-    // Watts, positive either way.
+    // Watts, positive either way. It's the battery's own flow: what the
+    // laptop draws on battery, and what reaches the battery while charging
+    // (the charger's output less what the laptop uses).
     readonly property real rate: device ? Math.abs(device.changeRate) : 0
+    // The same, signed: + charging, - discharging (also when plugged into a
+    // charger too weak to keep up), 0 otherwise. From the battery's state,
+    // not whether a charger is connected.
+    readonly property real signedRate: {
+        if (!device)
+            return 0;
+        if (charging)
+            return rate;
+        return device.state === UPowerDeviceState.Discharging ? -rate : 0;
+    }
     // Seconds until full (charging) or empty, 0 when UPower doesn't know.
     readonly property real timeLeft: !device ? 0 : (charging ? device.timeToFull : (onBattery ? device.timeToEmpty : 0))
 

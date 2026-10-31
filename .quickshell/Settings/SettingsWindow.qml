@@ -52,6 +52,11 @@ Scope {
             "id": "notifications",
             "title": "Notifications",
             "icon": "notifications"
+        },
+        {
+            "id": "keypress",
+            "title": "Key press menu",
+            "icon": "keyboard"
         }
     ]
 
@@ -78,10 +83,12 @@ Scope {
         { "page": "appearance", "label": "Border colour", "terms": "panel border outline color accent primary custom flyout launcher notepad" },
         { "page": "appearance", "label": "Border opacity", "terms": "panel border outline transparency hide" },
         { "page": "appearance", "label": "Border on attached flyouts and notepad", "terms": "panel border outline attached control center calendar notepad" },
-        { "page": "power", "label": "Lock command", "terms": "lock screen hyprlock swaylock" },
-        { "page": "power", "label": "Sleep command", "terms": "suspend hibernate" },
-        { "page": "power", "label": "Restart command", "terms": "reboot" },
-        { "page": "power", "label": "Shut down command", "terms": "shutdown power off poweroff" },
+        { "page": "power", "label": "Lock command", "terms": "lock screen power menu button show hide" },
+        { "page": "power", "label": "Logout command", "terms": "log out quit niri power menu button show hide" },
+        { "page": "power", "label": "Sleep command", "terms": "suspend hibernate power menu button show hide" },
+        { "page": "power", "label": "Shutdown command", "terms": "shut down power off poweroff power menu button show hide" },
+        { "page": "power", "label": "Reboot command", "terms": "restart power menu button show hide" },
+        { "page": "power", "label": "Windows command", "terms": "reboot into windows refind dual boot power menu button show hide" },
         { "page": "wallpaper", "label": "Wallpaper folder", "terms": "directory path pictures background" },
         { "page": "wallpaper", "label": "Colour scheme", "terms": "color matugen scheme type vibrant tonal neutral palette theme" },
         { "page": "wallpaper", "label": "Fade between wallpapers", "terms": "crossfade transition animation background" },
@@ -107,7 +114,8 @@ Scope {
         { "page": "clipboard", "label": "Clear all also removes pinned items", "terms": "clipboard history pins delete" },
         { "page": "clipboard", "label": "Clear history at login", "terms": "clipboard startup boot delete" },
         { "page": "clipboard", "label": "Paste into apps", "terms": "wtype ctrl+v clipboard" },
-        { "page": "notifications", "label": "Pop-up position", "terms": "notifications popups corner top bottom right" }
+        { "page": "notifications", "label": "Pop-up position", "terms": "notifications popups corner top bottom right" },
+        { "page": "keypress", "label": "Key press entries", "terms": "wlr-which-key mod+x keys shortcuts commands scripts menu" }
     ]
 
     property string query: ""
@@ -509,7 +517,7 @@ Scope {
 
                         StyledText {
                             Layout.fillWidth: true
-                            text: "What the control center's lock button and power menu run. Each command runs with sh -c, so $HOME, pipes and ; work."
+                            text: "The power menu's buttons (Ctrl+Alt+Delete, or the control center's power button): switch each on or off, and set what it runs. Lock is also the control center's lock button. Each command runs with sh -c, so $HOME, pipes and ; work."
                             color: Theme.surfaceVariantText
                             font.pixelSize: Theme.fontSizeSmall
                             wrapMode: Text.Wrap
@@ -517,13 +525,18 @@ Scope {
 
                         GridLayout {
                             Layout.fillWidth: true
-                            columns: 3
+                            columns: 4
                             columnSpacing: Theme.spacingM
                             rowSpacing: Theme.spacingM
 
+                            Toggle {
+                                checked: Settings.powerMenuShowLock
+                                onToggled: Settings.powerMenuShowLock = !Settings.powerMenuShowLock
+                            }
                             CommandLabel {
                                 icon: "lock"
                                 text: "Lock"
+                                opacity: Settings.powerMenuShowLock ? 1 : 0.5
                             }
                             CommandField {
                                 key: "lockCommand"
@@ -532,9 +545,30 @@ Scope {
                                 key: "lockCommand"
                             }
 
+                            Toggle {
+                                checked: Settings.powerMenuShowLogout
+                                onToggled: Settings.powerMenuShowLogout = !Settings.powerMenuShowLogout
+                            }
+                            CommandLabel {
+                                icon: "logout"
+                                text: "Logout"
+                                opacity: Settings.powerMenuShowLogout ? 1 : 0.5
+                            }
+                            CommandField {
+                                key: "logoutCommand"
+                            }
+                            ResetButton {
+                                key: "logoutCommand"
+                            }
+
+                            Toggle {
+                                checked: Settings.powerMenuShowSleep
+                                onToggled: Settings.powerMenuShowSleep = !Settings.powerMenuShowSleep
+                            }
                             CommandLabel {
                                 icon: "bedtime"
                                 text: "Sleep"
+                                opacity: Settings.powerMenuShowSleep ? 1 : 0.5
                             }
                             CommandField {
                                 key: "sleepCommand"
@@ -543,26 +577,52 @@ Scope {
                                 key: "sleepCommand"
                             }
 
-                            CommandLabel {
-                                icon: "restart_alt"
-                                text: "Restart"
+                            Toggle {
+                                checked: Settings.powerMenuShowShutdown
+                                onToggled: Settings.powerMenuShowShutdown = !Settings.powerMenuShowShutdown
                             }
-                            CommandField {
-                                key: "restartCommand"
-                            }
-                            ResetButton {
-                                key: "restartCommand"
-                            }
-
                             CommandLabel {
                                 icon: "power_settings_new"
-                                text: "Shut down"
+                                text: "Shutdown"
+                                opacity: Settings.powerMenuShowShutdown ? 1 : 0.5
                             }
                             CommandField {
                                 key: "shutdownCommand"
                             }
                             ResetButton {
                                 key: "shutdownCommand"
+                            }
+
+                            Toggle {
+                                checked: Settings.powerMenuShowReboot
+                                onToggled: Settings.powerMenuShowReboot = !Settings.powerMenuShowReboot
+                            }
+                            CommandLabel {
+                                icon: "restart_alt"
+                                text: "Reboot"
+                                opacity: Settings.powerMenuShowReboot ? 1 : 0.5
+                            }
+                            CommandField {
+                                key: "restartCommand"
+                            }
+                            ResetButton {
+                                key: "restartCommand"
+                            }
+
+                            Toggle {
+                                checked: Settings.powerMenuShowWindows
+                                onToggled: Settings.powerMenuShowWindows = !Settings.powerMenuShowWindows
+                            }
+                            CommandLabel {
+                                icon: "window"
+                                text: "Windows"
+                                opacity: Settings.powerMenuShowWindows ? 1 : 0.5
+                            }
+                            CommandField {
+                                key: "windowsCommand"
+                            }
+                            ResetButton {
+                                key: "windowsCommand"
                             }
                         }
 
@@ -1147,6 +1207,122 @@ Scope {
                         }
                     }
 
+                    // The key press menu's entries (KeyPressMenu/KeyPressMenu.qml). Rows are
+                    // keyed by position, so editing one doesn't rebuild the others
+                    // (and lose the cursor); adding or removing one does.
+                    Flickable {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        visible: root.page === "keypress"
+                        contentHeight: keyPressColumn.implicitHeight + Theme.spacingXL * 2
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        ColumnLayout {
+                            id: keyPressColumn
+
+                            x: Theme.spacingXL
+                            y: Theme.spacingXL
+                            width: parent.width - Theme.spacingXL * 2
+                            spacing: Theme.spacingM
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Theme.spacingS
+
+                                StyledText {
+                                    Layout.fillWidth: true
+                                    text: "Key press menu"
+                                    font.pixelSize: Theme.fontSizeXLarge
+                                }
+
+                                IconButton {
+                                    icon: "undo"
+                                    text: "Reset"
+                                    iconSize: 18
+                                    contentColor: Theme.surfaceVariantText
+                                    onClicked: Settings.reset("keyPressEntries")
+                                }
+                            }
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: "Mod+X opens it; press a key to run its command (with sh -c, so $HOME, pipes and ; work). Keys are case-sensitive. The order here is the menu's order."
+                                color: Theme.surfaceVariantText
+                                font.pixelSize: Theme.fontSizeSmall
+                                wrapMode: Text.Wrap
+                            }
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                readonly property var keys: (Settings.keyPressEntries ?? []).map(e => e.key).filter(k => k !== "")
+                                readonly property var repeated: keys.filter((k, i) => keys.indexOf(k) !== i)
+                                visible: repeated.length > 0
+                                text: "Used more than once: " + repeated.join(", ") + ". Only the first of each runs."
+                                color: Theme.error
+                                font.pixelSize: Theme.fontSizeSmall
+                                wrapMode: Text.Wrap
+                            }
+
+                            Repeater {
+                                model: (Settings.keyPressEntries ?? []).length
+
+                                delegate: RowLayout {
+                                    id: entryRow
+
+                                    required property int index
+
+                                    Layout.fillWidth: true
+                                    spacing: Theme.spacingS
+
+                                    KeyPressField {
+                                        Layout.preferredWidth: 44
+                                        index: entryRow.index
+                                        prop: "key"
+                                        mono: true
+                                        placeholder: "key"
+                                        maxLength: 1
+                                    }
+                                    KeyPressField {
+                                        Layout.preferredWidth: 190
+                                        index: entryRow.index
+                                        prop: "desc"
+                                        placeholder: "Description"
+                                    }
+                                    KeyPressField {
+                                        Layout.fillWidth: true
+                                        index: entryRow.index
+                                        prop: "cmd"
+                                        mono: true
+                                        placeholder: "command or script"
+                                    }
+                                    IconButton {
+                                        icon: "delete"
+                                        iconSize: 18
+                                        contentColor: Theme.surfaceVariantText
+                                        onClicked: {
+                                            const list = Settings.keyPressEntries.slice();
+                                            list.splice(entryRow.index, 1);
+                                            Settings.keyPressEntries = list;
+                                        }
+                                    }
+                                }
+                            }
+
+                            IconButton {
+                                icon: "add"
+                                text: "Add entry"
+                                iconSize: 18
+                                restColor: Theme.surfaceContainerHigh
+                                onClicked: Settings.keyPressEntries = (Settings.keyPressEntries ?? []).concat([{
+                                            "key": "",
+                                            "desc": "",
+                                            "cmd": ""
+                                        }])
+                            }
+                        }
+                    }
+
                     // Running apps on the taskbar: the settings page of the Better
                     // Running Apps plugin, with Taylor's values.
                     Flickable {
@@ -1709,6 +1885,12 @@ Scope {
                 function onShutdownCommandChanged() {
                     input.sync();
                 }
+                function onLogoutCommandChanged() {
+                    input.sync();
+                }
+                function onWindowsCommandChanged() {
+                    input.sync();
+                }
                 function onWallpaperFolderChanged() {
                     input.sync();
                 }
@@ -1902,6 +2084,79 @@ Scope {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // One field of one key press entry (Settings.keyPressEntries[index][prop]).
+    component KeyPressField: Rectangle {
+        id: entryField
+
+        required property int index
+        required property string prop
+        property bool mono: false
+        property string placeholder
+        property int maxLength: 32767
+
+        Layout.preferredHeight: 38
+        radius: Theme.cornerRadius / 1.5
+        color: Theme.surface
+        border.width: 1
+        border.color: entryInput.activeFocus ? Theme.primary : Theme.withAlpha(Theme.outline, 0.5)
+
+        function stored() {
+            return (Settings.keyPressEntries?.[index]?.[prop]) ?? "";
+        }
+
+        TextInput {
+            id: entryInput
+            anchors.fill: parent
+            anchors.leftMargin: Theme.spacingM
+            anchors.rightMargin: Theme.spacingM
+            verticalAlignment: TextInput.AlignVCenter
+            horizontalAlignment: entryField.maxLength === 1 ? TextInput.AlignHCenter : TextInput.AlignLeft
+            color: Theme.surfaceText
+            selectionColor: Theme.primarySelected
+            selectedTextColor: Theme.surfaceText
+            font.family: entryField.mono ? Theme.monoFamily : Theme.fontFamily
+            font.weight: entryField.mono ? Font.Normal : Theme.fontWeight
+            font.pixelSize: Theme.fontSizeSmall + 1
+            maximumLength: entryField.maxLength
+            selectByMouse: true
+            clip: true
+            // Long commands show their start until you're editing them.
+            autoScroll: activeFocus
+
+            // Not a binding: typing would break it. A reset or a change to
+            // settings.json is pushed in below.
+            Component.onCompleted: {
+                text = entryField.stored();
+                cursorPosition = 0;
+            }
+            onTextChanged: {
+                if (text === entryField.stored())
+                    return;
+                const list = Settings.keyPressEntries.slice();
+                list[entryField.index] = Object.assign({}, list[entryField.index], {
+                    [entryField.prop]: text
+                });
+                Settings.keyPressEntries = list;
+            }
+
+            Connections {
+                target: Settings
+                function onKeyPressEntriesChanged() {
+                    if (!entryInput.activeFocus && entryInput.text !== entryField.stored())
+                        entryInput.text = entryField.stored();
+                }
+            }
+
+            StyledText {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: entryInput.text === ""
+                text: entryField.placeholder
+                color: Theme.withAlpha(Theme.surfaceVariantText, 0.5)
+                font.pixelSize: Theme.fontSizeSmall + 1
             }
         }
     }

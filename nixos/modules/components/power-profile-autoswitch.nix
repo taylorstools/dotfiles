@@ -18,12 +18,18 @@ let
       done
     fi
 
+    # Plugged in: any external supply online. That's Mains (AC0) or USB,
+    # which is how a USB-C charger shows up (ucsi-source-psy-*); taylorpc
+    # charges over USB-C, where AC0 stays 0.
     onAc=0
     for ps in /sys/class/power_supply/*; do
-      if [ "$(cat "$ps/type" 2>/dev/null)" = "Mains" ] \
-         && [ "$(cat "$ps/online" 2>/dev/null)" = "1" ]; then
-        onAc=1
-      fi
+      case "$(cat "$ps/type" 2>/dev/null)" in
+        Mains|USB)
+          if [ "$(cat "$ps/online" 2>/dev/null)" = "1" ]; then
+            onAc=1
+          fi
+          ;;
+      esac
     done
 
     if [ "$onAc" = "1" ]; then
@@ -54,5 +60,6 @@ in
 
   services.udev.extraRules = ''
     SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ACTION=="change", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart power-profile-switch.service"
+    SUBSYSTEM=="power_supply", ATTR{type}=="USB", ACTION=="change", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart power-profile-switch.service"
   '';
 }

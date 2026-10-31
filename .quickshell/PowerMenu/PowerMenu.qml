@@ -11,51 +11,60 @@ import qs.Widgets
 // row over the effects wallpaper (the dimmed, blurred one hyprlock uses),
 // icons in matugen's light-scheme tertiary that grow and brighten on hover.
 // Keys as in wlogout: L lock, E log out, Z sleep, S shut down, R reboot,
-// W reboot into Windows; Esc closes.
-//   qs ipc call powermenu toggle
+// W reboot into Windows; Esc closes. Each button's command, and whether it
+// shows, is on the settings window's Power page.
+//   qs ipc call powermenu toggle    (the control center's power button too)
 Scope {
     id: root
 
     property bool shown: false
 
-    readonly property var buttons: [
+    readonly property var allButtons: [
         {
             "icon": "lock",
             "text": "Lock",
             "key": "l",
+            "shown": Settings.powerMenuShowLock,
             "run": () => Power.lock()
         },
         {
             "icon": "logout",
             "text": "Logout",
             "key": "e",
-            "run": () => Quickshell.execDetached(["niri", "msg", "action", "quit", "--skip-confirmation"])
+            "shown": Settings.powerMenuShowLogout,
+            "run": () => Power.logout()
         },
         {
             "icon": "sleep",
             "text": "Sleep",
             "key": "z",
+            "shown": Settings.powerMenuShowSleep,
             "run": () => Power.sleep()
         },
         {
             "icon": "shutdown",
             "text": "Shutdown",
             "key": "s",
+            "shown": Settings.powerMenuShowShutdown,
             "run": () => Power.shutdown()
         },
         {
             "icon": "reboot",
             "text": "Reboot",
             "key": "r",
+            "shown": Settings.powerMenuShowReboot,
             "run": () => Power.restart()
         },
         {
             "icon": "windows",
             "text": "Windows",
             "key": "w",
-            "run": () => Power.run("$HOME/scripts/refind_boot-to-windows.sh")
+            "shown": Settings.powerMenuShowWindows,
+            "run": () => Power.windows()
         }
     ]
+    // Hidden buttons are gone, keys included; the rest share the row.
+    readonly property var buttons: allButtons.filter(b => b.shown)
 
     // wlogout's measurements: 230px around the grid (its row came out 25px
     // narrower than that, measured against screenshots), 10px around each
@@ -81,6 +90,13 @@ Scope {
     function choose(button) {
         shown = false;
         button.run();
+    }
+
+    Connections {
+        target: Popouts
+        function onPowerMenuRequested() {
+            root.open();
+        }
     }
 
     IpcHandler {
