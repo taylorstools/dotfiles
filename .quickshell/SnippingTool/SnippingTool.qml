@@ -14,6 +14,8 @@ import qs.Widgets
 // button (or a click on it) opens a save dialog, suggesting
 // ~/Pictures/Screenshots/Screenshot_<time>.png. Keys in the panel: R W S
 // for the mode, 0-5 for the delay, Enter to take it, Esc to cancel.
+// Region freezes the screens first: a still of each one covers it while
+// slurp runs, and grim captures that still.
 //   qs ipc call snip open      the panel (Print)
 //   qs ipc call snip region    straight to region select (Ctrl+Print)
 // snip-helper.sh does the capture itself (grim, slurp, niri).
@@ -30,6 +32,8 @@ Scope {
     // Screenshots whose Save was pressed while another save dialog was up.
     property var saveQueue: []
     property var saving: null
+    // A region select is running (one slurp at a time).
+    property bool selecting: false
 
     function show() {
         if (!motion.mapped) {
@@ -42,13 +46,19 @@ Scope {
     // Close the panel, then wait out its fade (so it isn't in the shot) and
     // the delay before capturing.
     function take(withMode, withDelay) {
+        const fade = motion.mapped ? Theme.animDuration + 150 : 0;
         shown = false;
         captureDelay.mode = withMode;
-        captureDelay.interval = withDelay * 1000 + Theme.animDuration + 150;
+        captureDelay.interval = withDelay * 1000 + fade;
         captureDelay.restart();
     }
 
     function capture(withMode) {
+        if (withMode === "Region") {
+            if (selecting)
+                return;
+            selecting = true;
+        }
         const stamp = Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss");
         // Its own file per screenshot, so a second one taken while this
         // notification is still up doesn't replace the image its Save saves.
@@ -136,15 +146,78 @@ Scope {
             required property string stamp
             required property string mode
 
+            // Region: the screens are frozen until the capture is done.
+            property bool frozen: mode === "Region"
+            property int frozenScreens: 0
+
             function finish() {
                 Quickshell.execDetached(["rm", "-f", file]);
                 destroy();
             }
 
+            Component.onCompleted: {
+                if (!frozen)
+                    grab.running = true;
+            }
+
+            // Every screen's still is up: slurp goes on top of them.
+            onFrozenScreensChanged: {
+                if (frozenScreens === Quickshell.screens.length)
+                    grab.running = true;
+            }
+
+            Variants {
+                model: shot.frozen ? Quickshell.screens : []
+
+                PanelWindow {
+                    id: freeze
+
+                    required property ShellScreen modelData
+
+                    screen: modelData
+                    anchors {
+                        top: true
+                        bottom: true
+                        left: true
+                        right: true
+                    }
+                    exclusionMode: ExclusionMode.Ignore
+                    // ScreencopyView only captures in a mapped window, so
+                    // it's mapped clear (and isn't in the still).
+                    color: still.hasContent ? "black" : "transparent"
+
+                    WlrLayershell.namespace: "qstest:snip-freeze"
+                    WlrLayershell.layer: WlrLayer.Overlay
+                    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+                    ScreencopyView {
+                        id: still
+                        anchors.fill: parent
+                        captureSource: freeze.modelData
+                        live: false
+                        // Give it a frame on screen before slurp maps over it.
+                        onHasContentChanged: {
+                            if (hasContent)
+                                settle.start();
+                        }
+                    }
+
+                    Timer {
+                        id: settle
+                        interval: 50
+                        onTriggered: shot.frozenScreens++
+                    }
+                }
+            }
+
             Process {
-                running: true
+                id: grab
                 command: ["bash", root.helper, "capture", shot.mode, shot.file]
                 onExited: code => {
+                    if (shot.frozen) {
+                        shot.frozen = false;
+                        root.selecting = false;
+                    }
                     if (code === 0) {
                         // wl-copy forks and keeps serving the image.
                         Quickshell.execDetached(["sh", "-c", "wl-copy --type image/png < \"$1\"", "sh", shot.file]);
