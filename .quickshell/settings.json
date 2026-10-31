@@ -75,7 +75,7 @@
             "key": "b"
         },
         {
-            "cmd": "$HOME/scripts/night-light-temperature.sh",
+            "cmd": "qs ipc call nightpanel toggle",
             "desc": "Night Mode Strength",
             "key": "n"
         },

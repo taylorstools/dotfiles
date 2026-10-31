@@ -916,7 +916,7 @@ Scope {
                             SettingRow {
                                 label: "Night light warmth"
                                 opacity: NightLight.enabled ? 1 : 0.5
-                                // Left is warmer: 6000K down to 2500K, like your old yad slider.
+                                // Right is warmer: 6000K down to 2500K, as the Night Mode Strength panel.
                                 StyledSlider {
                                     Layout.preferredWidth: 200
                                     value: (6000 - NightLight.temperature) / 3500

@@ -52,6 +52,7 @@ else goes through `qs ipc call <target> <function>`; `qs ipc show` lists them.
 | `Lock/` | Lock screen (replaces hyprlock, same look); IPC `lock`, `qs ipc call lock preview` to try it without locking |
 | `KeyPressMenu/` | Key press menu (Mod+X; replaces wlr-which-key), entries edited in Shell Settings; IPC `keypress` |
 | `SnippingTool/` | Snipping tool panel (Print; Ctrl+Print for straight to region); IPC `snip` |
+| `NightLight/` | Night Mode Strength panel (night light warmth slider); IPC `nightpanel` |
 | `PowerMenu/` | Full-screen power menu (lock, log out, sleep, shut down, reboot, Windows), styled like the wlogout it replaced; IPC `powermenu` |
 | `Polkit/PolkitDialog.qml` | Polkit password prompt (pkexec, "unlock" buttons) |
 | `Whisrs/WhisrsPill.qml` | whisrs dictation pill; IPC `whisrs started` / `stopped` |

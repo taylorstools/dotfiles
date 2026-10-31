@@ -14,6 +14,7 @@ import qs.ControlCenter
 import qs.Dock
 import qs.Launcher
 import qs.Lock
+import qs.NightLight
 import qs.Notepad
 import qs.Notifications
 import qs.Osd
@@ -65,6 +66,7 @@ ShellRoot {
     PowerMenu {}
     KeyPressMenu {}
     SnippingTool {}
+    NightLightPanel {}
     Lock {}
     Notepad {}
     ControlCenter {}

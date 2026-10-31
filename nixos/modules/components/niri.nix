@@ -101,6 +101,5 @@
     xed-editor
     xsettingsd
     xwayland-satellite
-    yad
   ];
 }

@@ -39,7 +39,7 @@ Singleton {
                 { "key": "s", "desc": "Snipping Tool", "cmd": "qs ipc call snip open" },
                 { "key": "o", "desc": "OCR Select and Copy", "cmd": "$HOME/scripts/ocr-snip.sh" },
                 { "key": "b", "desc": "Toggle Night Mode", "cmd": "qs ipc call night toggle" },
-                { "key": "n", "desc": "Night Mode Strength", "cmd": "$HOME/scripts/night-light-temperature.sh" },
+                { "key": "n", "desc": "Night Mode Strength", "cmd": "qs ipc call nightpanel toggle" },
                 { "key": "a", "desc": "Toggle Keep Awake", "cmd": "$HOME/scripts/hypridle/toggle-hypridle.sh" },
                 { "key": "w", "desc": "Change Wallpaper", "cmd": "qs ipc call wallpaper random" },
                 { "key": "d", "desc": "Change Refresh Rate", "cmd": "$HOME/scripts/niri_change-refresh-rate.sh" },
