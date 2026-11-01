@@ -455,7 +455,8 @@ Scope {
                             width: Math.max(96, Math.min(240, (tabList.width - tabList.spacing * (tabList.count - 1)) / Math.max(1, tabList.count)))
                             height: tabList.height
                             radius: Theme.cornerRadius
-                            color: current ? Theme.overlay(Theme.surfaceContainerHighest, 0.9) : (tabMouse.containsMouse ? Theme.widgetHover : "transparent")
+                            // The same fill as the text below, so the open tab reads as part of it.
+                            color: current ? Theme.surfaceContainerHigh : (tabMouse.containsMouse ? Theme.widgetHover : "transparent")
 
                             MouseArea {
                                 id: tabMouse
@@ -540,7 +541,8 @@ Scope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: Theme.cornerRadius
-                    color: Theme.withAlpha(Theme.surface, 0.5)
+                    // A field like the rest: Settings > Appearance's overlay opacity.
+                    color: Theme.surfaceContainerHigh
 
                     Flickable {
                         id: flick
