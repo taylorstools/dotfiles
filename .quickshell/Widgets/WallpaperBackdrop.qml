@@ -28,6 +28,10 @@ ClippingRectangle {
     property real panelY: panel.y
     property real slideX: 0
     property real slideY: 0
+    // The panel's border, which the ring below tints under. Qt reports a
+    // width of 1 even for a Rectangle with no border set, so a panel without
+    // one (the bar) sets 0 here, or the ring tints its edge twice.
+    property real borderWidth: panel.border?.width ?? 0
 
     readonly property bool active: Settings.blur && Settings.blurXray && Wallpaper.path !== ""
 
@@ -106,7 +110,7 @@ ClippingRectangle {
         anchors.fill: parent
         radius: root.radius
         color: "transparent"
-        border.width: root.panel.border?.width ?? 0
+        border.width: root.borderWidth
         border.color: root.panel.color ?? "transparent"
     }
 }

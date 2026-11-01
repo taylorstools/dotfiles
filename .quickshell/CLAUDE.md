@@ -182,7 +182,10 @@ rows emit `clicked` and the code that uses them does the outer work.
   wallpaper blurred by a `MultiEffect` at quarter size (`blurMax` from the
   strength slider), lined up with the screen, as a `z: -1` child under each
   panel's colour, so it shares the panel's shape, opacity, scale and slide
-  and cancels them out to stay put. Where the window sits is worked out from
+  and cancels them out to stay put. It tints the ring under the panel's
+  border too (Qt leaves it unfilled, so a see-through border showed bare
+  wallpaper); Qt reports `border.width` 1 even with no border set, so the
+  bar passes `borderWidth: 0` (that ring was a dark line round the bar). Where the window sits is worked out from
   its anchors and margins (the bar's is the only exclusive zone a window has
   to allow for). `Wallpaper.xrayBackdrop` says when it's on, and every
   surface drops niri's blur then. It covers every shell surface; the settings
@@ -203,8 +206,11 @@ rows emit `clicked` and the code that uses them does the outer work.
   so those corners and borders are off screen and only the top-left corner
   is rounded; their content and menus keep clear of that strip, and the
   blur region is intersected with the window. The attached notepad is
-  square with a left border only (`Widgets/PanelEdges.qml`). Each panel
-  re-applies its blur region when these change.
+  square with a left border only (`Widgets/PanelEdges.qml`). The tray flyout
+  attaches to the taskbar only (still centred over the chevron), reaching
+  `flyoutOvershoot` past its bottom, with `flyoutRadius` and
+  `edgePanelBorder` like the others. Each panel re-applies its blur region
+  when these change.
 - **The bar was matched pixel by pixel to Taylor's previous bar** on taylorpc
   (scale 1.875), by capturing both with grim and comparing column extents.
   Sizes snap to physical pixels: widget 26.67 / bar 37.33 (50 / 70 px), so

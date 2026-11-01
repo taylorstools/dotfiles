@@ -34,6 +34,7 @@ PanelWindow {
         // X-ray: the blurred wallpaper under the panel's colour.
         WallpaperBackdrop {
             window: bar
+            borderWidth: 0
             onActiveChanged: bar.applyBlur()
         }
     }

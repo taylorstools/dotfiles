@@ -66,20 +66,36 @@ Scope {
         }
 
         Item {
-            // Follows the panel as it rises out of the bar.
+            // Follows the panel as it rises out of the bar. Kept inside the
+            // window: attached, the panel reaches past its bottom.
             Region {
                 id: blurRegion
                 x: panel.x
                 y: panel.y + (1 - motion.progress) * 16
                 width: panel.width
                 height: panel.height
+
+                Region {
+                    intersection: Intersection.Intersect
+                    width: window.width
+                    height: window.height
+                }
             }
         }
 
+        // Re-apply when blur is switched in the settings window, or the panel
+        // changes shape (attached or not, corner radius).
         Connections {
             target: Settings
             function onBlurChanged() {
                 window.applyBlur();
+            }
+            // Later, once panel.radius has caught up.
+            function onAttachPanelsChanged() {
+                Qt.callLater(window.applyBlur);
+            }
+            function onFlyoutRadiusChanged() {
+                Qt.callLater(window.applyBlur);
             }
         }
 
@@ -121,15 +137,21 @@ Scope {
 
             readonly property real pad: Theme.spacingS
 
+            // Attached (Settings.attachPanels): sits on the taskbar like the
+            // other flyouts, reaching Theme.flyoutOvershoot past it so its
+            // bottom corners and border are off screen, with their corner
+            // radius and border setting. Floating: a gap above the taskbar.
+            readonly property real overshoot: Theme.flyoutOvershoot
+
             // Centred over the chevron, kept on screen.
             x: Math.max(Theme.spacingS, Math.min(Popouts.trayX - width / 2, parent.width - width - Theme.spacingS))
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: Theme.spacingS
+            anchors.bottomMargin: Theme.attachPanels ? -overshoot : Theme.spacingS
             width: grid.implicitWidth + pad * 2
-            height: grid.implicitHeight + pad * 2
-            radius: Theme.cornerRadius
+            height: grid.implicitHeight + pad * 2 + overshoot
+            radius: Theme.attachPanels ? Theme.flyoutRadius : Theme.cornerRadius
             color: Theme.popupBackground
-            border.width: 1
+            border.width: Theme.edgePanelBorder ? 1 : 0
             border.color: Theme.blurBorder
 
             // Swallows clicks so they don't close the panel.
@@ -140,7 +162,9 @@ Scope {
             Grid {
                 id: grid
 
-                anchors.centerIn: parent
+                // Clear of the strip past the taskbar.
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: panel.pad
                 columns: Math.max(1, Math.min(6, root.items.length))
                 spacing: Theme.spacingXS
 
