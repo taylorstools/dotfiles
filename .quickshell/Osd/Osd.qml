@@ -34,12 +34,21 @@ Scope {
     property string toastIcon: ""
     property bool toastError: false
 
+    // Each kind reads only its own device: brightness has no mute.
     readonly property bool muted: {
-        if (kind === "toast")
-            return false;
-        return kind === "mic" ? (sourceAudio?.muted ?? false) : (sinkAudio?.muted ?? false);
+        if (kind === "volume")
+            return sinkAudio?.muted ?? false;
+        if (kind === "mic")
+            return sourceAudio?.muted ?? false;
+        return false;
     }
-    readonly property real level: kind === "brightness" ? Brightness.value : (sinkAudio?.volume ?? 0)
+    readonly property real level: {
+        if (kind === "volume")
+            return sinkAudio?.volume ?? 0;
+        if (kind === "brightness")
+            return Brightness.value;
+        return 0;
+    }
     readonly property string icon: {
         if (kind === "toast")
             return toastIcon;
