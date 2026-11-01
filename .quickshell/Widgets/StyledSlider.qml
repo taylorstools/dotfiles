@@ -5,12 +5,15 @@ import qs.Common
 // fires with each new value from a drag, click, scroll or key. Clicking it
 // (or Tab) gives it focus; then Left/Right (or Down/Up) move one step,
 // Page Down/Page Up ten, Home/End to the ends. Set `steps` to how many units
-// the setting has across the range, so one key press is one unit.
+// the setting has across the range, so one key press is one unit. With
+// `wheelChanges` off the wheel scrolls whatever is under the slider instead
+// (the settings window's pages, where scrolling down shouldn't change things).
 Item {
     id: root
 
     property real value: 0
     property int steps: 100
+    property bool wheelChanges: true
     readonly property bool dragging: mouse.pressed
     property real _dragValue: 0
     readonly property real shownValue: Math.max(0, Math.min(1, dragging ? _dragValue : value))
@@ -107,6 +110,10 @@ Item {
                 update(m.x);
         }
         onWheel: w => {
+            if (!root.wheelChanges) {
+                w.accepted = false;
+                return;
+            }
             root.moved(Math.max(0, Math.min(1, root.value + (w.angleDelta.y > 0 ? 0.05 : -0.05))));
         }
     }

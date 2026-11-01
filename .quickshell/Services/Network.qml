@@ -8,6 +8,7 @@ import Quickshell.Io
 // NetworkManager change; a slow timer catches signal-strength drift.
 // While `listNetworks` is set (the control center is open) a refresh also
 // reads the visible Wi-Fi networks, and connect/disconnect go through here.
+// The networks are read once at startup as well, so the first open has a list.
 Singleton {
     id: root
 
@@ -32,6 +33,8 @@ Singleton {
     property var _savedBySsid: ({})
     // An action asked for while another runs; it goes next.
     property var _queuedAction: null
+    // A rescan to start once the list being read now is in.
+    property bool _rescanQueued: false
 
     readonly property string icon: {
         if (!available)
@@ -59,15 +62,19 @@ Singleton {
             readNetworks(false);
     }
 
-    // A rescan takes a few seconds; `scanning` is true until it's done.
+    // A rescan takes a few seconds, so the networks NetworkManager already
+    // knows from its own background scans (a read without a rescan takes
+    // ~50 ms) show first, and the rescan updates them. `scanning` is true
+    // until it's done.
     function scan() {
-        readNetworks(true);
+        _rescanQueued = true;
+        readNetworks(false);
     }
 
     function readNetworks(rescan) {
         if (lister.running)
             return;
-        scanning = rescan;
+        scanning = rescan || _rescanQueued;
         lister.command = ["sh", "-c", "nmcli -t -f IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan " + (rescan ? "yes" : "no") + ' && echo --- && nmcli -t -f UUID,TYPE connection show | while IFS=: read -r uuid type; do [ "$type" = 802-11-wireless ] && printf "%s:%s\\n" "$uuid" "$(nmcli -t -g 802-11-wireless.ssid connection show uuid "$uuid")"; done; true'];
         lister.running = true;
     }
@@ -230,8 +237,18 @@ Singleton {
                 root.networks = Object.values(bySsid).sort((a, b) => (b.active - a.active) || (b.signal - a.signal));
             }
         }
-        onExited: root.scanning = false
+        onExited: {
+            root.scanning = false;
+            if (root._rescanQueued) {
+                root._rescanQueued = false;
+                root.readNetworks(true);
+            }
+        }
     }
+
+    // Read once at startup too, so the control center has networks to show
+    // the first time it opens instead of "Scanning…".
+    Component.onCompleted: readNetworks(false)
 
     Process {
         id: action

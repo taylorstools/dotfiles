@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
@@ -17,6 +18,9 @@ Scope {
     id: root
 
     property string page: "power"
+    // Height of the strip above the "Saved to" line where scrolling pages blur
+    // out; their content ends this far up, so the last row stays sharp.
+    readonly property real pageFade: 40
     readonly property var pages: [
         {
             "id": "appearance",
@@ -505,1181 +509,1301 @@ Scope {
                         }
                     }
 
-                    ColumnLayout {
+                    // The pages, and under every one (outside its scrolling) where the
+                    // settings are saved. Content scrolling down towards that line
+                    // blurs more the closer it gets: the real pages are clipped above
+                    // the bottom strip, and the strip draws a sharp copy fading out
+                    // over a blurred one that fades in and then out again, so nothing
+                    // ends in a hard line where the pages are cut off.
+                    Item {
+                        id: pageArea
+
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        Layout.margins: Theme.spacingXL
-                        spacing: Theme.spacingL
-                        visible: root.page === "power"
-
-                        StyledText {
-                            text: "Power"
-                            font.pixelSize: Theme.fontSizeXLarge
-                        }
-
-                        StyledText {
-                            Layout.fillWidth: true
-                            text: "The power menu's buttons (Ctrl+Alt+Delete, or the control center's power button): switch each on or off, and set what it runs. Lock is also the control center's lock button. Each command runs with sh -c, so $HOME, pipes and ; work."
-                            color: Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
-                            wrapMode: Text.Wrap
-                        }
-
-                        GridLayout {
-                            Layout.fillWidth: true
-                            columns: 4
-                            columnSpacing: Theme.spacingM
-                            rowSpacing: Theme.spacingM
-
-                            Toggle {
-                                checked: Settings.powerMenuShowLock
-                                onToggled: Settings.powerMenuShowLock = !Settings.powerMenuShowLock
-                            }
-                            CommandLabel {
-                                icon: "lock"
-                                text: "Lock"
-                                opacity: Settings.powerMenuShowLock ? 1 : 0.5
-                            }
-                            CommandField {
-                                key: "lockCommand"
-                            }
-                            ResetButton {
-                                key: "lockCommand"
-                            }
-
-                            Toggle {
-                                checked: Settings.powerMenuShowLogout
-                                onToggled: Settings.powerMenuShowLogout = !Settings.powerMenuShowLogout
-                            }
-                            CommandLabel {
-                                icon: "logout"
-                                text: "Logout"
-                                opacity: Settings.powerMenuShowLogout ? 1 : 0.5
-                            }
-                            CommandField {
-                                key: "logoutCommand"
-                            }
-                            ResetButton {
-                                key: "logoutCommand"
-                            }
-
-                            Toggle {
-                                checked: Settings.powerMenuShowSleep
-                                onToggled: Settings.powerMenuShowSleep = !Settings.powerMenuShowSleep
-                            }
-                            CommandLabel {
-                                icon: "bedtime"
-                                text: "Sleep"
-                                opacity: Settings.powerMenuShowSleep ? 1 : 0.5
-                            }
-                            CommandField {
-                                key: "sleepCommand"
-                            }
-                            ResetButton {
-                                key: "sleepCommand"
-                            }
-
-                            Toggle {
-                                checked: Settings.powerMenuShowShutdown
-                                onToggled: Settings.powerMenuShowShutdown = !Settings.powerMenuShowShutdown
-                            }
-                            CommandLabel {
-                                icon: "power_settings_new"
-                                text: "Shutdown"
-                                opacity: Settings.powerMenuShowShutdown ? 1 : 0.5
-                            }
-                            CommandField {
-                                key: "shutdownCommand"
-                            }
-                            ResetButton {
-                                key: "shutdownCommand"
-                            }
-
-                            Toggle {
-                                checked: Settings.powerMenuShowReboot
-                                onToggled: Settings.powerMenuShowReboot = !Settings.powerMenuShowReboot
-                            }
-                            CommandLabel {
-                                icon: "restart_alt"
-                                text: "Reboot"
-                                opacity: Settings.powerMenuShowReboot ? 1 : 0.5
-                            }
-                            CommandField {
-                                key: "restartCommand"
-                            }
-                            ResetButton {
-                                key: "restartCommand"
-                            }
-
-                            Toggle {
-                                checked: Settings.powerMenuShowWindows
-                                onToggled: Settings.powerMenuShowWindows = !Settings.powerMenuShowWindows
-                            }
-                            CommandLabel {
-                                icon: "window"
-                                text: "Windows"
-                                opacity: Settings.powerMenuShowWindows ? 1 : 0.5
-                            }
-                            CommandField {
-                                key: "windowsCommand"
-                            }
-                            ResetButton {
-                                key: "windowsCommand"
-                            }
-                        }
 
                         Item {
-                            Layout.fillHeight: true
-                        }
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            height: pageStack.height - root.pageFade
+                            clip: true
 
-                        StyledText {
-                            Layout.fillWidth: true
-                            text: "Saved to " + Settings.path
-                            color: Theme.outline
-                            font.pixelSize: Theme.fontSizeSmall
-                            elide: Text.ElideMiddle
-                        }
-                    }
+                            ColumnLayout {
+                                id: pageStack
 
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.margins: Theme.spacingXL
-                        spacing: Theme.spacingL
-                        visible: root.page === "wallpaper"
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: false
-                            spacing: Theme.spacingS
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: "Wallpaper"
-                                font.pixelSize: Theme.fontSizeXLarge
-                            }
-
-                            IconButton {
-                                icon: "shuffle"
-                                text: "Random"
-                                restColor: Theme.surfaceContainerHigh
-                                onClicked: Wallpaper.random()
-                            }
-                        }
-
-                        StyledText {
-                            Layout.fillWidth: true
-                            text: Wallpaper.lastError !== "" ? Wallpaper.lastError : "Colours for the whole shell are made from the wallpaper with matugen. Changes apply live."
-                            color: Wallpaper.lastError !== "" ? Theme.error : Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
-                            wrapMode: Text.Wrap
-                        }
-
-                        GridLayout {
-                            Layout.fillWidth: true
-                            columns: 3
-                            columnSpacing: Theme.spacingM
-                            rowSpacing: Theme.spacingM
-
-                            CommandLabel {
-                                icon: "folder"
-                                text: "Folder"
-                            }
-                            CommandField {
-                                key: "wallpaperFolder"
-                            }
-                            ResetButton {
-                                key: "wallpaperFolder"
-                            }
-                        }
-
-                        // matugen --type
-                        Flow {
-                            Layout.fillWidth: true
-                            spacing: Theme.spacingS
-
-                            Repeater {
-                                model: Wallpaper.schemes
-
-                                delegate: Rectangle {
-                                    id: chip
-
-                                    required property string modelData
-                                    readonly property bool current: Settings.matugenScheme === modelData
-
-                                    width: chipText.implicitWidth + Theme.spacingM * 2
-                                    height: 30
-                                    radius: height / 2
-                                    color: current ? Theme.primary : (chipMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
+                                width: pageArea.width
+                                height: footer.y - Theme.spacingL
+                                spacing: 0
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    Layout.margins: Theme.spacingXL
+                                    spacing: Theme.spacingL
+                                    visible: root.page === "power"
 
                                     StyledText {
-                                        id: chipText
-                                        anchors.centerIn: parent
-                                        text: chip.modelData.replace("scheme-", "")
-                                        color: chip.current ? Theme.onPrimary : Theme.surfaceVariantText
-                                        font.pixelSize: Theme.fontSizeSmall
+                                        text: "Power"
+                                        font.pixelSize: Theme.fontSizeXLarge
                                     }
-
-                                    MouseArea {
-                                        id: chipMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: Settings.matugenScheme = chip.modelData
-                                    }
-                                }
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Fade between wallpapers"
-                            StyledSlider {
-                                Layout.preferredWidth: 200
-                                value: Settings.wallpaperFadeDuration / 2000
-                                steps: 20
-                                onMoved: v => Settings.wallpaperFadeDuration = Math.round(v * 20) * 100
-                            }
-                            ValueText {
-                                text: Settings.wallpaperFadeDuration === 0 ? "Off" : (Settings.wallpaperFadeDuration / 1000).toFixed(1) + " s"
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Change wallpaper at login"
-                            description: "A random one from the folder, once per login (not on a shell restart)."
-                            Toggle {
-                                checked: Settings.wallpaperChangeAtStartup
-                                onToggled: Settings.wallpaperChangeAtStartup = !Settings.wallpaperChangeAtStartup
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Change wallpaper automatically"
-                            description: "A random one from the folder, every so often."
-                            Toggle {
-                                checked: Settings.wallpaperAutoChange
-                                onToggled: Settings.wallpaperAutoChange = !Settings.wallpaperAutoChange
-                            }
-                        }
-
-                        SettingRow {
-                            id: intervalRow
-                            label: "Every"
-                            opacity: Settings.wallpaperAutoChange ? 1 : 0.5
-
-                            // Minutes, one per slider step.
-                            readonly property var choices: [1, 2, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 720, 1440]
-                            readonly property int choice: {
-                                const m = Number(Settings.wallpaperChangeInterval) || 15;
-                                let best = 0;
-                                for (let i = 0; i < choices.length; i++)
-                                    if (Math.abs(choices[i] - m) < Math.abs(choices[best] - m))
-                                        best = i;
-                                return best;
-                            }
-
-                            StyledSlider {
-                                Layout.preferredWidth: 200
-                                value: intervalRow.choice / (intervalRow.choices.length - 1)
-                                steps: intervalRow.choices.length - 1
-                                onMoved: v => Settings.wallpaperChangeInterval = intervalRow.choices[Math.round(v * (intervalRow.choices.length - 1))]
-                            }
-                            ValueText {
-                                readonly property int m: Number(Settings.wallpaperChangeInterval) || 15
-                                text: m < 60 ? m + " min" : (m % 60 === 0 ? m / 60 + " h" : (m / 60).toFixed(1) + " h")
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Colourful base colour (build from the wallpaper's most saturated colour)"
-                            Toggle {
-                                checked: Settings.colorfulSeed
-                                onToggled: Settings.colorfulSeed = !Settings.colorfulSeed
-                            }
-                        }
-
-                        WallpaperPicker {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                        }
-                    }
-
-                    // Scrolls: this page has more rows than the window's height.
-                    Flickable {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        visible: root.page === "appearance"
-                        contentHeight: appearanceColumn.implicitHeight + Theme.spacingXL * 2
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        ColumnLayout {
-                            id: appearanceColumn
-
-                            x: Theme.spacingXL
-                            y: Theme.spacingXL
-                            width: parent.width - Theme.spacingXL * 2
-                            spacing: Theme.spacingM
-
-                            StyledText {
-                                text: "Appearance"
-                                font.pixelSize: Theme.fontSizeXLarge
-                            }
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: "These apply to every panel: the taskbar, dock, launcher, runner, clipboard, flyouts, notepad, OSD, notifications, menus and this window. Animation duration sets how long panels take to open, close and slide; 0 turns animations off."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.Wrap
-                            }
-
-                            FontSetting {
-                                label: "Font"
-                                key: "fontFamily"
-                                description: "Everything in the shell, from the taskbar to the settings window."
-                            }
-
-                            SettingRow {
-                                label: "Font weight"
-                                Repeater {
-                                    model: [
-                                        {
-                                            "id": "regular",
-                                            "title": "Regular"
-                                        },
-                                        {
-                                            "id": "medium",
-                                            "title": "Medium"
-                                        }
-                                    ]
-
-                                    delegate: Rectangle {
-                                        id: weightChip
-
-                                        required property var modelData
-                                        readonly property bool current: (Settings.fontWeight || "medium") === modelData.id
-
-                                        implicitWidth: weightText.implicitWidth + Theme.spacingM * 2
-                                        implicitHeight: 28
-                                        radius: height / 2
-                                        color: current ? Theme.primary : (weightMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
-
-                                        StyledText {
-                                            id: weightText
-                                            anchors.centerIn: parent
-                                            text: weightChip.modelData.title
-                                            color: weightChip.current ? Theme.onPrimary : Theme.surfaceVariantText
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            font.weight: weightChip.modelData.id === "regular" ? Font.Normal : Font.Medium
-                                        }
-
-                                        MouseArea {
-                                            id: weightMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: Settings.fontWeight = weightChip.modelData.id
-                                        }
-                                    }
-                                }
-                            }
-
-                            FontSetting {
-                                label: "Monospace font"
-                                key: "monoFontFamily"
-                                description: "Command and colour fields in this window."
-                            }
-
-                            SettingRow {
-                                label: "Background opacity"
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: (Settings.surfaceOpacity - 0.3) / 0.7
-                                    steps: 70
-                                    onMoved: v => Settings.surfaceOpacity = Math.round((0.3 + v * 0.7) * 100) / 100
-                                }
-                                ValueText {
-                                    text: Math.round(Settings.surfaceOpacity * 100) + "%"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Overlay opacity (cards, rows, fields and buttons inside panels)"
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Settings.overlayOpacity
-                                    steps: 100
-                                    onMoved: v => Settings.overlayOpacity = Math.round(v * 100) / 100
-                                }
-                                ValueText {
-                                    text: Math.round(Settings.overlayOpacity * 100) + "%"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Animation duration"
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Settings.animationDuration / 400
-                                    steps: 40
-                                    onMoved: v => Settings.animationDuration = Math.round(v * 40) * 10
-                                }
-                                ValueText {
-                                    text: Settings.animationDuration === 0 ? "Off" : Settings.animationDuration + " ms"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Attach flyouts to the taskbar"
-                                description: "The control center, calendar and notepad sit against the taskbar and screen edge, like Windows 10. Off, they float with a gap."
-                                Toggle {
-                                    checked: Settings.attachPanels
-                                    onToggled: Settings.attachPanels = !Settings.attachPanels
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Flyout corner radius"
-                                description: "The control center and calendar, attached or floating. Attached, only the corner away from the taskbar and screen edge is rounded; the notepad stays square."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Theme.flyoutRadius / 30
-                                    steps: 30
-                                    onMoved: v => Settings.flyoutRadius = Math.round(v * 30)
-                                }
-                                ValueText {
-                                    text: Theme.flyoutRadius === 0 ? "Square" : Theme.flyoutRadius + " px"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Night light"
-                                Toggle {
-                                    checked: NightLight.enabled
-                                    onToggled: NightLight.setEnabled(!NightLight.enabled)
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Night light warmth"
-                                opacity: NightLight.enabled ? 1 : 0.5
-                                // Right is warmer: 6000K down to 2500K, as the Night Mode Strength panel.
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: (6000 - NightLight.temperature) / 3500
-                                    steps: 35
-                                    onMoved: v => NightLight.setTemperature(Math.round((6000 - v * 3500) / 100) * 100)
-                                }
-                                ValueText {
-                                    text: NightLight.temperature + "K"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Blur behind panels"
-                                Toggle {
-                                    checked: Settings.blur
-                                    onToggled: Settings.blur = !Settings.blur
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Blur strength"
-                                opacity: Settings.blur ? 1 : 0.5
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Settings.blurStrength / 100
-                                    steps: 100
-                                    onMoved: v => Settings.blurStrength = Math.round(v * 100)
-                                }
-                                ValueText {
-                                    text: Settings.blurStrength
-                                }
-                            }
-
-                            SettingRow {
-                                label: "X-ray blur (blur only the wallpaper, not the windows behind)"
-                                opacity: Settings.blur ? 1 : 0.5
-                                Toggle {
-                                    checked: Settings.blurXray
-                                    onToggled: Settings.blurXray = !Settings.blurXray
-                                }
-                            }
-
-                            // Blur strength is niri's setting: say so when niri's
-                            // config doesn't include the file this writes.
-                            Rectangle {
-                                Layout.fillWidth: true
-                                visible: !NiriBlur.included
-                                Layout.preferredHeight: blurNote.implicitHeight + Theme.spacingM * 2
-                                radius: Theme.cornerRadius / 1.5
-                                color: Theme.overlay(Theme.surfaceContainerHigh, 0.8)
-
-                                ColumnLayout {
-                                    id: blurNote
-
-                                    anchors.fill: parent
-                                    anchors.margins: Theme.spacingM
-                                    spacing: Theme.spacingS
 
                                     StyledText {
                                         Layout.fillWidth: true
-                                        text: "niri draws the blur, so the strength only takes effect once your niri config.kdl includes this line:"
+                                        text: "The power menu's buttons (Ctrl+Alt+Delete, or the control center's power button): switch each on or off, and set what it runs. Lock is also the control center's lock button. Each command runs with sh -c, so $HOME, pipes and ; work."
                                         color: Theme.surfaceVariantText
                                         font.pixelSize: Theme.fontSizeSmall
                                         wrapMode: Text.Wrap
                                     }
 
+                                    GridLayout {
+                                        Layout.fillWidth: true
+                                        columns: 4
+                                        columnSpacing: Theme.spacingM
+                                        rowSpacing: Theme.spacingM
+
+                                        Toggle {
+                                            checked: Settings.powerMenuShowLock
+                                            onToggled: Settings.powerMenuShowLock = !Settings.powerMenuShowLock
+                                        }
+                                        CommandLabel {
+                                            icon: "lock"
+                                            text: "Lock"
+                                            opacity: Settings.powerMenuShowLock ? 1 : 0.5
+                                        }
+                                        CommandField {
+                                            key: "lockCommand"
+                                        }
+                                        ResetButton {
+                                            key: "lockCommand"
+                                        }
+
+                                        Toggle {
+                                            checked: Settings.powerMenuShowLogout
+                                            onToggled: Settings.powerMenuShowLogout = !Settings.powerMenuShowLogout
+                                        }
+                                        CommandLabel {
+                                            icon: "logout"
+                                            text: "Logout"
+                                            opacity: Settings.powerMenuShowLogout ? 1 : 0.5
+                                        }
+                                        CommandField {
+                                            key: "logoutCommand"
+                                        }
+                                        ResetButton {
+                                            key: "logoutCommand"
+                                        }
+
+                                        Toggle {
+                                            checked: Settings.powerMenuShowSleep
+                                            onToggled: Settings.powerMenuShowSleep = !Settings.powerMenuShowSleep
+                                        }
+                                        CommandLabel {
+                                            icon: "bedtime"
+                                            text: "Sleep"
+                                            opacity: Settings.powerMenuShowSleep ? 1 : 0.5
+                                        }
+                                        CommandField {
+                                            key: "sleepCommand"
+                                        }
+                                        ResetButton {
+                                            key: "sleepCommand"
+                                        }
+
+                                        Toggle {
+                                            checked: Settings.powerMenuShowShutdown
+                                            onToggled: Settings.powerMenuShowShutdown = !Settings.powerMenuShowShutdown
+                                        }
+                                        CommandLabel {
+                                            icon: "power_settings_new"
+                                            text: "Shutdown"
+                                            opacity: Settings.powerMenuShowShutdown ? 1 : 0.5
+                                        }
+                                        CommandField {
+                                            key: "shutdownCommand"
+                                        }
+                                        ResetButton {
+                                            key: "shutdownCommand"
+                                        }
+
+                                        Toggle {
+                                            checked: Settings.powerMenuShowReboot
+                                            onToggled: Settings.powerMenuShowReboot = !Settings.powerMenuShowReboot
+                                        }
+                                        CommandLabel {
+                                            icon: "restart_alt"
+                                            text: "Reboot"
+                                            opacity: Settings.powerMenuShowReboot ? 1 : 0.5
+                                        }
+                                        CommandField {
+                                            key: "restartCommand"
+                                        }
+                                        ResetButton {
+                                            key: "restartCommand"
+                                        }
+
+                                        Toggle {
+                                            checked: Settings.powerMenuShowWindows
+                                            onToggled: Settings.powerMenuShowWindows = !Settings.powerMenuShowWindows
+                                        }
+                                        CommandLabel {
+                                            icon: "window"
+                                            text: "Windows"
+                                            opacity: Settings.powerMenuShowWindows ? 1 : 0.5
+                                        }
+                                        CommandField {
+                                            key: "windowsCommand"
+                                        }
+                                        ResetButton {
+                                            key: "windowsCommand"
+                                        }
+                                    }
+
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    Layout.margins: Theme.spacingXL
+                                    spacing: Theme.spacingL
+                                    visible: root.page === "wallpaper"
+
                                     RowLayout {
                                         Layout.fillWidth: true
+                                        Layout.fillHeight: false
                                         spacing: Theme.spacingS
 
                                         StyledText {
                                             Layout.fillWidth: true
-                                            text: NiriBlur.includeLine
-                                            font.family: Theme.monoFamily
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            elide: Text.ElideMiddle
+                                            text: "Wallpaper"
+                                            font.pixelSize: Theme.fontSizeXLarge
                                         }
 
                                         IconButton {
-                                            implicitHeight: 28
-                                            icon: "content_copy"
-                                            iconSize: 16
-                                            text: "Copy"
-                                            restColor: Theme.surfaceContainerHighest
-                                            onClicked: Quickshell.execDetached(["wl-copy", "--", NiriBlur.includeLine])
+                                            icon: "shuffle"
+                                            text: "Random"
+                                            restColor: Theme.surfaceContainerHigh
+                                            onClicked: Wallpaper.random()
+                                        }
+                                    }
+
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        text: Wallpaper.lastError !== "" ? Wallpaper.lastError : "Colours for the whole shell are made from the wallpaper with matugen. Changes apply live."
+                                        color: Wallpaper.lastError !== "" ? Theme.error : Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        wrapMode: Text.Wrap
+                                    }
+
+                                    GridLayout {
+                                        Layout.fillWidth: true
+                                        columns: 3
+                                        columnSpacing: Theme.spacingM
+                                        rowSpacing: Theme.spacingM
+
+                                        CommandLabel {
+                                            icon: "folder"
+                                            text: "Folder"
+                                        }
+                                        CommandField {
+                                            key: "wallpaperFolder"
+                                        }
+                                        ResetButton {
+                                            key: "wallpaperFolder"
+                                        }
+                                    }
+
+                                    // matugen --type
+                                    Flow {
+                                        Layout.fillWidth: true
+                                        spacing: Theme.spacingS
+
+                                        Repeater {
+                                            model: Wallpaper.schemes
+
+                                            delegate: Rectangle {
+                                                id: chip
+
+                                                required property string modelData
+                                                readonly property bool current: Settings.matugenScheme === modelData
+
+                                                width: chipText.implicitWidth + Theme.spacingM * 2
+                                                height: 30
+                                                radius: height / 2
+                                                color: current ? Theme.primary : (chipMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
+
+                                                StyledText {
+                                                    id: chipText
+                                                    anchors.centerIn: parent
+                                                    text: chip.modelData.replace("scheme-", "")
+                                                    color: chip.current ? Theme.onPrimary : Theme.surfaceVariantText
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                }
+
+                                                MouseArea {
+                                                    id: chipMouse
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: Settings.matugenScheme = chip.modelData
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Fade between wallpapers"
+                                        StyledSlider {
+                                            wheelChanges: false
+                                            Layout.preferredWidth: 200
+                                            value: Settings.wallpaperFadeDuration / 2000
+                                            steps: 20
+                                            onMoved: v => Settings.wallpaperFadeDuration = Math.round(v * 20) * 100
+                                        }
+                                        ValueText {
+                                            text: Settings.wallpaperFadeDuration === 0 ? "Off" : (Settings.wallpaperFadeDuration / 1000).toFixed(1) + " s"
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Change wallpaper at login"
+                                        description: "A random one from the folder, once per login (not on a shell restart)."
+                                        Toggle {
+                                            checked: Settings.wallpaperChangeAtStartup
+                                            onToggled: Settings.wallpaperChangeAtStartup = !Settings.wallpaperChangeAtStartup
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Change wallpaper automatically"
+                                        description: "A random one from the folder, every so often."
+                                        Toggle {
+                                            checked: Settings.wallpaperAutoChange
+                                            onToggled: Settings.wallpaperAutoChange = !Settings.wallpaperAutoChange
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        id: intervalRow
+                                        label: "Every"
+                                        opacity: Settings.wallpaperAutoChange ? 1 : 0.5
+
+                                        // Minutes, one per slider step.
+                                        readonly property var choices: [1, 2, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 720, 1440]
+                                        readonly property int choice: {
+                                            const m = Number(Settings.wallpaperChangeInterval) || 15;
+                                            let best = 0;
+                                            for (let i = 0; i < choices.length; i++)
+                                                if (Math.abs(choices[i] - m) < Math.abs(choices[best] - m))
+                                                    best = i;
+                                            return best;
+                                        }
+
+                                        StyledSlider {
+                                            wheelChanges: false
+                                            Layout.preferredWidth: 200
+                                            value: intervalRow.choice / (intervalRow.choices.length - 1)
+                                            steps: intervalRow.choices.length - 1
+                                            onMoved: v => Settings.wallpaperChangeInterval = intervalRow.choices[Math.round(v * (intervalRow.choices.length - 1))]
+                                        }
+                                        ValueText {
+                                            readonly property int m: Number(Settings.wallpaperChangeInterval) || 15
+                                            text: m < 60 ? m + " min" : (m % 60 === 0 ? m / 60 + " h" : (m / 60).toFixed(1) + " h")
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Colourful base colour (build from the wallpaper's most saturated colour)"
+                                        Toggle {
+                                            checked: Settings.colorfulSeed
+                                            onToggled: Settings.colorfulSeed = !Settings.colorfulSeed
+                                        }
+                                    }
+
+                                    WallpaperPicker {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                    }
+                                }
+
+                                // Scrolls: this page has more rows than the window's height.
+                                Flickable {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    visible: root.page === "appearance"
+                                    contentHeight: appearanceColumn.implicitHeight + Theme.spacingXL + root.pageFade
+                                    clip: true
+                                    boundsBehavior: Flickable.StopAtBounds
+
+                                    ColumnLayout {
+                                        id: appearanceColumn
+
+                                        x: Theme.spacingXL
+                                        y: Theme.spacingXL
+                                        width: parent.width - Theme.spacingXL * 2
+                                        spacing: Theme.spacingM
+
+                                        StyledText {
+                                            text: "Appearance"
+                                            font.pixelSize: Theme.fontSizeXLarge
+                                        }
+
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            text: "These apply to every panel: the taskbar, dock, launcher, runner, clipboard, flyouts, notepad, OSD, notifications, menus and this window. Animation duration sets how long panels take to open, close and slide; 0 turns animations off."
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.Wrap
+                                        }
+
+                                        FontSetting {
+                                            label: "Font"
+                                            key: "fontFamily"
+                                            description: "Everything in the shell, from the taskbar to the settings window."
+                                        }
+
+                                        SettingRow {
+                                            label: "Font weight"
+                                            Repeater {
+                                                model: [
+                                                    {
+                                                        "id": "regular",
+                                                        "title": "Regular"
+                                                    },
+                                                    {
+                                                        "id": "medium",
+                                                        "title": "Medium"
+                                                    }
+                                                ]
+
+                                                delegate: Rectangle {
+                                                    id: weightChip
+
+                                                    required property var modelData
+                                                    readonly property bool current: (Settings.fontWeight || "medium") === modelData.id
+
+                                                    implicitWidth: weightText.implicitWidth + Theme.spacingM * 2
+                                                    implicitHeight: 28
+                                                    radius: height / 2
+                                                    color: current ? Theme.primary : (weightMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
+
+                                                    StyledText {
+                                                        id: weightText
+                                                        anchors.centerIn: parent
+                                                        text: weightChip.modelData.title
+                                                        color: weightChip.current ? Theme.onPrimary : Theme.surfaceVariantText
+                                                        font.pixelSize: Theme.fontSizeSmall
+                                                        font.weight: weightChip.modelData.id === "regular" ? Font.Normal : Font.Medium
+                                                    }
+
+                                                    MouseArea {
+                                                        id: weightMouse
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: Settings.fontWeight = weightChip.modelData.id
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        FontSetting {
+                                            label: "Monospace font"
+                                            key: "monoFontFamily"
+                                            description: "Command and colour fields in this window."
+                                        }
+
+                                        SettingRow {
+                                            label: "Background opacity"
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: (Settings.surfaceOpacity - 0.3) / 0.7
+                                                steps: 70
+                                                onMoved: v => Settings.surfaceOpacity = Math.round((0.3 + v * 0.7) * 100) / 100
+                                            }
+                                            ValueText {
+                                                text: Math.round(Settings.surfaceOpacity * 100) + "%"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Overlay opacity (cards, rows, fields and buttons inside panels)"
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Settings.overlayOpacity
+                                                steps: 100
+                                                onMoved: v => Settings.overlayOpacity = Math.round(v * 100) / 100
+                                            }
+                                            ValueText {
+                                                text: Math.round(Settings.overlayOpacity * 100) + "%"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Animation duration"
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Settings.animationDuration / 400
+                                                steps: 40
+                                                onMoved: v => Settings.animationDuration = Math.round(v * 40) * 10
+                                            }
+                                            ValueText {
+                                                text: Settings.animationDuration === 0 ? "Off" : Settings.animationDuration + " ms"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Attach flyouts to the taskbar"
+                                            description: "The control center, calendar and notepad sit against the taskbar and screen edge, like Windows 10. Off, they float with a gap."
+                                            Toggle {
+                                                checked: Settings.attachPanels
+                                                onToggled: Settings.attachPanels = !Settings.attachPanels
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Flyout corner radius"
+                                            description: "The control center and calendar, attached or floating. Attached, only the corner away from the taskbar and screen edge is rounded; the notepad stays square."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Theme.flyoutRadius / 30
+                                                steps: 30
+                                                onMoved: v => Settings.flyoutRadius = Math.round(v * 30)
+                                            }
+                                            ValueText {
+                                                text: Theme.flyoutRadius === 0 ? "Square" : Theme.flyoutRadius + " px"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Night light"
+                                            Toggle {
+                                                checked: NightLight.enabled
+                                                onToggled: NightLight.setEnabled(!NightLight.enabled)
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Night light warmth"
+                                            opacity: NightLight.enabled ? 1 : 0.5
+                                            // Right is warmer: 6000K down to 2500K, as the Night Mode Strength panel.
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: (6000 - NightLight.temperature) / 3500
+                                                steps: 35
+                                                onMoved: v => NightLight.setTemperature(Math.round((6000 - v * 3500) / 100) * 100)
+                                            }
+                                            ValueText {
+                                                text: NightLight.temperature + "K"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Blur behind panels"
+                                            Toggle {
+                                                checked: Settings.blur
+                                                onToggled: Settings.blur = !Settings.blur
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Blur strength"
+                                            opacity: Settings.blur ? 1 : 0.5
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Settings.blurStrength / 100
+                                                steps: 100
+                                                onMoved: v => Settings.blurStrength = Math.round(v * 100)
+                                            }
+                                            ValueText {
+                                                text: Settings.blurStrength
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "X-ray blur (blur only the wallpaper, not the windows behind)"
+                                            opacity: Settings.blur ? 1 : 0.5
+                                            Toggle {
+                                                checked: Settings.blurXray
+                                                onToggled: Settings.blurXray = !Settings.blurXray
+                                            }
+                                        }
+
+                                        // Blur strength is niri's setting: say so when niri's
+                                        // config doesn't include the file this writes.
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            visible: !NiriBlur.included
+                                            Layout.preferredHeight: blurNote.implicitHeight + Theme.spacingM * 2
+                                            radius: Theme.cornerRadius / 1.5
+                                            color: Theme.overlay(Theme.surfaceContainerHigh, 0.8)
+
+                                            ColumnLayout {
+                                                id: blurNote
+
+                                                anchors.fill: parent
+                                                anchors.margins: Theme.spacingM
+                                                spacing: Theme.spacingS
+
+                                                StyledText {
+                                                    Layout.fillWidth: true
+                                                    text: "niri draws the blur, so the strength only takes effect once your niri config.kdl includes this line:"
+                                                    color: Theme.surfaceVariantText
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                    wrapMode: Text.Wrap
+                                                }
+
+                                                RowLayout {
+                                                    Layout.fillWidth: true
+                                                    spacing: Theme.spacingS
+
+                                                    StyledText {
+                                                        Layout.fillWidth: true
+                                                        text: NiriBlur.includeLine
+                                                        font.family: Theme.monoFamily
+                                                        font.pixelSize: Theme.fontSizeSmall
+                                                        elide: Text.ElideMiddle
+                                                    }
+
+                                                    IconButton {
+                                                        implicitHeight: 28
+                                                        icon: "content_copy"
+                                                        iconSize: 16
+                                                        text: "Copy"
+                                                        restColor: Theme.surfaceContainerHighest
+                                                        onClicked: Quickshell.execDetached(["wl-copy", "--", NiriBlur.includeLine])
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        StyledText {
+                                            Layout.topMargin: Theme.spacingM
+                                            text: "Surface tint"
+                                            font.pixelSize: Theme.fontSizeLarge
+                                        }
+
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            text: "Mixes a colour into the background of the taskbar, dock and every panel, and the fills inside them, so they aren't plain grey (with or without blur). Primary, secondary and tertiary are matugen's and follow the wallpaper."
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.Wrap
+                                        }
+
+                                        ColorSetting {
+                                            label: "Tint colour"
+                                            key: "surfaceTintColor"
+                                            customKey: "surfaceTintCustom"
+                                            options: ["primary", "secondary", "tertiary", "custom"]
+                                        }
+
+                                        SettingRow {
+                                            label: "Tint intensity"
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Theme.tintAmount
+                                                steps: 100
+                                                onMoved: v => Settings.surfaceTint = Math.round(v * 100) / 100
+                                            }
+                                            ValueText {
+                                                text: Math.round(Theme.tintAmount * 100) + "%"
+                                            }
+                                        }
+
+                                        StyledText {
+                                            Layout.topMargin: Theme.spacingM
+                                            text: "Panel border"
+                                            font.pixelSize: Theme.fontSizeLarge
+                                        }
+
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            text: "The outline of the flyouts, notepad, launcher, runner, clipboard history, notification pop-ups, OSD, dock and the other panels. The taskbar has none. The dock's border can be turned off on the Dock page."
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.Wrap
+                                        }
+
+                                        ColorSetting {
+                                            label: "Border colour"
+                                            key: "borderColor"
+                                            customKey: "borderColorCustom"
+                                            options: ["primary", "secondary", "tertiary", "outline", "text", "custom"]
+                                        }
+
+                                        SettingRow {
+                                            label: "Border opacity"
+                                            description: "0% hides the border."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Theme.blurBorder.a
+                                                steps: 100
+                                                onMoved: v => Settings.borderOpacity = Math.round(v * 100) / 100
+                                            }
+                                            ValueText {
+                                                text: Math.round(Theme.blurBorder.a * 100) + "%"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Border on attached flyouts and notepad"
+                                            description: "When flyouts are attached to the taskbar, give the control center, calendar and notepad this border too. Floating, they always have it."
+                                            opacity: Settings.attachPanels ? 1 : 0.5
+                                            Toggle {
+                                                checked: Settings.attachedPanelBorder
+                                                onToggled: Settings.attachedPanelBorder = !Settings.attachedPanelBorder
+                                            }
+                                        }
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    Layout.margins: Theme.spacingXL
+                                    spacing: Theme.spacingM
+                                    visible: root.page === "clipboard"
+
+                                    StyledText {
+                                        text: "Clipboard"
+                                        font.pixelSize: Theme.fontSizeXLarge
+                                    }
+
+                                    SettingRow {
+                                        label: "Clear all also removes pinned items"
+                                        Toggle {
+                                            checked: Settings.clipboardClearPinned
+                                            onToggled: Settings.clipboardClearPinned = !Settings.clipboardClearPinned
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Clear history at login"
+                                        Toggle {
+                                            checked: Settings.clipboardClearOnStartup
+                                            onToggled: Settings.clipboardClearOnStartup = !Settings.clipboardClearOnStartup
+                                        }
+                                    }
+
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        text: Settings.clipboardClearPinned ? "Pinned items are removed by Clear all and at login." : "Pinned items are kept by Clear all and at login."
+                                        color: Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        wrapMode: Text.Wrap
+                                    }
+
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        Layout.topMargin: Theme.spacingS
+                                        text: {
+                                            switch (ClipboardHistory.pasteMethod) {
+                                            case "wtype":
+                                                return "Pasting types Ctrl+V into your app with wtype.";
+                                            default:
+                                                return "wtype isn't installed, so choosing an entry only copies it; press Ctrl+V yourself. Pasting starts working once wtype is on your PATH.";
+                                            }
+                                        }
+                                        color: Theme.outline
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        wrapMode: Text.Wrap
+                                    }
+
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    Layout.margins: Theme.spacingXL
+                                    spacing: Theme.spacingM
+                                    visible: root.page === "notifications"
+
+                                    StyledText {
+                                        text: "Notifications"
+                                        font.pixelSize: Theme.fontSizeXLarge
+                                    }
+
+                                    SettingRow {
+                                        label: "Pop-up position"
+                                        description: "Where new notifications appear. They slide in from the right edge of the screen."
+                                        Repeater {
+                                            model: [
+                                                {
+                                                    "id": "bottom-right",
+                                                    "title": "Bottom right"
+                                                },
+                                                {
+                                                    "id": "top-right",
+                                                    "title": "Top right"
+                                                }
+                                            ]
+
+                                            delegate: Rectangle {
+                                                id: positionChip
+
+                                                required property var modelData
+                                                readonly property bool current: (Settings.notificationPosition || "bottom-right") === modelData.id
+
+                                                implicitWidth: positionText.implicitWidth + Theme.spacingM * 2
+                                                implicitHeight: 28
+                                                radius: height / 2
+                                                color: current ? Theme.primary : (positionMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
+
+                                                StyledText {
+                                                    id: positionText
+                                                    anchors.centerIn: parent
+                                                    text: positionChip.modelData.title
+                                                    color: positionChip.current ? Theme.onPrimary : Theme.surfaceVariantText
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                }
+
+                                                MouseArea {
+                                                    id: positionMouse
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: Settings.notificationPosition = positionChip.modelData.id
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+                                }
+
+                                // The key press menu's entries (KeyPressMenu/KeyPressMenu.qml). Rows are
+                                // keyed by position, so editing one doesn't rebuild the others
+                                // (and lose the cursor); adding or removing one does.
+                                Flickable {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    visible: root.page === "keypress"
+                                    contentHeight: keyPressColumn.implicitHeight + Theme.spacingXL + root.pageFade
+                                    clip: true
+                                    boundsBehavior: Flickable.StopAtBounds
+
+                                    ColumnLayout {
+                                        id: keyPressColumn
+
+                                        x: Theme.spacingXL
+                                        y: Theme.spacingXL
+                                        width: parent.width - Theme.spacingXL * 2
+                                        spacing: Theme.spacingM
+
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: Theme.spacingS
+
+                                            StyledText {
+                                                Layout.fillWidth: true
+                                                text: "Key press menu"
+                                                font.pixelSize: Theme.fontSizeXLarge
+                                            }
+
+                                            IconButton {
+                                                icon: "undo"
+                                                text: "Reset"
+                                                iconSize: 18
+                                                contentColor: Theme.surfaceVariantText
+                                                onClicked: Settings.reset("keyPressEntries")
+                                            }
+                                        }
+
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            text: "Mod+X opens it; press a key to run its command (with sh -c, so $HOME, pipes and ; work). Keys are case-sensitive. The order here is the menu's order."
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.Wrap
+                                        }
+
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            readonly property var keys: (Settings.keyPressEntries ?? []).map(e => e.key).filter(k => k !== "")
+                                            readonly property var repeated: keys.filter((k, i) => keys.indexOf(k) !== i)
+                                            visible: repeated.length > 0
+                                            text: "Used more than once: " + repeated.join(", ") + ". Only the first of each runs."
+                                            color: Theme.error
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.Wrap
+                                        }
+
+                                        Repeater {
+                                            model: (Settings.keyPressEntries ?? []).length
+
+                                            delegate: RowLayout {
+                                                id: entryRow
+
+                                                required property int index
+
+                                                Layout.fillWidth: true
+                                                spacing: Theme.spacingS
+
+                                                KeyPressField {
+                                                    Layout.preferredWidth: 44
+                                                    index: entryRow.index
+                                                    prop: "key"
+                                                    mono: true
+                                                    placeholder: "key"
+                                                    maxLength: 1
+                                                }
+                                                KeyPressField {
+                                                    Layout.preferredWidth: 190
+                                                    index: entryRow.index
+                                                    prop: "desc"
+                                                    placeholder: "Description"
+                                                }
+                                                KeyPressField {
+                                                    Layout.fillWidth: true
+                                                    index: entryRow.index
+                                                    prop: "cmd"
+                                                    mono: true
+                                                    placeholder: "command or script"
+                                                }
+                                                IconButton {
+                                                    icon: "delete"
+                                                    iconSize: 18
+                                                    contentColor: Theme.surfaceVariantText
+                                                    onClicked: {
+                                                        const list = Settings.keyPressEntries.slice();
+                                                        list.splice(entryRow.index, 1);
+                                                        Settings.keyPressEntries = list;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        IconButton {
+                                            icon: "add"
+                                            text: "Add entry"
+                                            iconSize: 18
+                                            restColor: Theme.surfaceContainerHigh
+                                            onClicked: Settings.keyPressEntries = (Settings.keyPressEntries ?? []).concat([{
+                                                        "key": "",
+                                                        "desc": "",
+                                                        "cmd": ""
+                                                    }])
+                                        }
+                                    }
+                                }
+
+                                // Running apps on the taskbar: the settings page of the Better
+                                // Running Apps plugin, with Taylor's values.
+                                Flickable {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    visible: root.page === "taskbar"
+                                    contentHeight: taskbarColumn.implicitHeight + Theme.spacingXL + root.pageFade
+                                    clip: true
+                                    boundsBehavior: Flickable.StopAtBounds
+
+                                    ColumnLayout {
+                                        id: taskbarColumn
+
+                                        x: Theme.spacingXL
+                                        y: Theme.spacingXL
+                                        width: parent.width - Theme.spacingXL * 2
+                                        spacing: Theme.spacingM
+
+                                        StyledText {
+                                            text: "Taskbar"
+                                            font.pixelSize: Theme.fontSizeXLarge
+                                        }
+
+                                        SettingRow {
+                                            label: "Zoom out with the overview"
+                                            description: "Keep the taskbar under your windows, so it shrinks with the workspace in the overview. Floating windows can cover it."
+                                            Toggle {
+                                                checked: Settings.barZoomsWithOverview
+                                                onToggled: Settings.barZoomsWithOverview = !Settings.barZoomsWithOverview
+                                            }
+                                        }
+
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            text: "Running apps: how app labels shrink when many windows are open, so the list doesn't run into the tray and clock."
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.Wrap
+                                        }
+
+                                        SettingRow {
+                                            label: "Larger app icons"
+                                            description: "Use the large bar icon size."
+                                            Toggle {
+                                                checked: Settings.runningAppsLargeIcons
+                                                onToggled: Settings.runningAppsLargeIcons = !Settings.runningAppsLargeIcons
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Current workspace only"
+                                            description: "Show only windows on the workspace you're looking at."
+                                            Toggle {
+                                                checked: Settings.runningAppsCurrentWorkspaceOnly
+                                                onToggled: Settings.runningAppsCurrentWorkspaceOnly = !Settings.runningAppsCurrentWorkspaceOnly
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Group windows by app"
+                                            description: "Collapse each app's windows into one entry with a count badge."
+                                            Toggle {
+                                                checked: Settings.runningAppsGroupByApp
+                                                onToggled: Settings.runningAppsGroupByApp = !Settings.runningAppsGroupByApp
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Max bar coverage"
+                                            description: "How much of the screen width running apps may fill before labels start shrinking."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: (Settings.runningAppsMaxWidthPercent - 30) / 70
+                                                steps: 70
+                                                onMoved: v => Settings.runningAppsMaxWidthPercent = Math.round(30 + v * 70)
+                                            }
+                                            ValueText {
+                                                text: Settings.runningAppsMaxWidthPercent + "%"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Hard width cap"
+                                            description: "Absolute width limit. Off uses the percentage above instead."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Settings.runningAppsMaxWidth / 4000
+                                                steps: 400
+                                                onMoved: v => Settings.runningAppsMaxWidth = Math.round(v * 400) * 10
+                                            }
+                                            ValueText {
+                                                text: Settings.runningAppsMaxWidth === 0 ? "Off" : Settings.runningAppsMaxWidth + " px"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Full label width"
+                                            description: "Width of each app's label when there is plenty of room."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: (Settings.runningAppsFullTitleWidth - 40) / 260
+                                                steps: 260
+                                                onMoved: v => Settings.runningAppsFullTitleWidth = Math.round(40 + v * 260)
+                                            }
+                                            ValueText {
+                                                text: Settings.runningAppsFullTitleWidth + " px"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Minimum label width"
+                                            description: "If a label would be narrower than this, the app shows as an icon only instead of a sliver of text. Off always shows labels."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Settings.runningAppsMinTitleWidth / 200
+                                                steps: 200
+                                                onMoved: v => Settings.runningAppsMinTitleWidth = Math.round(v * 200)
+                                            }
+                                            ValueText {
+                                                text: Settings.runningAppsMinTitleWidth === 0 ? "Off" : Settings.runningAppsMinTitleWidth + " px"
+                                            }
+                                        }
+
+                                        SettingRow {
+                                            label: "Reserved right-side space"
+                                            description: "Extra space to keep free when using the percentage. The taskbar already shrinks the list to fit, so 0 is usually fine."
+                                            StyledSlider {
+                                                wheelChanges: false
+                                                Layout.preferredWidth: 200
+                                                value: Settings.runningAppsReservedWidth / 2000
+                                                steps: 200
+                                                onMoved: v => Settings.runningAppsReservedWidth = Math.round(v * 200) * 10
+                                            }
+                                            ValueText {
+                                                text: Settings.runningAppsReservedWidth + " px"
+                                            }
+                                        }
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    Layout.margins: Theme.spacingXL
+                                    spacing: Theme.spacingM
+                                    visible: root.page === "dock"
+
+                                    StyledText {
+                                        text: "Dock"
+                                        font.pixelSize: Theme.fontSizeXLarge
+                                    }
+
+                                    SettingRow {
+                                        label: "Show the dock"
+                                        Toggle {
+                                            checked: Settings.dockEnabled
+                                            onToggled: Settings.dockEnabled = !Settings.dockEnabled
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Position"
+                                        Repeater {
+                                            model: ["left", "right"]
+
+                                            delegate: Rectangle {
+                                                id: sideChip
+
+                                                required property string modelData
+                                                readonly property bool current: Settings.dockPosition === modelData
+
+                                                implicitWidth: sideText.implicitWidth + Theme.spacingM * 2
+                                                implicitHeight: 28
+                                                radius: height / 2
+                                                color: current ? Theme.primary : (sideMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
+
+                                                StyledText {
+                                                    id: sideText
+                                                    anchors.centerIn: parent
+                                                    text: sideChip.modelData === "left" ? "Left" : "Right"
+                                                    color: sideChip.current ? Theme.onPrimary : Theme.surfaceVariantText
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                }
+
+                                                MouseArea {
+                                                    id: sideMouse
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: Settings.dockPosition = sideChip.modelData
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Hide until the pointer reaches the screen edge"
+                                        Toggle {
+                                            checked: Settings.dockAutoHide
+                                            onToggled: Settings.dockAutoHide = !Settings.dockAutoHide
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Border"
+                                        Toggle {
+                                            checked: Settings.dockBorder
+                                            onToggled: Settings.dockBorder = !Settings.dockBorder
+                                        }
+                                    }
+
+                                    // Sliders map 0..1 onto each setting's range.
+                                    SettingRow {
+                                        label: "Icon size"
+                                        StyledSlider {
+                                            wheelChanges: false
+                                            Layout.preferredWidth: 200
+                                            value: (Settings.dockIconSize - 20) / 36
+                                            steps: 36
+                                            onMoved: v => Settings.dockIconSize = Math.round(20 + v * 36)
+                                        }
+                                        ValueText {
+                                            text: Settings.dockIconSize + " px"
+                                        }
+                                    }
+
+                                    SettingRow {
+                                        label: "Spacing"
+                                        StyledSlider {
+                                            wheelChanges: false
+                                            Layout.preferredWidth: 200
+                                            value: (Settings.dockSpacing - 2) / 14
+                                            steps: 14
+                                            onMoved: v => Settings.dockSpacing = Math.round(2 + v * 14)
+                                        }
+                                        ValueText {
+                                            text: Settings.dockSpacing + " px"
+                                        }
+                                    }
+
+                                    StyledText {
+                                        Layout.topMargin: Theme.spacingS
+                                        text: "Pinned apps (right-click an app in the dock, launcher or taskbar to pin it)"
+                                        color: Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                    }
+
+                                    ListView {
+                                        id: pinList
+
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        clip: true
+                                        spacing: 2
+                                        boundsBehavior: Flickable.StopAtBounds
+                                        model: Settings.dockPins
+
+                                        delegate: Rectangle {
+                                            id: pinRow
+
+                                            required property string modelData
+                                            required property int index
+
+                                            width: ListView.view.width
+                                            height: 36
+                                            radius: Theme.cornerRadius / 1.5
+                                            color: pinHover.hovered ? Theme.surfaceContainerHigh : "transparent"
+
+                                            HoverHandler {
+                                                id: pinHover
+                                            }
+
+                                            RowLayout {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: Theme.spacingS
+                                                anchors.rightMargin: Theme.spacingXS
+                                                spacing: Theme.spacingS
+
+                                                IconImage {
+                                                    implicitSize: 22
+                                                    source: Apps.iconFor(pinRow.modelData)
+                                                    asynchronous: true
+                                                }
+
+                                                StyledText {
+                                                    Layout.fillWidth: true
+                                                    text: Apps.nameFor(pinRow.modelData)
+                                                    elide: Text.ElideRight
+                                                }
+
+                                                IconButton {
+                                                    implicitHeight: 28
+                                                    icon: "keyboard_arrow_up"
+                                                    contentColor: Theme.surfaceVariantText
+                                                    opacity: pinRow.index > 0 ? 1 : 0.3
+                                                    onClicked: DockApps.movePin(pinRow.modelData, -1)
+                                                }
+                                                IconButton {
+                                                    implicitHeight: 28
+                                                    icon: "keyboard_arrow_down"
+                                                    contentColor: Theme.surfaceVariantText
+                                                    opacity: pinRow.index < pinList.count - 1 ? 1 : 0.3
+                                                    onClicked: DockApps.movePin(pinRow.modelData, 1)
+                                                }
+                                                IconButton {
+                                                    implicitHeight: 28
+                                                    icon: "close"
+                                                    contentColor: Theme.surfaceVariantText
+                                                    onClicked: DockApps.unpin(pinRow.modelData)
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
+                        }
 
-                            StyledText {
-                                Layout.topMargin: Theme.spacingM
-                                text: "Surface tint"
-                                font.pixelSize: Theme.fontSizeLarge
-                            }
+                        ShaderEffectSource {
+                            id: fadeStrip
+                            y: pageStack.height - root.pageFade
+                            width: pageStack.width
+                            height: root.pageFade
+                            visible: false
+                            sourceItem: pageStack
+                            sourceRect: Qt.rect(0, y, width, height)
+                        }
 
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: "Mixes a colour into the background of the taskbar, dock and every panel, and the fills inside them, so they aren't plain grey (with or without blur). Primary, secondary and tertiary are matugen's and follow the wallpaper."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.Wrap
-                            }
+                        MultiEffect {
+                            anchors.fill: fadeStrip
+                            source: fadeStrip
+                            maskEnabled: true
+                            maskSource: fadeOutMask
+                            maskThresholdMin: 0.5
+                            maskSpreadAtMin: 1
+                        }
 
-                            ColorSetting {
-                                label: "Tint colour"
-                                key: "surfaceTintColor"
-                                customKey: "surfaceTintCustom"
-                                options: ["primary", "secondary", "tertiary", "custom"]
-                            }
+                        MultiEffect {
+                            anchors.fill: fadeStrip
+                            source: fadeStrip
+                            autoPaddingEnabled: false
+                            blurEnabled: true
+                            blur: 1
+                            blurMax: 16
+                            maskEnabled: true
+                            maskSource: fadeInMask
+                            maskThresholdMin: 0.5
+                            maskSpreadAtMin: 1
+                        }
 
-                            SettingRow {
-                                label: "Tint intensity"
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Theme.tintAmount
-                                    steps: 100
-                                    onMoved: v => Settings.surfaceTint = Math.round(v * 100) / 100
+                        Rectangle {
+                            id: fadeOutMask
+                            anchors.fill: fadeStrip
+                            visible: false
+                            layer.enabled: true
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 0
+                                    color: "white"
                                 }
-                                ValueText {
-                                    text: Math.round(Theme.tintAmount * 100) + "%"
-                                }
-                            }
-
-                            StyledText {
-                                Layout.topMargin: Theme.spacingM
-                                text: "Panel border"
-                                font.pixelSize: Theme.fontSizeLarge
-                            }
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: "The outline of the flyouts, notepad, launcher, runner, clipboard history, notification pop-ups, OSD, dock and the other panels. The taskbar has none. The dock's border can be turned off on the Dock page."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.Wrap
-                            }
-
-                            ColorSetting {
-                                label: "Border colour"
-                                key: "borderColor"
-                                customKey: "borderColorCustom"
-                                options: ["primary", "secondary", "tertiary", "outline", "text", "custom"]
-                            }
-
-                            SettingRow {
-                                label: "Border opacity"
-                                description: "0% hides the border."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Theme.blurBorder.a
-                                    steps: 100
-                                    onMoved: v => Settings.borderOpacity = Math.round(v * 100) / 100
-                                }
-                                ValueText {
-                                    text: Math.round(Theme.blurBorder.a * 100) + "%"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Border on attached flyouts and notepad"
-                                description: "When flyouts are attached to the taskbar, give the control center, calendar and notepad this border too. Floating, they always have it."
-                                opacity: Settings.attachPanels ? 1 : 0.5
-                                Toggle {
-                                    checked: Settings.attachedPanelBorder
-                                    onToggled: Settings.attachedPanelBorder = !Settings.attachedPanelBorder
+                                GradientStop {
+                                    position: 1
+                                    color: "transparent"
                                 }
                             }
                         }
-                    }
 
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.margins: Theme.spacingXL
-                        spacing: Theme.spacingM
-                        visible: root.page === "clipboard"
-
-                        StyledText {
-                            text: "Clipboard"
-                            font.pixelSize: Theme.fontSizeXLarge
-                        }
-
-                        SettingRow {
-                            label: "Clear all also removes pinned items"
-                            Toggle {
-                                checked: Settings.clipboardClearPinned
-                                onToggled: Settings.clipboardClearPinned = !Settings.clipboardClearPinned
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Clear history at login"
-                            Toggle {
-                                checked: Settings.clipboardClearOnStartup
-                                onToggled: Settings.clipboardClearOnStartup = !Settings.clipboardClearOnStartup
+                        Rectangle {
+                            id: fadeInMask
+                            anchors.fill: fadeStrip
+                            visible: false
+                            layer.enabled: true
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 0
+                                    color: "transparent"
+                                }
+                                GradientStop {
+                                    position: 0.5
+                                    color: "white"
+                                }
+                                GradientStop {
+                                    position: 1
+                                    color: "transparent"
+                                }
                             }
                         }
 
                         StyledText {
-                            Layout.fillWidth: true
-                            text: Settings.clipboardClearPinned ? "Pinned items are removed by Clear all and at login." : "Pinned items are kept by Clear all and at login."
-                            color: Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
-                            wrapMode: Text.Wrap
-                        }
-
-                        StyledText {
-                            Layout.fillWidth: true
-                            Layout.topMargin: Theme.spacingS
-                            text: {
-                                switch (ClipboardHistory.pasteMethod) {
-                                case "wtype":
-                                    return "Pasting types Ctrl+V into your app with wtype.";
-                                default:
-                                    return "wtype isn't installed, so choosing an entry only copies it; press Ctrl+V yourself. Pasting starts working once wtype is on your PATH.";
-                                }
-                            }
+                            id: footer
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.leftMargin: Theme.spacingXL
+                            anchors.rightMargin: Theme.spacingXL
+                            anchors.bottomMargin: Theme.spacingM
+                            text: "Saved to " + Settings.path
                             color: Theme.outline
                             font.pixelSize: Theme.fontSizeSmall
-                            wrapMode: Text.Wrap
-                        }
-
-                        Item {
-                            Layout.fillHeight: true
-                        }
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.margins: Theme.spacingXL
-                        spacing: Theme.spacingM
-                        visible: root.page === "notifications"
-
-                        StyledText {
-                            text: "Notifications"
-                            font.pixelSize: Theme.fontSizeXLarge
-                        }
-
-                        SettingRow {
-                            label: "Pop-up position"
-                            description: "Where new notifications appear. They slide in from the right edge of the screen."
-                            Repeater {
-                                model: [
-                                    {
-                                        "id": "bottom-right",
-                                        "title": "Bottom right"
-                                    },
-                                    {
-                                        "id": "top-right",
-                                        "title": "Top right"
-                                    }
-                                ]
-
-                                delegate: Rectangle {
-                                    id: positionChip
-
-                                    required property var modelData
-                                    readonly property bool current: (Settings.notificationPosition || "bottom-right") === modelData.id
-
-                                    implicitWidth: positionText.implicitWidth + Theme.spacingM * 2
-                                    implicitHeight: 28
-                                    radius: height / 2
-                                    color: current ? Theme.primary : (positionMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
-
-                                    StyledText {
-                                        id: positionText
-                                        anchors.centerIn: parent
-                                        text: positionChip.modelData.title
-                                        color: positionChip.current ? Theme.onPrimary : Theme.surfaceVariantText
-                                        font.pixelSize: Theme.fontSizeSmall
-                                    }
-
-                                    MouseArea {
-                                        id: positionMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: Settings.notificationPosition = positionChip.modelData.id
-                                    }
-                                }
-                            }
-                        }
-
-                        Item {
-                            Layout.fillHeight: true
-                        }
-                    }
-
-                    // The key press menu's entries (KeyPressMenu/KeyPressMenu.qml). Rows are
-                    // keyed by position, so editing one doesn't rebuild the others
-                    // (and lose the cursor); adding or removing one does.
-                    Flickable {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        visible: root.page === "keypress"
-                        contentHeight: keyPressColumn.implicitHeight + Theme.spacingXL * 2
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        ColumnLayout {
-                            id: keyPressColumn
-
-                            x: Theme.spacingXL
-                            y: Theme.spacingXL
-                            width: parent.width - Theme.spacingXL * 2
-                            spacing: Theme.spacingM
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: Theme.spacingS
-
-                                StyledText {
-                                    Layout.fillWidth: true
-                                    text: "Key press menu"
-                                    font.pixelSize: Theme.fontSizeXLarge
-                                }
-
-                                IconButton {
-                                    icon: "undo"
-                                    text: "Reset"
-                                    iconSize: 18
-                                    contentColor: Theme.surfaceVariantText
-                                    onClicked: Settings.reset("keyPressEntries")
-                                }
-                            }
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: "Mod+X opens it; press a key to run its command (with sh -c, so $HOME, pipes and ; work). Keys are case-sensitive. The order here is the menu's order."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.Wrap
-                            }
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                readonly property var keys: (Settings.keyPressEntries ?? []).map(e => e.key).filter(k => k !== "")
-                                readonly property var repeated: keys.filter((k, i) => keys.indexOf(k) !== i)
-                                visible: repeated.length > 0
-                                text: "Used more than once: " + repeated.join(", ") + ". Only the first of each runs."
-                                color: Theme.error
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.Wrap
-                            }
-
-                            Repeater {
-                                model: (Settings.keyPressEntries ?? []).length
-
-                                delegate: RowLayout {
-                                    id: entryRow
-
-                                    required property int index
-
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingS
-
-                                    KeyPressField {
-                                        Layout.preferredWidth: 44
-                                        index: entryRow.index
-                                        prop: "key"
-                                        mono: true
-                                        placeholder: "key"
-                                        maxLength: 1
-                                    }
-                                    KeyPressField {
-                                        Layout.preferredWidth: 190
-                                        index: entryRow.index
-                                        prop: "desc"
-                                        placeholder: "Description"
-                                    }
-                                    KeyPressField {
-                                        Layout.fillWidth: true
-                                        index: entryRow.index
-                                        prop: "cmd"
-                                        mono: true
-                                        placeholder: "command or script"
-                                    }
-                                    IconButton {
-                                        icon: "delete"
-                                        iconSize: 18
-                                        contentColor: Theme.surfaceVariantText
-                                        onClicked: {
-                                            const list = Settings.keyPressEntries.slice();
-                                            list.splice(entryRow.index, 1);
-                                            Settings.keyPressEntries = list;
-                                        }
-                                    }
-                                }
-                            }
-
-                            IconButton {
-                                icon: "add"
-                                text: "Add entry"
-                                iconSize: 18
-                                restColor: Theme.surfaceContainerHigh
-                                onClicked: Settings.keyPressEntries = (Settings.keyPressEntries ?? []).concat([{
-                                            "key": "",
-                                            "desc": "",
-                                            "cmd": ""
-                                        }])
-                            }
-                        }
-                    }
-
-                    // Running apps on the taskbar: the settings page of the Better
-                    // Running Apps plugin, with Taylor's values.
-                    Flickable {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        visible: root.page === "taskbar"
-                        contentHeight: taskbarColumn.implicitHeight + Theme.spacingXL * 2
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        ColumnLayout {
-                            id: taskbarColumn
-
-                            x: Theme.spacingXL
-                            y: Theme.spacingXL
-                            width: parent.width - Theme.spacingXL * 2
-                            spacing: Theme.spacingM
-
-                            StyledText {
-                                text: "Taskbar"
-                                font.pixelSize: Theme.fontSizeXLarge
-                            }
-
-                            SettingRow {
-                                label: "Zoom out with the overview"
-                                description: "Keep the taskbar under your windows, so it shrinks with the workspace in the overview. Floating windows can cover it."
-                                Toggle {
-                                    checked: Settings.barZoomsWithOverview
-                                    onToggled: Settings.barZoomsWithOverview = !Settings.barZoomsWithOverview
-                                }
-                            }
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: "Running apps: how app labels shrink when many windows are open, so the list doesn't run into the tray and clock."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.Wrap
-                            }
-
-                            SettingRow {
-                                label: "Larger app icons"
-                                description: "Use the large bar icon size."
-                                Toggle {
-                                    checked: Settings.runningAppsLargeIcons
-                                    onToggled: Settings.runningAppsLargeIcons = !Settings.runningAppsLargeIcons
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Current workspace only"
-                                description: "Show only windows on the workspace you're looking at."
-                                Toggle {
-                                    checked: Settings.runningAppsCurrentWorkspaceOnly
-                                    onToggled: Settings.runningAppsCurrentWorkspaceOnly = !Settings.runningAppsCurrentWorkspaceOnly
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Group windows by app"
-                                description: "Collapse each app's windows into one entry with a count badge."
-                                Toggle {
-                                    checked: Settings.runningAppsGroupByApp
-                                    onToggled: Settings.runningAppsGroupByApp = !Settings.runningAppsGroupByApp
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Max bar coverage"
-                                description: "How much of the screen width running apps may fill before labels start shrinking."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: (Settings.runningAppsMaxWidthPercent - 30) / 70
-                                    steps: 70
-                                    onMoved: v => Settings.runningAppsMaxWidthPercent = Math.round(30 + v * 70)
-                                }
-                                ValueText {
-                                    text: Settings.runningAppsMaxWidthPercent + "%"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Hard width cap"
-                                description: "Absolute width limit. Off uses the percentage above instead."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Settings.runningAppsMaxWidth / 4000
-                                    steps: 400
-                                    onMoved: v => Settings.runningAppsMaxWidth = Math.round(v * 400) * 10
-                                }
-                                ValueText {
-                                    text: Settings.runningAppsMaxWidth === 0 ? "Off" : Settings.runningAppsMaxWidth + " px"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Full label width"
-                                description: "Width of each app's label when there is plenty of room."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: (Settings.runningAppsFullTitleWidth - 40) / 260
-                                    steps: 260
-                                    onMoved: v => Settings.runningAppsFullTitleWidth = Math.round(40 + v * 260)
-                                }
-                                ValueText {
-                                    text: Settings.runningAppsFullTitleWidth + " px"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Minimum label width"
-                                description: "If a label would be narrower than this, the app shows as an icon only instead of a sliver of text. Off always shows labels."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Settings.runningAppsMinTitleWidth / 200
-                                    steps: 200
-                                    onMoved: v => Settings.runningAppsMinTitleWidth = Math.round(v * 200)
-                                }
-                                ValueText {
-                                    text: Settings.runningAppsMinTitleWidth === 0 ? "Off" : Settings.runningAppsMinTitleWidth + " px"
-                                }
-                            }
-
-                            SettingRow {
-                                label: "Reserved right-side space"
-                                description: "Extra space to keep free when using the percentage. The taskbar already shrinks the list to fit, so 0 is usually fine."
-                                StyledSlider {
-                                    Layout.preferredWidth: 200
-                                    value: Settings.runningAppsReservedWidth / 2000
-                                    steps: 200
-                                    onMoved: v => Settings.runningAppsReservedWidth = Math.round(v * 200) * 10
-                                }
-                                ValueText {
-                                    text: Settings.runningAppsReservedWidth + " px"
-                                }
-                            }
-                        }
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.margins: Theme.spacingXL
-                        spacing: Theme.spacingM
-                        visible: root.page === "dock"
-
-                        StyledText {
-                            text: "Dock"
-                            font.pixelSize: Theme.fontSizeXLarge
-                        }
-
-                        SettingRow {
-                            label: "Show the dock"
-                            Toggle {
-                                checked: Settings.dockEnabled
-                                onToggled: Settings.dockEnabled = !Settings.dockEnabled
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Position"
-                            Repeater {
-                                model: ["left", "right"]
-
-                                delegate: Rectangle {
-                                    id: sideChip
-
-                                    required property string modelData
-                                    readonly property bool current: Settings.dockPosition === modelData
-
-                                    implicitWidth: sideText.implicitWidth + Theme.spacingM * 2
-                                    implicitHeight: 28
-                                    radius: height / 2
-                                    color: current ? Theme.primary : (sideMouse.containsMouse ? Theme.widgetHover : Theme.surfaceContainerHigh)
-
-                                    StyledText {
-                                        id: sideText
-                                        anchors.centerIn: parent
-                                        text: sideChip.modelData === "left" ? "Left" : "Right"
-                                        color: sideChip.current ? Theme.onPrimary : Theme.surfaceVariantText
-                                        font.pixelSize: Theme.fontSizeSmall
-                                    }
-
-                                    MouseArea {
-                                        id: sideMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: Settings.dockPosition = sideChip.modelData
-                                    }
-                                }
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Hide until the pointer reaches the screen edge"
-                            Toggle {
-                                checked: Settings.dockAutoHide
-                                onToggled: Settings.dockAutoHide = !Settings.dockAutoHide
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Border"
-                            Toggle {
-                                checked: Settings.dockBorder
-                                onToggled: Settings.dockBorder = !Settings.dockBorder
-                            }
-                        }
-
-                        // Sliders map 0..1 onto each setting's range.
-                        SettingRow {
-                            label: "Icon size"
-                            StyledSlider {
-                                Layout.preferredWidth: 200
-                                value: (Settings.dockIconSize - 20) / 36
-                                steps: 36
-                                onMoved: v => Settings.dockIconSize = Math.round(20 + v * 36)
-                            }
-                            ValueText {
-                                text: Settings.dockIconSize + " px"
-                            }
-                        }
-
-                        SettingRow {
-                            label: "Spacing"
-                            StyledSlider {
-                                Layout.preferredWidth: 200
-                                value: (Settings.dockSpacing - 2) / 14
-                                steps: 14
-                                onMoved: v => Settings.dockSpacing = Math.round(2 + v * 14)
-                            }
-                            ValueText {
-                                text: Settings.dockSpacing + " px"
-                            }
-                        }
-
-                        StyledText {
-                            Layout.topMargin: Theme.spacingS
-                            text: "Pinned apps (right-click an app in the dock, launcher or taskbar to pin it)"
-                            color: Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
-                        }
-
-                        ListView {
-                            id: pinList
-
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            clip: true
-                            spacing: 2
-                            boundsBehavior: Flickable.StopAtBounds
-                            model: Settings.dockPins
-
-                            delegate: Rectangle {
-                                id: pinRow
-
-                                required property string modelData
-                                required property int index
-
-                                width: ListView.view.width
-                                height: 36
-                                radius: Theme.cornerRadius / 1.5
-                                color: pinHover.hovered ? Theme.surfaceContainerHigh : "transparent"
-
-                                HoverHandler {
-                                    id: pinHover
-                                }
-
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: Theme.spacingS
-                                    anchors.rightMargin: Theme.spacingXS
-                                    spacing: Theme.spacingS
-
-                                    IconImage {
-                                        implicitSize: 22
-                                        source: Apps.iconFor(pinRow.modelData)
-                                        asynchronous: true
-                                    }
-
-                                    StyledText {
-                                        Layout.fillWidth: true
-                                        text: Apps.nameFor(pinRow.modelData)
-                                        elide: Text.ElideRight
-                                    }
-
-                                    IconButton {
-                                        implicitHeight: 28
-                                        icon: "keyboard_arrow_up"
-                                        contentColor: Theme.surfaceVariantText
-                                        opacity: pinRow.index > 0 ? 1 : 0.3
-                                        onClicked: DockApps.movePin(pinRow.modelData, -1)
-                                    }
-                                    IconButton {
-                                        implicitHeight: 28
-                                        icon: "keyboard_arrow_down"
-                                        contentColor: Theme.surfaceVariantText
-                                        opacity: pinRow.index < pinList.count - 1 ? 1 : 0.3
-                                        onClicked: DockApps.movePin(pinRow.modelData, 1)
-                                    }
-                                    IconButton {
-                                        implicitHeight: 28
-                                        icon: "close"
-                                        contentColor: Theme.surfaceVariantText
-                                        onClicked: DockApps.unpin(pinRow.modelData)
-                                    }
-                                }
-                            }
+                            elide: Text.ElideMiddle
                         }
                     }
                 }
