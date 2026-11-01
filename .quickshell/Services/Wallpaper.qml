@@ -18,6 +18,9 @@ Singleton {
     id: root
 
     readonly property string path: Settings.wallpaperPath
+    // X-ray blur is the shell's own (Widgets/WallpaperBackdrop.qml): panels
+    // drop niri's blur while it's on.
+    readonly property bool xrayBackdrop: Settings.blur && Settings.blurXray && path !== ""
     // Images in the wallpaper folder, sorted by name.
     property var images: []
     property bool generating: false

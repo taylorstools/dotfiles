@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import qs.Common
+import qs.Services
 import qs.Widgets
 
 // A status pill for whisrs dictation, ported from Taylor's old WhisrsPill
@@ -209,7 +210,7 @@ Scope {
                 if ("radius" in blurRegion)
                     blurRegion.radius = card.radius;
                 if (pill.BackgroundEffect !== undefined)
-                    pill.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+                    pill.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
             }
 
             Component.onCompleted: applyBlur()
@@ -223,6 +224,12 @@ Scope {
 
             Rectangle {
                 id: card
+
+                // X-ray: the blurred wallpaper under the panel's colour.
+                WallpaperBackdrop {
+                    window: pill
+                    onActiveChanged: pill.applyBlur()
+                }
 
                 implicitWidth: layout.implicitWidth + Theme.spacingL * 2
                 implicitHeight: Math.round(Theme.fontSizeLarge * 2.6)

@@ -34,6 +34,12 @@ Scope {
     property var saving: null
     // A region select is running (one slurp at a time).
     property bool selecting: false
+    // The screens are frozen for a region select (the freeze windows below),
+    // and how many of them have their still up.
+    property bool freezing: false
+    property int frozenScreens: 0
+
+    onFreezingChanged: frozenScreens = 0
 
     function show() {
         if (!motion.mapped) {
@@ -148,7 +154,6 @@ Scope {
 
             // Region: the screens are frozen until the capture is done.
             property bool frozen: mode === "Region"
-            property int frozenScreens: 0
 
             function finish() {
                 Quickshell.execDetached(["rm", "-f", file]);
@@ -156,57 +161,19 @@ Scope {
             }
 
             Component.onCompleted: {
-                if (!frozen)
+                if (frozen)
+                    root.freezing = true;
+                else
                     grab.running = true;
             }
 
             // Every screen's still is up: slurp goes on top of them.
-            onFrozenScreensChanged: {
-                if (frozenScreens === Quickshell.screens.length)
-                    grab.running = true;
-            }
-
-            Variants {
-                model: shot.frozen ? Quickshell.screens : []
-
-                PanelWindow {
-                    id: freeze
-
-                    required property ShellScreen modelData
-
-                    screen: modelData
-                    anchors {
-                        top: true
-                        bottom: true
-                        left: true
-                        right: true
-                    }
-                    exclusionMode: ExclusionMode.Ignore
-                    // ScreencopyView only captures in a mapped window, so
-                    // it's mapped clear (and isn't in the still).
-                    color: still.hasContent ? "black" : "transparent"
-
-                    WlrLayershell.namespace: "qstest:snip-freeze"
-                    WlrLayershell.layer: WlrLayer.Overlay
-                    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-                    ScreencopyView {
-                        id: still
-                        anchors.fill: parent
-                        captureSource: freeze.modelData
-                        live: false
-                        // Give it a frame on screen before slurp maps over it.
-                        onHasContentChanged: {
-                            if (hasContent)
-                                settle.start();
-                        }
-                    }
-
-                    Timer {
-                        id: settle
-                        interval: 50
-                        onTriggered: shot.frozenScreens++
-                    }
+            Connections {
+                target: root
+                enabled: shot.frozen
+                function onFrozenScreensChanged() {
+                    if (root.frozenScreens === Quickshell.screens.length)
+                        grab.running = true;
                 }
             }
 
@@ -216,6 +183,7 @@ Scope {
                 onExited: code => {
                     if (shot.frozen) {
                         shot.frozen = false;
+                        root.freezing = false;
                         root.selecting = false;
                     }
                     if (code === 0) {
@@ -245,6 +213,93 @@ Scope {
                             shot.finish();
                     }
                 }
+            }
+        }
+    }
+
+    // The freeze: a still of each screen covers it while slurp runs, and grim
+    // captures the stills. The stills come from grim too, not Quickshell's
+    // ScreencopyView: a capture with that left Qt's Wayland code holding a
+    // deleted screen, and the next layer window to hide (a closing flyout,
+    // the notification pop-ups) crashed the shell on it
+    // (QWaylandSurface::oldestEnteredScreen), about one region shot in three
+    // with a bar flyout open.
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            id: freeze
+
+            required property ShellScreen modelData
+            // Its own file per freeze: Image would show a cached old still.
+            property string file: ""
+            property bool grabbed: false
+
+            screen: modelData
+            // Mapped once grim has the still, so it isn't in it. Not on the
+            // image's status: mapping rebuilds the window, which reloads it.
+            visible: root.freezing && grabbed
+            anchors {
+                top: true
+                bottom: true
+                left: true
+                right: true
+            }
+            exclusionMode: ExclusionMode.Ignore
+            color: "black"
+
+            WlrLayershell.namespace: "qstest:snip-freeze"
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+            Connections {
+                target: root
+                function onFreezingChanged() {
+                    if (root.freezing) {
+                        // PPM: no compression to wait for.
+                        freeze.file = root.shotDir + "/freeze-" + freeze.modelData.name + "-" + Date.now() + ".ppm";
+                        stillGrab.command = ["sh", "-c", "mkdir -p \"$(dirname \"$1\")\" && grim -t ppm -o \"$2\" \"$1\"", "sh", freeze.file, freeze.modelData.name];
+                        stillGrab.running = true;
+                    } else if (freeze.file) {
+                        freeze.grabbed = false;
+                        Quickshell.execDetached(["rm", "-f", freeze.file]);
+                        freeze.file = "";
+                    }
+                }
+            }
+
+            Process {
+                id: stillGrab
+                onExited: code => {
+                    if (!root.freezing)
+                        return;
+                    if (code === 0)
+                        freeze.grabbed = true;
+                    // No still: carry on unfrozen rather than hang.
+                    else
+                        root.frozenScreens++;
+                }
+            }
+
+            // Loaded with the window's first frame, so slurp never maps over
+            // a black screen.
+            Image {
+                anchors.fill: parent
+                source: freeze.grabbed ? "file://" + freeze.file : ""
+                cache: false
+                fillMode: Image.Stretch
+            }
+
+            // Give it a frame on screen before slurp maps over it.
+            onVisibleChanged: {
+                if (visible)
+                    settle.start();
+            }
+
+            Timer {
+                id: settle
+                interval: 50
+                onTriggered: root.frozenScreens++
             }
         }
     }
@@ -330,7 +385,7 @@ Scope {
             if ("radius" in blurRegion)
                 blurRegion.radius = panel.radius;
             if (window.BackgroundEffect !== undefined)
-                window.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+                window.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
         }
 
         // Click outside the panel cancels.
@@ -367,6 +422,12 @@ Scope {
 
         Rectangle {
             id: panel
+
+            // X-ray: the blurred wallpaper under the panel's colour.
+            WallpaperBackdrop {
+                window: window
+                onActiveChanged: window.applyBlur()
+            }
 
             // Fades and grows in from 95%; Settings > Appearance sets the speed.
             opacity: motion.progress

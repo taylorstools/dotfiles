@@ -72,7 +72,7 @@ PanelWindow {
         if ("radius" in blurRegion)
             blurRegion.radius = panel.radius;
         if (root.BackgroundEffect !== undefined)
-            root.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+            root.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
     }
 
     Component.onCompleted: applyBlur()
@@ -112,6 +112,12 @@ PanelWindow {
 
     Rectangle {
         id: panel
+
+        // X-ray: the blurred wallpaper under the panel's colour.
+        WallpaperBackdrop {
+            window: root
+            onActiveChanged: root.applyBlur()
+        }
 
         readonly property real shownX: root.onLeft ? root.border : root.width - width - root.border
         readonly property real hiddenX: root.onLeft ? -width - root.border * 2 : root.width + root.border

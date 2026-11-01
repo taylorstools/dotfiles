@@ -243,7 +243,7 @@ Scope {
             if ("radius" in blurRegion)
                 blurRegion.radius = panel.radius;
             if (window.BackgroundEffect !== undefined)
-                window.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+                window.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
         }
 
         Shortcut {
@@ -267,6 +267,13 @@ Scope {
 
         Rectangle {
             id: panel
+
+            // X-ray: the blurred wallpaper under the panel's colour.
+            WallpaperBackdrop {
+                window: window
+                slideY: (1 - motion.progress) * 16
+                onActiveChanged: window.applyBlur()
+            }
 
             // Fades in while rising out of the bar; Settings > Appearance sets the speed.
             opacity: motion.progress

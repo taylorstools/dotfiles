@@ -121,7 +121,7 @@ Scope {
             if ("radius" in blurRegion)
                 blurRegion.radius = panel.radius;
             if (launcherWindow.BackgroundEffect !== undefined)
-                launcherWindow.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+                launcherWindow.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
         }
 
         // Click outside the panel closes.
@@ -132,6 +132,12 @@ Scope {
 
         Rectangle {
             id: panel
+
+            // X-ray: the blurred wallpaper under the panel's colour.
+            WallpaperBackdrop {
+                window: launcherWindow
+                onActiveChanged: launcherWindow.applyBlur()
+            }
 
             // Fades and grows in from 95%; Settings > Appearance sets the speed.
             opacity: motion.progress

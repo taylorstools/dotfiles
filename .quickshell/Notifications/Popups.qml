@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 // Notification pop-ups, stacked in the bottom-right corner above the bar or
 // the top-right corner (Settings > Notifications) on the screen niri has
@@ -90,7 +91,7 @@ PanelWindow {
 
     function applyBlur() {
         if (root.BackgroundEffect !== undefined)
-            root.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+            root.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
     }
 
     Component.onCompleted: applyBlur()
@@ -99,6 +100,13 @@ PanelWindow {
     Connections {
         target: Settings
         function onBlurChanged() {
+            root.applyBlur();
+        }
+    }
+
+    Connections {
+        target: Wallpaper
+        function onXrayBackdropChanged() {
             root.applyBlur();
         }
     }
@@ -177,6 +185,15 @@ PanelWindow {
                 to: root.slideDistance
                 duration: root.slideDuration
                 easing.type: Easing.InCubic
+            }
+
+            // X-ray: the blurred wallpaper under the card's colour. Card
+            // positions count from the list's content (see cardBlur).
+            WallpaperBackdrop {
+                window: root
+                panelX: stack.contentItem.x + card.x
+                panelY: stack.contentItem.y + card.y
+                slideX: slide.x
             }
 
             // Follows the card as it slides in and as the stack moves.

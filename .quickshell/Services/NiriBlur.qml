@@ -15,8 +15,9 @@ import qs.Common
 // (a FloatingWindow) only blurs through a window rule. That rule lives here
 // too, so Settings.blur switches it on and off with the panels.
 //
-// X-ray (Settings.blurXray) is niri's too: a layer rule for every qstest:
-// surface, and the same flag on the settings window's rule.
+// X-ray (Settings.blurXray) is drawn by the shell (Widgets/WallpaperBackdrop),
+// so the layer rule for every qstest: surface turns niri's off; the settings
+// window's rule still carries it.
 Singleton {
     id: root
 
@@ -33,7 +34,10 @@ Singleton {
             text += "blur {\n    passes 3\n    offset " + (Math.round(strength / 14 * 10) / 10) + "\n}\n";
         if (blur) {
             const x = xray ? "true" : "false";
-            text += "layer-rule {\n    match namespace=\"^qstest:\"\n    background-effect {\n        xray " + x + "\n    }\n}\n";
+            // The shell draws x-ray itself (WallpaperBackdrop), with smooth
+            // corners; niri's stays for the settings window, a normal window
+            // whose place on screen the shell doesn't know.
+            text += "layer-rule {\n    match namespace=\"^qstest:\"\n    background-effect {\n        xray false\n    }\n}\n";
             text += "window-rule {\n    match app-id=\"^org.quickshell$\" title=\"^Shell Settings$\"\n    background-effect {\n        blur true\n        xray " + x + "\n    }\n}\n";
         }
         return text;

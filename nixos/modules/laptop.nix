@@ -35,7 +35,8 @@ in
       passwordStore = "gnome-libsecret";
     };
 
-    quickshell.source = "git";
+    # nixpkgs' release (v0.3.2), not Quickshell master.
+    quickshell.source = "stable";
 
     whisrs = {
       enable = true;

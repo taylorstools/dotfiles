@@ -195,7 +195,7 @@ Scope {
             if ("radius" in blurRegion)
                 blurRegion.radius = pill.radius;
             if (window.BackgroundEffect !== undefined)
-                window.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+                window.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
         }
 
         Component.onCompleted: applyBlur()
@@ -210,6 +210,12 @@ Scope {
 
         Rectangle {
             id: pill
+
+            // X-ray: the blurred wallpaper under the panel's colour.
+            WallpaperBackdrop {
+                window: window
+                onActiveChanged: window.applyBlur()
+            }
 
             // Sized to whole screen pixels, or the window clips the right edge.
             width: {

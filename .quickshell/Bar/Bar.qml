@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 // Bottom bar:
 //   left:  workspace switcher, Better Running Apps
@@ -29,6 +30,12 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         color: Theme.barBackground
+
+        // X-ray: the blurred wallpaper under the panel's colour.
+        WallpaperBackdrop {
+            window: bar
+            onActiveChanged: bar.applyBlur()
+        }
     }
 
     // Compositor blur behind the bar (ext-background-effect, needs a recent
@@ -52,7 +59,7 @@ PanelWindow {
 
     function applyBlur() {
         if (bar.BackgroundEffect !== undefined)
-            bar.BackgroundEffect.blurRegion = Settings.blur ? blurRegion : null;
+            bar.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
     }
 
     Component.onCompleted: applyBlur()
