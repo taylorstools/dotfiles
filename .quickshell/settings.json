@@ -4,7 +4,7 @@
     "attachedPanelBorder": false,
     "barZoomsWithOverview": true,
     "blur": true,
-    "blurStrength": 100,
+    "blurStrength": 75,
     "blurXray": true,
     "borderColor": "primary",
     "borderColorCustom": "#ffffff",
