@@ -25,6 +25,10 @@ PanelWindow {
     readonly property real spacing: Settings.dockSpacing
     readonly property real border: Settings.dockBorder ? 1 : 0
     readonly property real dockWidth: iconSize + spacing * 2
+    // Attached to the screen edge: the panel reaches this far past it, so its
+    // corners and border on that side are off screen and it looks square
+    // there, like the attached flyouts.
+    readonly property real overshoot: Theme.cornerRadius + 1
 
     // The app whose right-click menu is open, or "".
     property string menuApp: ""
@@ -40,10 +44,10 @@ PanelWindow {
         left: onLeft
         right: !onLeft
     }
-    implicitWidth: dockWidth + border * 2 + Theme.spacingS
+    implicitWidth: dockWidth + Theme.spacingS
     // Without auto-hide the dock keeps its space, like a bar.
     exclusionMode: ExclusionMode.Normal
-    exclusiveZone: Settings.dockAutoHide ? 0 : dockWidth + border * 2
+    exclusiveZone: Settings.dockAutoHide ? 0 : dockWidth
     color: "transparent"
 
     // Only the dock itself takes input; while hidden, a thin strip along the
@@ -56,7 +60,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-    // Compositor blur behind the dock (needs a recent Quickshell).
+    // Compositor blur behind the dock (needs a recent Quickshell). Kept
+    // inside the window: the panel reaches past the screen edge.
     Item {
         Region {
             id: blurRegion
@@ -64,6 +69,12 @@ PanelWindow {
             y: panel.y
             width: panel.width
             height: panel.height
+
+            Region {
+                intersection: Intersection.Intersect
+                width: root.width
+                height: root.height
+            }
         }
     }
 
@@ -119,12 +130,12 @@ PanelWindow {
             onActiveChanged: root.applyBlur()
         }
 
-        readonly property real shownX: root.onLeft ? root.border : root.width - width - root.border
-        readonly property real hiddenX: root.onLeft ? -width - root.border * 2 : root.width + root.border
+        readonly property real shownX: root.onLeft ? -root.overshoot : root.width - width + root.overshoot
+        readonly property real hiddenX: root.onLeft ? -width : root.width
 
         x: root.revealed ? shownX : hiddenX
         anchors.verticalCenter: parent.verticalCenter
-        width: root.dockWidth
+        width: root.dockWidth + root.overshoot
         height: column.implicitHeight + root.spacing * 2
         radius: Theme.cornerRadius
         color: Theme.barBackground
@@ -143,7 +154,8 @@ PanelWindow {
         Column {
             id: column
 
-            x: root.spacing
+            // Clear of the strip past the screen edge.
+            x: root.spacing + (root.onLeft ? root.overshoot : 0)
             y: root.spacing
             spacing: root.spacing
 

@@ -98,4 +98,15 @@ ClippingRectangle {
             blurMax: Settings.blurStrength > 0 ? Math.max(2, Math.round(Settings.blurStrength * 0.32)) : 16
         }
     }
+
+    // Qt doesn't paint a Rectangle's colour under its border, so a
+    // see-through border (Border opacity) showed the bare wallpaper as a
+    // bright ring. Tint the ring like the rest of the panel.
+    Rectangle {
+        anchors.fill: parent
+        radius: root.radius
+        color: "transparent"
+        border.width: root.panel.border?.width ?? 0
+        border.color: root.panel.color ?? "transparent"
+    }
 }
