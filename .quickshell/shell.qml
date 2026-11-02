@@ -12,6 +12,7 @@ import qs.Clipboard
 import qs.Clock
 import qs.ControlCenter
 import qs.Dock
+import qs.EmojiPicker
 import qs.Launcher
 import qs.Lock
 import qs.NightLight
@@ -63,6 +64,7 @@ ShellRoot {
     Runner {}
     WindowSwitcher {}
     ClipboardPanel {}
+    EmojiPicker {}
     PowerMenu {}
     KeyPressMenu {}
     SnippingTool {}

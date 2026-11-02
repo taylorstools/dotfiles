@@ -46,14 +46,33 @@ in
       matugen # colours from the wallpaper, and the app themes
       python3 # Theming/term16.py
       slurp # snipping tool: region select
+      unicode-emoji # emoji picker: emoji-test.txt, the list and names
       wl-clipboard # clipboard history
       wl-gammarelay-rs # night light (Services/NightLight.qml)
-      wtype # clipboard history: paste into the focused app
+      wtype # clipboard history and emoji picker: type into the focused app
       xdg-utils # runner: xdg-open, xdg-mime
     ];
 
+    # The emoji picker reads /run/current-system/sw/share/unicode/emoji.
+    environment.pathsToLink = [ "/share/unicode" ];
+
     # The icon font.
     fonts.packages = [ pkgs.material-symbols ];
+
+    # The camera key (Services/Camera.qml) switches webcams off by
+    # deauthorizing their video interfaces, which needs write access to each
+    # one's `authorized` file, and back on by re-probing them through
+    # drivers_probe (authorizing an interface again doesn't rebind its
+    # driver). Interfaces rather than the whole device: the PX13's webcam
+    # also carries the light and presence sensors on a HID interface, and
+    # those should keep working with the camera off. wheel is Taylor's own
+    # group here; using it avoids a new group and a re-login.
+    services.udev.extraRules = ''
+      ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_interface", ATTR{bInterfaceClass}=="0e", RUN+="${pkgs.coreutils}/bin/chgrp wheel /sys%p/authorized", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys%p/authorized"
+    '';
+    systemd.tmpfiles.rules = [
+      "z /sys/bus/usb/drivers_probe 0220 root wheel -"
+    ];
 
     # The control center's profile picture (/var/lib/AccountsService/icons).
     services.accounts-daemon.enable = true;

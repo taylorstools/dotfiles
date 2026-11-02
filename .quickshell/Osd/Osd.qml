@@ -157,6 +157,19 @@ Scope {
         }
     }
 
+    // The camera key; a toast since it has no level to show.
+    Connections {
+        target: Camera
+        function onSwitched(status, failed) {
+            if (failed)
+                root.toast("error", status === "none" ? "No camera the shell may switch" : "Couldn't switch the camera", true);
+            else if (status === "on")
+                root.toast("videocam", "Camera on", false);
+            else
+                root.toast("videocam_off", "Camera off", false);
+        }
+    }
+
     PanelWindow {
         id: window
 

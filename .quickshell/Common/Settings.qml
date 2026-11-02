@@ -108,6 +108,10 @@ Singleton {
             "nightLight": false,
             "nightLightTemperature": 3000,
             "doNotDisturb": false,
+            // Emoji picker: the last ones picked, newest first, and the skin
+            // tone for emoji that have one ("" = the default yellow).
+            "emojiRecent": [],
+            "emojiSkinTone": "",
             // Opacity of the grey fills inside panels (cards, rows, fields,
             // buttons); 1 keeps them solid.
             "overlayOpacity": 1,
@@ -189,6 +193,8 @@ Singleton {
     property alias wallpaperChangeInterval: adapter.wallpaperChangeInterval
     property alias clipboardClearOnStartup: adapter.clipboardClearOnStartup
     property alias doNotDisturb: stateAdapter.doNotDisturb
+    property alias emojiRecent: stateAdapter.emojiRecent
+    property alias emojiSkinTone: stateAdapter.emojiSkinTone
     property alias barZoomsWithOverview: adapter.barZoomsWithOverview
     property alias notificationPosition: adapter.notificationPosition
     property alias runningAppsLargeIcons: adapter.runningAppsLargeIcons
@@ -340,6 +346,8 @@ Singleton {
             property bool doNotDisturb: root.defaults.doNotDisturb
             property bool nightLight: root.defaults.nightLight
             property int nightLightTemperature: root.defaults.nightLightTemperature
+            property var emojiRecent: root.defaults.emojiRecent
+            property string emojiSkinTone: root.defaults.emojiSkinTone
         }
     }
 

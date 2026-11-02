@@ -1,3 +1,7 @@
+[General]
+ConnectionListSortOrder=0
+ResizeOnConnect=false
+
 [hostpreferences][rdp://taylor@win11vm]
 PreventSessionLock=false
 acceleration=0
@@ -12,7 +16,7 @@ gatewayPassword=
 gatewayServer=
 gatewayTransportType=0
 gatewayUsername=
-height=1661
+height=818
 keyboardLayout=7
 proxyHost=
 proxyPassword=
@@ -20,7 +24,7 @@ proxyProtocol=0
 proxyUsername=
 resolution=3
 scaleFactor=100
-scaleToSize=false
+scaleToSize=true
 securityEXT=false
 securityNLA=true
 securityRDP=true
@@ -35,7 +39,8 @@ tlsSecLevel=1
 use_ssh_tunnel=false
 use_ssh_tunnel_loopback=false
 walletSupport=true
-width=2880
+width=1530
+windowedScale=true
 
 [hostpreferences][rdp://win11vm]
 PreventSessionLock=true
