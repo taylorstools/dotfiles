@@ -8,13 +8,16 @@
   services.power-profiles-daemon.enable = true;
 
   # Dims, locks and sleeps when idle (dot_config/hypr/hypridle.conf). Its
-  # user unit comes with the package and is started and stopped by
-  # scripts/hypridle/toggle-hypridle.sh (keep awake), not enabled here.
+  # user unit comes with the package; scripts/hypridle/toggle-hypridle.sh
+  # (keep awake) stops and starts it for the rest of the session.
   environment.systemPackages = [ pkgs.hypridle ];
 
-  # hypridle's dim/restore scripts call brightnessctl, qs and friends.
   systemd.user.services.hypridle = {
     overrideStrategy = "asDropin";
+    # NixOS ignores a packaged unit's [Install] section, so its
+    # WantedBy=graphical-session.target does nothing without this.
+    wantedBy = [ "graphical-session.target" ];
+    # hypridle's dim/restore scripts call brightnessctl, qs and friends.
     serviceConfig.Environment = [
       "PATH=/run/wrappers/bin:/run/current-system/sw/bin"
     ];
