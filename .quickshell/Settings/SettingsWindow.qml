@@ -1426,7 +1426,7 @@ Scope {
 
                                         SettingRow {
                                             label: "Zoom out with the overview"
-                                            description: "Keep the taskbar under your windows, so it shrinks with the workspace in the overview. Floating windows can cover it."
+                                            description: "The taskbar shrinks with the workspace in the overview. The rest of the time it stays above your windows."
                                             Toggle {
                                                 checked: Settings.barZoomsWithOverview
                                                 onToggled: Settings.barZoomsWithOverview = !Settings.barZoomsWithOverview

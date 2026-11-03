@@ -122,9 +122,10 @@ Singleton {
             "wallpaperAutoChange": true,
             "wallpaperChangeInterval": 15,
             "clipboardClearOnStartup": true,
-            // The taskbar sits under windows (niri's bottom layer), so it
-            // zooms out with the workspace in the overview; floating windows
-            // can cover it. Off keeps it above windows and fixed on screen.
+            // In the overview the taskbar moves under windows (niri's bottom
+            // layer), so it zooms out with the workspace; the rest of the time
+            // it stays above windows. Off keeps it fixed on screen in the
+            // overview too.
             "barZoomsWithOverview": true,
             // Notification pop-ups: "bottom-right" (above the taskbar) or "top-right".
             "notificationPosition": "bottom-right",

@@ -67,7 +67,8 @@ Item {
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.26
-        text: Qt.formatTime(clock.date, "h:mm")
+        // Qt's "h" is only 12-hour when "AP" is present, so format with it and drop it.
+        text: Qt.formatTime(clock.date, "h:mm AP").split(" ")[0]
         color: root.lighter
         font.family: "Inter Display"
         font.weight: Font.ExtraLight

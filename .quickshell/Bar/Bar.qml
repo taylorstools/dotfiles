@@ -23,9 +23,27 @@ PanelWindow {
     color: "transparent"
 
     WlrLayershell.namespace: "qstest:bar"
-    // Bottom: under windows, so it zooms out with the workspace in niri's
-    // overview (Settings > Taskbar).
-    WlrLayershell.layer: Settings.barZoomsWithOverview ? WlrLayer.Bottom : WlrLayer.Top
+    // Above windows, except in niri's overview, where the Bottom layer zooms
+    // out with the workspace (Settings > Taskbar). It stays on Bottom through
+    // the overview's closing animation, so it zooms back in with the
+    // workspace instead of jumping to the screen edge.
+    WlrLayershell.layer: Settings.barZoomsWithOverview && (Niri.overviewOpen || overviewClosing.running) ? WlrLayer.Bottom : WlrLayer.Top
+
+    Timer {
+        id: overviewClosing
+        // A little longer than niri's overview-open-close spring (animations.kdl).
+        interval: 400
+    }
+
+    Connections {
+        target: Niri
+        function onOverviewOpenChanged() {
+            if (Niri.overviewOpen)
+                overviewClosing.stop();
+            else
+                overviewClosing.restart();
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
