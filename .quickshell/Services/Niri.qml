@@ -19,6 +19,23 @@ Singleton {
     property var windows: ({})
     property var focusedWindowId: null
     property bool overviewOpen: false
+    // Also true through the closing animation, for surfaces on the Bottom layer
+    // while the overview is open: they zoom back in with the workspace instead
+    // of jumping to the screen edge.
+    readonly property bool overviewZoomed: overviewOpen || overviewClosing.running
+
+    onOverviewOpenChanged: {
+        if (overviewOpen)
+            overviewClosing.stop();
+        else
+            overviewClosing.restart();
+    }
+
+    Timer {
+        id: overviewClosing
+        // A little longer than niri's overview-open-close spring (animations.kdl).
+        interval: 400
+    }
 
     readonly property var workspaceList: Object.values(workspaces).sort((a, b) => a.idx - b.idx)
     readonly property var sortedWindows: sortWindows(Object.values(windows), workspaces)

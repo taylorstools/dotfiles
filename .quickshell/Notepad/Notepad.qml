@@ -291,7 +291,9 @@ Scope {
         color: "transparent"
 
         WlrLayershell.namespace: "qstest:notepad"
-        WlrLayershell.layer: WlrLayer.Top
+        // Above windows, except in niri's overview, where the Bottom layer zooms
+        // out with the workspace, like the taskbar.
+        WlrLayershell.layer: Niri.overviewZoomed ? WlrLayer.Bottom : WlrLayer.Top
         WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         onVisibleChanged: {
