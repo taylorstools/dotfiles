@@ -18,7 +18,7 @@ let
     text = ''
       # Config
       SrcUuid="4E21-0000"                       # PC Toolkit (exFAT) volume serial
-      SmbShare="//192.168.0.63/taylornas"       # CIFS share root
+      SmbShare="//tower.lan/taylornas"          # CIFS share root (Unraid "Tower")
       SmbSubdir="Ventoy Backup"                 # folder within the share
       CredFile="/etc/ventoy-backup-smb.cred"    # root:root 0600, NOT in git
       WorkDir="/run/ventoy-backup"
