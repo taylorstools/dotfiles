@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793873675,
-        "narHash": "sha256-L7I7qYz0LsRYwgeAUToD/1b3xETXEGjRLf1UEdjgZwk=",
+        "lastModified": 1793927295,
+        "narHash": "sha256-kzJB3vCcrVMZYDCiYVsF+8GbPHoq9uHCXPDla5kNBGM=",
         "owner": "aaddrick",
         "repo": "claude-desktop-debian",
-        "rev": "a31445bc8c1a3e7d571cf00b74d9e011cfefc2e3",
+        "rev": "54ef5d2d75f9ab03e0c42da3e8ad58fe37381c1b",
         "type": "github"
       },
       "original": {
@@ -340,11 +340,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793870170,
-        "narHash": "sha256-0psEeQjs1g9oWQ6eVVGlCom+X3/uHyr6jSMyHVU57u8=",
+        "lastModified": 1793956102,
+        "narHash": "sha256-dASUovwB3DUoTm6daga0hsNZZAFCCGlUS4FPBjK0OwA=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "19e0e6c951a7a8a7d3232c64e58d26b89df44c60",
+        "rev": "74cebce67ef6671ea48fda353a5be2d229bd2920",
         "type": "github"
       },
       "original": {
@@ -376,11 +376,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793891996,
-        "narHash": "sha256-ZvAvHXuJHigFvSrPexYHaoU7zA7nhLIujk63ewCOnAY=",
+        "lastModified": 1793977977,
+        "narHash": "sha256-Vdbr7LG8+fUgEdoi2ielHqFjB6RAxaEqQCZKMkWPN0k=",
         "owner": "y0sif",
         "repo": "whisrs",
-        "rev": "27bcee1e9b938a8b95693ec7b8f25ca4f1040ee7",
+        "rev": "adb5cf003cc2fc73cca123320b2f54d388e8d5b1",
         "type": "github"
       },
       "original": {
