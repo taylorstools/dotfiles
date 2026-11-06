@@ -76,8 +76,12 @@ ShellRoot {
     BatteryFlyout {}
     TrayFlyout {}
     Popups {}
-    Osd {}
+    Osd {
+        id: osd
+    }
     PolkitDialog {}
-    WhisrsPill {}
+    WhisrsPill {
+        osdShown: osd.shown
+    }
     SettingsWindow {}
 }

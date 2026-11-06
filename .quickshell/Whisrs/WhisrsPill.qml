@@ -33,6 +33,11 @@ Scope {
     // Must match the bars= in whisrs-pill-cava (nixos components/whisrs.nix).
     readonly property int barCount: 12
 
+    // The OSD uses the same spot. Its volume changes and toasts are brief, so
+    // the pill makes way for them and comes back.
+    property bool osdShown: false
+    readonly property bool shown: phase !== "idle" && !osdShown
+
     // whisrs's state names mean what they say: "recording" is you talking,
     // "transcribing" is the flush after you stop. local-whisper streams, so
     // most of the text has already been typed by then.
@@ -175,188 +180,180 @@ Scope {
         }
     }
 
-    LazyLoader {
-        active: root.phase !== "idle"
+    // Laid out like the OSD's toasts (Osd.qml) and in the same spot, so it
+    // keeps every size and colour they use.
+    PanelWindow {
+        id: pill
 
-        PanelWindow {
-            id: pill
+        screen: {
+            const screens = Array.from(Quickshell.screens);
+            return screens.find(s => s.name === Niri.focusedOutput) ?? screens[0];
+        }
+        visible: card.opacity > 0
+        anchors.bottom: true
+        margins.bottom: Theme.spacingL
+        implicitWidth: card.width
+        implicitHeight: card.height
+        exclusionMode: ExclusionMode.Normal
+        exclusiveZone: 0
+        color: "transparent"
+        // Clicks go through to whatever is underneath.
+        mask: Region {}
 
-            color: "transparent"
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.namespace: "qstest:whisrs"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        WlrLayershell.namespace: "qstest:whisrs"
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-            anchors.bottom: true
-            // Clears the bar and the OSD at the bottom edge.
-            margins.bottom: 96
+        Item {
+            Region {
+                id: blurRegion
+                x: card.x
+                y: card.y
+                width: card.width
+                height: card.height
+            }
+        }
 
-            implicitWidth: card.implicitWidth
-            implicitHeight: card.implicitHeight
+        function applyBlur() {
+            // Region.radius only exists in newer Quickshell builds.
+            if ("radius" in blurRegion)
+                blurRegion.radius = card.radius;
+            if (pill.BackgroundEffect !== undefined)
+                pill.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
+        }
 
-            // Clicks go through to whatever is underneath.
-            mask: Region {}
+        Component.onCompleted: applyBlur()
+        onVisibleChanged: applyBlur()
 
-            Item {
-                Region {
-                    id: blurRegion
-                    width: card.width
-                    height: card.height
+        Connections {
+            target: Settings
+            function onBlurChanged() {
+                pill.applyBlur();
+            }
+        }
+
+        Rectangle {
+            id: card
+
+            // X-ray: the blurred wallpaper under the panel's colour.
+            WallpaperBackdrop {
+                window: pill
+                onActiveChanged: pill.applyBlur()
+            }
+
+            // Sized to whole screen pixels, or the window clips the right edge.
+            width: Theme.wholeSize(layout.implicitWidth + 36)
+            height: 48
+            radius: height / 2
+            color: Theme.popupBackground
+            border.width: 1
+            border.color: Theme.blurBorder
+            opacity: root.shown ? 1 : 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Theme.animDuration
                 }
             }
 
-            function applyBlur() {
-                // Region.radius only exists in newer Quickshell builds.
-                if ("radius" in blurRegion)
-                    blurRegion.radius = card.radius;
-                if (pill.BackgroundEffect !== undefined)
-                    pill.BackgroundEffect.blurRegion = Settings.blur && !Wallpaper.xrayBackdrop ? blurRegion : null;
-            }
+            Row {
+                id: layout
 
-            Component.onCompleted: applyBlur()
+                anchors.centerIn: parent
+                spacing: 12
 
-            Connections {
-                target: Settings
-                function onBlurChanged() {
-                    pill.applyBlur();
-                }
-            }
+                // A mic while recording, a spinner while transcribing, a check
+                // when the text lands. The spinner is its own icon so the
+                // others never inherit the angle it stopped at.
+                Item {
+                    width: 22
+                    height: 22
+                    anchors.verticalCenter: parent.verticalCenter
 
-            Rectangle {
-                id: card
+                    MaterialIcon {
+                        visible: !root.busy
+                        name: root.listening ? "mic" : "check"
+                        size: 22
+                        filled: true
+                        color: Theme.primary
+                    }
 
-                // X-ray: the blurred wallpaper under the panel's colour.
-                WallpaperBackdrop {
-                    window: pill
-                    onActiveChanged: pill.applyBlur()
-                }
+                    MaterialIcon {
+                        visible: root.busy
+                        name: "progress_activity"
+                        size: 22
+                        filled: true
+                        color: Theme.primary
 
-                implicitWidth: layout.implicitWidth + Theme.spacingL * 2
-                implicitHeight: Math.round(Theme.fontSizeLarge * 2.6)
-                radius: height / 2
-                color: Theme.popupBackground
-                border.width: 1
-                border.color: Theme.blurBorder
-                opacity: 0
-
-                Component.onCompleted: opacity = 1
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: Theme.animDuration
-                        easing.type: Easing.OutCubic
+                        RotationAnimation on rotation {
+                            running: root.busy
+                            loops: Animation.Infinite
+                            from: 0
+                            to: 360
+                            duration: 900
+                        }
                     }
                 }
 
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: {
+                        switch (root.phase) {
+                        case "recording":
+                            return "Recording...";
+                        case "transcribing":
+                            return "Transcribing...";
+                        }
+                        // Idle too: the pill is still fading out then, and
+                        // would collapse if the text went.
+                        return "Done";
+                    }
+                    font.pixelSize: 13
+                }
+
+                // Live mic level. Bars sit at a floor height so the pill
+                // keeps its shape between words instead of collapsing.
                 Row {
-                    id: layout
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.listening
+                    spacing: 3
 
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingM
-
-                    // Recording dot, pulsing; a spinner while transcribing; a
-                    // check when the text lands.
-                    Item {
-                        width: Theme.fontSizeLarge
-                        height: Theme.fontSizeLarge
-                        anchors.verticalCenter: parent.verticalCenter
+                    Repeater {
+                        model: root.barCount
 
                         Rectangle {
-                            anchors.centerIn: parent
-                            visible: root.phase !== "done"
-                            width: root.listening ? Theme.fontSizeLarge * 0.7 : Theme.fontSizeLarge * 0.5
-                            height: width
-                            radius: width / 2
-                            color: root.listening ? Theme.error : Theme.primary
+                            required property int index
 
-                            SequentialAnimation on opacity {
-                                running: root.listening
-                                loops: Animation.Infinite
-                                NumberAnimation {
-                                    to: 0.35
-                                    duration: 620
-                                    easing.type: Easing.InOutSine
-                                }
-                                NumberAnimation {
-                                    to: 1
-                                    duration: 620
-                                    easing.type: Easing.InOutSine
-                                }
-                            }
+                            readonly property real level: Math.min(1, (root.levels[index] || 0) / 100)
 
-                            RotationAnimation on rotation {
-                                running: root.busy
-                                loops: Animation.Infinite
-                                from: 0
-                                to: 360
-                                duration: 900
-                            }
-                        }
-
-                        MaterialIcon {
-                            anchors.centerIn: parent
-                            visible: root.phase === "done"
-                            name: "check"
-                            size: Theme.fontSizeLarge
+                            width: 3
+                            radius: 1.5
+                            height: 3 + level * (Theme.fontSizeLarge * 1.4)
                             color: Theme.primary
-                        }
-                    }
+                            opacity: 0.55 + level * 0.45
+                            anchors.verticalCenter: parent.verticalCenter
 
-                    StyledText {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: {
-                            switch (root.phase) {
-                            case "recording":
-                                return "Recording...";
-                            case "transcribing":
-                                return "Transcribing...";
-                            case "done":
-                                return "Done";
-                            }
-                            return "";
-                        }
-                        font.pixelSize: Theme.fontSizeMedium
-                    }
-
-                    // Live mic level. Bars sit at a floor height so the pill
-                    // keeps its shape between words instead of collapsing.
-                    Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: root.listening
-                        spacing: 3
-
-                        Repeater {
-                            model: root.barCount
-
-                            Rectangle {
-                                required property int index
-
-                                readonly property real level: Math.min(1, (root.levels[index] || 0) / 100)
-
-                                width: 3
-                                radius: 1.5
-                                height: 3 + level * (Theme.fontSizeLarge * 1.4)
-                                color: Theme.primary
-                                opacity: 0.55 + level * 0.45
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                Behavior on height {
-                                    NumberAnimation {
-                                        duration: 70
-                                        easing.type: Easing.OutQuad
-                                    }
+                            Behavior on height {
+                                NumberAnimation {
+                                    duration: 70
+                                    easing.type: Easing.OutQuad
                                 }
                             }
                         }
                     }
+                }
 
-                    StyledText {
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: root.listening
-                        text: root.elapsedText()
-                        font.pixelSize: Theme.fontSizeMedium
-                        opacity: 0.7
-                    }
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.listening
+                    text: root.elapsedText()
+                    color: Theme.surfaceVariantText
+                    font.pixelSize: 13
+                    // Equal-width digits: the pill would otherwise resize, and
+                    // clip for a frame, whenever a tick changes the text's width.
+                    font.features: ({
+                            "tnum": 1
+                        })
                 }
             }
         }
