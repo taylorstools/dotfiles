@@ -16,6 +16,9 @@ Item {
     // Off for the copy that fades in and out (Lock.qml): it shows the lock
     // as it stands, without replaying the dots' typing animations.
     property bool animated: true
+    // The wallpaper. The preview's surface, hidden nearly all the time, blanks
+    // this so it doesn't decode and hold a copy on every lock (Lock.qml).
+    property string backgroundSource: lock.backgroundSource
 
     // matugen's tertiary in the light and dark scheme ($light and $lighter
     // in hyprlock.conf).
@@ -48,8 +51,11 @@ Item {
     Image {
         anchors.fill: parent
         fillMode: Image.PreserveAspectCrop
-        source: root.lock.backgroundSource
-        cache: false
+        // Cached on purpose: every surface of one lock shares a single decode
+        // (Lock.refreshBackground). Loading is synchronous, and decoding it
+        // anew for each surface froze the animations for 140 ms at a time.
+        source: root.backgroundSource
+        sourceSize: root.lock.backgroundSize
     }
 
     // Date: 42pt, top edge at 23% down.
@@ -246,6 +252,43 @@ Item {
                     }
                 }
             }
+        }
+
+        // A ring at the field's right end while the password is checked. Its
+        // angle and fades come from Lock.checkTime so the unlock's copy picks
+        // up where this one is, and it goes at once when the check ends. It
+        // gives way to the red outline, fading out as that fades in; timed
+        // from the check, not showChecking, which an accepted password clears
+        // and would bring the ring back during the unlock's fade.
+        Canvas {
+            id: checkRing
+
+            readonly property color tint: root.lighter
+            onTintChanged: requestPaint()
+
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: (field.height - height) / 2
+            width: field.height * 0.42
+            height: width
+            opacity: {
+                const t = root.lock.checkTime;
+                return Math.max(0, Math.min(t / 0.12, 1, 1 - (t - root.lock.showCheckingAfter / 1000) / 0.2));
+            }
+            rotation: root.lock.checkTime / 0.75 * 360
+
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const w = field.outlineWidth;
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, (width - w) / 2, 0, Math.PI * 1.28);
+                ctx.lineWidth = w;
+                ctx.lineCap = "round";
+                ctx.strokeStyle = tint;
+                ctx.stroke();
+            }
+            onWidthChanged: requestPaint()
         }
 
         TextInput {

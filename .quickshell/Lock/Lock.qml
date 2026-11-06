@@ -53,11 +53,36 @@ Scope {
     // A right password is checked in a few hundred ms; a wrong one takes
     // about 2 s (pam_unix stalls on failure). So the red only ever shows for
     // a wrong one.
+    readonly property int showCheckingAfter: 1000
+
     Timer {
         id: showCheckingDelay
-        interval: 1000
+        interval: root.showCheckingAfter
         onTriggered: root.showChecking = true
     }
+
+    // Seconds into the current check, which drives the ring in the password
+    // field (LockSurface). Kept here rather than per screen so the screens stay
+    // in step and the copy that fades out carries on from the same point:
+    // authState stays "checking" until the unlock has finished. A preview that
+    // accepts the password also leaves it "checking", with nothing on screen,
+    // hence the rest of the condition. Counts up rather than looping, so the
+    // ring only fades in once; an hour is far past any check.
+    property real checkTime: 0
+
+    NumberAnimation {
+        target: root
+        property: "checkTime"
+        running: root.authState === "checking" && (root.locked || root.previewing || root.unlocking)
+        from: 0
+        to: 3600
+        duration: 3600000
+        onRunningChanged: {
+            if (!running)
+                root.checkTime = 0;
+        }
+    }
+
     // Sent once PAM asks: Enter can come before PAM is ready for it.
     property string pendingPassword: ""
 
@@ -68,6 +93,17 @@ Scope {
     readonly property string marker: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/qstest-locked." + (Quickshell.env("WAYLAND_DISPLAY") || "wayland")
     // Reloaded on every lock: the effects script rewrites it per wallpaper.
     property string backgroundSource: ""
+    // The picture can be larger than the screens (3840x2160 here, on 2880x1800):
+    // decoded at this size, it needs less memory and uploads to the GPU faster.
+    readonly property size backgroundSize: {
+        let width = 0;
+        let height = 0;
+        for (const screen of Quickshell.screens) {
+            width = Math.max(width, Math.ceil(screen.width * screen.devicePixelRatio));
+            height = Math.max(height, Math.ceil(screen.height * screen.devicePixelRatio));
+        }
+        return Qt.size(width, height);
+    }
 
     // hyprlock_battery.sh: a battery a tenth full per step, a plug while charging.
     readonly property string batteryText: {
@@ -77,16 +113,22 @@ Scope {
         return icon + "  " + percent + "%";
     }
 
+    // A new query string is a new entry in Qt's image cache: this lock reads
+    // the current file once, and all its surfaces share the result.
     function refreshBackground() {
-        backgroundSource = "";
-        backgroundSource = "file://" + Quickshell.env("HOME") + "/.config/.EffectsWallpaper.png";
+        backgroundSource = "file://" + Quickshell.env("HOME") + "/.config/.EffectsWallpaper.png?v=" + Date.now();
     }
 
     function lock() {
         if (unlocking) {
-            // Still locked, waiting for the fade window: stay locked.
+            // Still locked, waiting for the fade window: stay locked and start
+            // over. Left on "checking", the field would stay read-only and
+            // Enter ignored, with no way left to type a password.
             if (locked) {
                 unlocking = false;
+                password = "";
+                pendingPassword = "";
+                authState = "";
                 startAuth();
                 return;
             }
@@ -125,8 +167,9 @@ Scope {
     }
 
     // The fade starts once the copy is on screen. Its window's first drawn
-    // frames don't reach the screen for about 250 ms (measured), as long as
-    // the fade itself, so starting on the first frame showed only its end.
+    // frame takes up to 37 ms to reach the screen (measured with grim), so
+    // this waits about twice that; starting on the first frame could lose the
+    // start of the fade.
     function startFadeIn() {
         if (!locking || locked || fadeIn.running || fadeInDelay.running)
             return;
@@ -171,7 +214,7 @@ Scope {
 
     Timer {
         id: fadeInDelay
-        interval: 250
+        interval: 80
         onTriggered: root.runFadeIn()
     }
 
@@ -190,17 +233,18 @@ Scope {
     function unlock() {
         pam.abort();
         pendingPassword = "";
-        // Accepted: no red, not even fading out (LockSurface snaps it off).
+        // Accepted: no red, not even fading out (LockSurface snaps it off once
+        // `unlocking` is set, so that comes first).
         showCheckingDelay.stop();
-        showChecking = false;
         unlocking = true;
+        showChecking = false;
         fade = 1;
         unlockDelay.restart();
     }
 
-    // The copy has drawn its first frame. That frame reaches the screen
-    // about 250 ms later (measured, as for the fade-in); letting go of the
-    // lock before then showed the bare desktop for a frame.
+    // The copy has drawn its first frame, which reaches the screen shortly
+    // after (as for the fade-in); letting go of the lock before then showed
+    // the bare desktop for a frame.
     function copyDrawn() {
         if (unlocking && locked && !releaseDelay.running)
             releaseDelay.restart();
@@ -230,7 +274,7 @@ Scope {
 
     Timer {
         id: releaseDelay
-        interval: 250
+        interval: 80
         onTriggered: root.releaseLock()
     }
 
@@ -488,6 +532,7 @@ Scope {
             id: previewSurface
             anchors.fill: parent
             lock: root
+            backgroundSource: root.previewing ? root.backgroundSource : ""
         }
 
         onVisibleChanged: {
