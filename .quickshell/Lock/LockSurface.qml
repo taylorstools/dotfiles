@@ -55,7 +55,7 @@ Item {
         // (Lock.refreshBackground). Loading is synchronous, and decoding it
         // anew for each surface froze the animations for 140 ms at a time.
         source: root.backgroundSource
-        sourceSize: root.lock.backgroundSize
+        sourceSize: Theme.largestScreenPixels
     }
 
     // Date: 42pt, top edge at 23% down.

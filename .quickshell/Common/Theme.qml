@@ -105,6 +105,18 @@ Singleton {
     // snap to an even number of physical pixels, so they depend on the
     // screen's scale: at your 1.875 that's 26.67 and 37.33 (50 and 70 px).
     readonly property real dpr: Quickshell.screens.length > 0 ? Quickshell.screens[0].devicePixelRatio : 1
+    // Big enough for a full-screen picture on any screen: `sourceSize` for the
+    // effects wallpaper (3840x2160 here, on 2880x1800), which then needs less
+    // memory and uploads to the GPU faster.
+    readonly property size largestScreenPixels: {
+        let width = 0;
+        let height = 0;
+        for (const screen of Quickshell.screens) {
+            width = Math.max(width, Math.ceil(screen.width * screen.devicePixelRatio));
+            height = Math.max(height, Math.ceil(screen.height * screen.devicePixelRatio));
+        }
+        return Qt.size(width, height);
+    }
     readonly property real barInnerPadding: 1
     readonly property real widgetThickness: snapEven(Math.max(20, 26 + barInnerPadding * 0.6))
     readonly property real barThickness: snapEven(Math.max(widgetThickness + barInnerPadding + 4, 48 - 4 - (8 - barInnerPadding)))

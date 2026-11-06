@@ -76,14 +76,41 @@ Scope {
     readonly property real hoverIconSize: 85
     readonly property real labelLift: 63
 
+    // Decoding this picture takes 140 ms. Done on open, it froze the shell every
+    // time, so it's read ahead on another thread (`background`) and kept, and
+    // read again only when the effects script rewrites the file. A new query
+    // string is what makes Qt read the file again.
+    readonly property string backgroundFile: Quickshell.env("HOME") + "/.config/.EffectsWallpaper.png"
+
+    function refreshBackground() {
+        background.source = "file://" + backgroundFile + "?v=" + Date.now();
+    }
+
+    Component.onCompleted: refreshBackground()
+
+    FileView {
+        path: root.backgroundFile
+        preload: false
+        watchChanges: true
+        printErrors: false
+        onFileChanged: backgroundRefresh.restart()
+    }
+
+    // magick writes the file in place: read it once that has settled.
+    Timer {
+        id: backgroundRefresh
+        interval: 1000
+        onTriggered: root.refreshBackground()
+    }
+
     function open() {
         if (!motion.mapped) {
             const screens = Array.from(Quickshell.screens);
             window.screen = screens.find(s => s.name === Niri.focusedOutput) ?? screens[0];
         }
-        // The effects script rewrites the file when the wallpaper changes.
-        background.source = "";
-        background.source = "file://" + Quickshell.env("HOME") + "/.config/.EffectsWallpaper.png";
+        // It wasn't there to read earlier (the script hadn't run yet, say).
+        if (background.status === Image.Error)
+            refreshBackground();
         shown = true;
     }
 
@@ -178,8 +205,10 @@ Scope {
                 id: background
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
-                cache: false
-                asynchronous: false
+                sourceSize: Theme.largestScreenPixels
+                asynchronous: true
+                // A new picture replaces the old one only once it's ready.
+                retainWhileLoading: true
             }
 
             // A click outside the buttons closes.

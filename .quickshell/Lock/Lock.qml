@@ -93,17 +93,6 @@ Scope {
     readonly property string marker: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/qstest-locked." + (Quickshell.env("WAYLAND_DISPLAY") || "wayland")
     // Reloaded on every lock: the effects script rewrites it per wallpaper.
     property string backgroundSource: ""
-    // The picture can be larger than the screens (3840x2160 here, on 2880x1800):
-    // decoded at this size, it needs less memory and uploads to the GPU faster.
-    readonly property size backgroundSize: {
-        let width = 0;
-        let height = 0;
-        for (const screen of Quickshell.screens) {
-            width = Math.max(width, Math.ceil(screen.width * screen.devicePixelRatio));
-            height = Math.max(height, Math.ceil(screen.height * screen.devicePixelRatio));
-        }
-        return Qt.size(width, height);
-    }
 
     // hyprlock_battery.sh: a battery a tenth full per step, a plug while charging.
     readonly property string batteryText: {
