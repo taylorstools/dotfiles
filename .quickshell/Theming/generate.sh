@@ -7,7 +7,7 @@
 #
 #   1. the shell's palette  -> ~/.cache/qstest/colors.json (Theme reads it)
 #   2. a terminal palette   -> ~/.cache/qstest/term16.json (term16.py)
-#   3. app themes           -> GTK, niri, Ghostty, kitty, KDE, Zed, Firefox
+#   3. app themes           -> GTK, niri, Ghostty, kitty, KDE, Zed
 #                              (templates.toml)
 #   4. your own templates   -> ~/.config/matugen/config.toml
 #   5. kitty and Ghostty are told to reload
@@ -48,6 +48,21 @@ matugen image "$wall" --type "$scheme" --mode dark "${seed[@]}" \
     -c "$cache/matugen-apps.toml" --import-json "$cache/term16.json" >/dev/null ||
     { echo "app themes: matugen failed" >&2; failed=1; }
 
+# Sends a signal only to processes that listen for it. Helpers like
+# `ghostty +ssh` share the app's name but don't handle USR1/USR2, so the signal
+# would kill them, and the SSH session with them. Ghostty has a handler
+# (SigCgt); kitty blocks the signal and reads it from a signalfd (SigBlk).
+reload_app() {
+    local signum=$1 names=$2 pid caught blocked
+    for pid in $(pgrep -x "$names"); do
+        caught=$(sed -n 's/^SigCgt:[[:space:]]*//p' "/proc/$pid/status" 2>/dev/null)
+        blocked=$(sed -n 's/^SigBlk:[[:space:]]*//p' "/proc/$pid/status" 2>/dev/null)
+        if [[ -n $caught && -n $blocked ]] && ((((0x$caught | 0x$blocked) >> (signum - 1)) & 1)); then
+            kill "-$signum" "$pid" 2>/dev/null
+        fi
+    done
+}
+
 if [[ -z ${QSTEST_THEME_ROOT:-} ]]; then
     if [[ -f $user_config ]]; then
         matugen image "$wall" --type "$scheme" --mode dark "${seed[@]}" \
@@ -56,9 +71,10 @@ if [[ -z ${QSTEST_THEME_ROOT:-} ]]; then
     fi
     # kitty rereads its config (and the theme it includes) on SIGUSR1,
     # Ghostty on SIGUSR2. niri reloads colors.kdl by itself. NixOS can run
-    # them under their .*-wrapped names.
-    pkill -USR1 -x 'kitty|\.kitty-wrapped' 2>/dev/null
-    pkill -USR2 -x 'ghostty|\.ghostty-wrapped' 2>/dev/null
+    # them under their .*-wrapped names, which the kernel cuts to 15 characters
+    # (.ghostty-wrappe).
+    reload_app 10 'kitty|\.kitty-wrapped'
+    reload_app 12 'ghostty|\.ghostty-wrappe'
 fi
 
 # Last, so the shell recolours once everything else is written.

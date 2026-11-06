@@ -22,8 +22,8 @@ push() {
   git add . && git commit -m "$1" && git push
 }
 
-# Prompt
-PS1='\[\033[36m\]\w > \[\033[0m\]'
+# Prompt, in blue: the terminal palette's wallpaper colour on taylorpc
+PS1='\[\033[34m\]\w > \[\033[0m\]'
 
 export XDG_CONFIG_HOME="$HOME/.config"
 

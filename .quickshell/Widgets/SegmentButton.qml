@@ -20,6 +20,10 @@ Rectangle {
 
     Row {
         anchors.centerIn: parent
+        // Material Symbols leave about 3px blank each side of an 18px glyph, so
+        // the icon's blank edge counted towards the row and pushed what you see
+        // right. Half of it back centres the visible icon and label.
+        anchors.horizontalCenterOffset: root.icon !== "" ? -1.5 : 0
         spacing: 6
 
         // Text-only buttons (no icon) keep their label centred.
