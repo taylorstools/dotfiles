@@ -6,8 +6,9 @@ import qs.Services
 // What one screen of the lock shows, a copy of Taylor's hyprlock.conf
 // (dot_config/hypr before the switch): the effects wallpaper, date and time,
 // the user, the password field, battery bottom left and power icons bottom
-// right. Placement and sizes follow hyprlock's, which counts in physical
-// pixels and font points without the output scale; hp() and fp() convert.
+// right. Sizes are written as they were on the 2880x1800 laptop screen, in
+// hyprlock's pixels and font points; hp() and fp() scale them to this screen,
+// so the lock looks the same at any resolution or output scale.
 Item {
     id: root
 
@@ -24,13 +25,16 @@ Item {
     // in hyprlock.conf).
     readonly property color light: Theme.tertiaryLightScheme
     readonly property color lighter: Theme.tertiary
-    readonly property real dpr: Window.window?.devicePixelRatio ?? Theme.dpr
+    // One pixel of the 2880x1800 screen on this one. The smaller ratio, like
+    // CSS's vmin, so a wider or narrower screen doesn't push anything off it.
+    // 1 until the surface has a size: a font size of 0 makes Qt print a warning.
+    readonly property real unit: width > 0 && height > 0 ? Math.min(width / 2880, height / 1800) : 1
 
-    function hp(physical) {
-        return physical / dpr;
+    function hp(pixels) {
+        return pixels * unit;
     }
     function fp(points) {
-        return points * 4 / 3 / dpr;
+        return points * 4 / 3 * unit;
     }
 
     // Keyboard goes to the field; it's invisible, the dots below show it.
@@ -92,9 +96,9 @@ Item {
         font.pixelSize: root.fp(48)
     }
 
-    // Password field: 18% x 5% of the screen, bottom edge at 25% up, and
-    // around that a 2px outline fading from $lighter at the top to $light at
-    // the bottom.
+    // Password field: hyprlock's 18% x 5% of the 2880x1800 screen, kept in that
+    // shape on any other, bottom edge at 25% up, and around that a 2px outline
+    // fading from $lighter at the top to $light at the bottom.
     Item {
         id: field
 
@@ -102,8 +106,8 @@ Item {
 
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.75 + outlineWidth - height
-        width: parent.width * 0.18 + outlineWidth * 2
-        height: parent.height * 0.05 + outlineWidth * 2
+        width: root.hp(518.4) + outlineWidth * 2
+        height: root.hp(90) + outlineWidth * 2
 
         Canvas {
             id: outline
