@@ -3,7 +3,7 @@ import Quickshell
 import qs.Common
 
 // A popup beside a dock icon, on the side away from the screen edge. Used for
-// the dock's tooltips and right-click menu.
+// the dock's tooltips.
 PopupWindow {
     id: root
 

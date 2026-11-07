@@ -66,11 +66,30 @@ PanelWindow {
     Component.onCompleted: applyBlur()
     onVisibleChanged: applyBlur()
 
-    // Scrolling on empty bar space switches workspaces.
+    // Scrolling on empty bar space switches workspaces; right-clicking it opens
+    // the taskbar menu. Most widgets only take left clicks, so their right
+    // clicks land here too and are ruled out by position. Running apps and tray
+    // icons have their own right-click menus.
     MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.NoButton
+        acceptedButtons: Qt.RightButton
         property real accumulator: 0
+        onClicked: mouse => {
+            if (closer.over(workspaces, mouse) || closer.over(rightSection, mouse))
+                return;
+            Popouts.openContextMenuAboveBar(bar.screen, mouse.x, [
+                {
+                    icon: "monitoring",
+                    text: "Task Manager",
+                    action: () => Quickshell.execDetached(["missioncenter"])
+                },
+                {
+                    icon: "settings",
+                    text: "Shell Settings",
+                    action: () => Popouts.settingsOpen = true
+                }
+            ]);
+        }
         onWheel: wheel => {
             accumulator += wheel.angleDelta.y;
             if (Math.abs(accumulator) >= 120) {

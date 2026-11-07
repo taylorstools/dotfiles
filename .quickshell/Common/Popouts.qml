@@ -20,6 +20,41 @@ Singleton {
     property real trayX: 0
     property string clockTab: "overview"
     property bool settingsOpen: false
+    // The right-click menu (Bar/ContextMenu.qml): its screen (null when
+    // closed), the point it's placed against on that screen, which way it
+    // opens from there ("top", "left" or "right"), and its rows.
+    property var contextMenuScreen: null
+    property real contextMenuX: 0
+    property real contextMenuY: 0
+    property string contextMenuSide: "top"
+    property var contextMenuItems: []
+
+    readonly property bool flyoutOpen: controlCenterScreen !== null || clockScreen !== null || batteryScreen !== null || trayScreen !== null
+
+    // Floating above the taskbar, centred on x.
+    // items: a list of { icon: material icon, text, action: function }. A row
+    // with no action is a label, and icon is optional.
+    function openContextMenuAboveBar(screen, x, items) {
+        openContextMenu(screen, "top", x, screen.height - Theme.barThickness - Theme.spacingS, items);
+    }
+
+    // Opening from (x, y) towards side ("left" or "right"), centred on y.
+    function openContextMenuBeside(screen, side, x, y, items) {
+        openContextMenu(screen, side, x, y, items);
+    }
+
+    function openContextMenu(screen, side, x, y, items) {
+        contextMenuSide = side;
+        contextMenuX = x;
+        contextMenuY = y;
+        contextMenuItems = items;
+        contextMenuScreen = screen;
+    }
+
+    // Leaves the rows in place: they're still showing while the menu fades out.
+    function closeContextMenu() {
+        contextMenuScreen = null;
+    }
 
     // Opening one flyout closes the others.
     function toggleControlCenter(screen) {

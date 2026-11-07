@@ -75,6 +75,7 @@ ShellRoot {
     ClockFlyout {}
     BatteryFlyout {}
     TrayFlyout {}
+    ContextMenu {}
     Popups {}
     Osd {
         id: osd

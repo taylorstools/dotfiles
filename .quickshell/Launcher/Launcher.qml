@@ -11,28 +11,34 @@ import qs.Widgets
 //   qs ipc -p <this folder> call launcher toggle      (or ./run.sh launcher)
 // Type to filter, Up/Down (or Tab/Shift+Tab) to move, Enter to launch,
 // Esc or a click outside to close. Right-click an app to pin it to the dock.
-// Opens on the monitor niri has focused.
+// Opens on the monitor niri has focused. Typing in niri's overview opens it too,
+// with what was typed; emptying the search then goes back to the overview.
 Scope {
     id: root
 
     property bool shown: false
     property string query: ""
+    // Opened by typing in the overview.
+    property bool fromOverview: false
     // The app whose right-click menu is open, and where it was clicked.
     property var menuEntry: null
     property point menuPos
     readonly property var results: Apps.search(query)
 
-    function show() {
+    function show(typed) {
         const screens = Array.from(Quickshell.screens);
         const target = screens.find(s => s.name === Niri.focusedOutput) ?? screens[0];
         if (target)
             launcherWindow.screen = target;
-        query = "";
+        fromOverview = !!typed;
+        searchInput.text = typed ?? "";
+        resultList.currentIndex = 0;
         shown = true;
     }
 
     function hide() {
         menuEntry = null;
+        fromOverview = false;
         shown = false;
     }
 
@@ -48,6 +54,99 @@ Scope {
             return;
         hide();
         entry.execute();
+        // So the new window is what you see, not the overview around it.
+        if (Niri.overviewOpen)
+            Niri.action("CloseOverview");
+    }
+
+    // A key that reached the overview's window below.
+    function overviewKey(event) {
+        const text = event.text;
+        const shortcut = event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier);
+
+        if (!shortcut && text >= " " && text !== "\x7f") {
+            // The launcher takes the keyboard a moment after it opens, so a
+            // fast typist's next keys still land here.
+            if (shown)
+                searchInput.insert(searchInput.cursorPosition, text);
+            else if (text !== " ")
+                show(text);
+            event.accepted = true;
+            return;
+        }
+        if (shown || shortcut || (event.modifiers & Qt.ShiftModifier))
+            return;
+
+        // niri only handles these itself while the overview has the keyboard,
+        // so they're passed on as the same actions (hardcoded_overview_bind).
+        // Esc and Enter don't repeat there either: holding Esc to leave the
+        // launcher shouldn't close the overview as well.
+        switch (event.key) {
+        case Qt.Key_Escape:
+        case Qt.Key_Return:
+            if (!event.isAutoRepeat)
+                Niri.action("CloseOverview");
+            break;
+        case Qt.Key_Left:
+            Niri.action("FocusColumnLeft");
+            break;
+        case Qt.Key_Right:
+            Niri.action("FocusColumnRight");
+            break;
+        case Qt.Key_Up:
+            Niri.action("FocusWindowOrWorkspaceUp");
+            break;
+        case Qt.Key_Down:
+            Niri.action("FocusWindowOrWorkspaceDown");
+            break;
+        default:
+            return;
+        }
+        event.accepted = true;
+    }
+
+    Connections {
+        target: Niri
+        function onOverviewOpenChanged() {
+            if (!Niri.overviewOpen && root.fromOverview)
+                root.hide();
+        }
+    }
+
+    // niri's overview drops keys it has no use for, so while it's open this
+    // invisible window holds the keyboard and passes them to overviewKey. One
+    // per screen, as niri only gives focus to the active output's surfaces.
+    // On the Top layer because niri prefers the Overlay layer, so every
+    // Overlay panel (this launcher too) takes the keyboard from it by itself.
+    // The flyouts are on Top as well, where niri picks the surface mapped
+    // first, so this one has to let go for them. Stays mapped to catch the
+    // first key straight after the overview opens.
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            required property var modelData
+
+            screen: modelData
+            anchors {
+                top: true
+                left: true
+            }
+            implicitWidth: 1
+            implicitHeight: 1
+            exclusionMode: ExclusionMode.Ignore
+            color: "transparent"
+            mask: Region {}
+
+            WlrLayershell.namespace: "qstest:overview-keys"
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.keyboardFocus: Niri.overviewOpen && !Popouts.flyoutOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
+            Item {
+                focus: true
+                Keys.onPressed: event => root.overviewKey(event)
+            }
+        }
     }
 
     IpcHandler {
@@ -90,8 +189,6 @@ Scope {
 
         onVisibleChanged: {
             if (visible) {
-                searchInput.text = "";
-                resultList.currentIndex = 0;
                 searchInput.forceActiveFocus();
                 applyBlur();
             }
@@ -202,6 +299,8 @@ Scope {
                         root.menuEntry = null;
                         root.query = text;
                         resultList.currentIndex = 0;
+                        if (text === "" && root.fromOverview)
+                            root.hide();
                     }
 
                     Keys.onPressed: event => {

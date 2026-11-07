@@ -314,7 +314,7 @@ Item {
                             delegateItem.activate();
                         } else if (mouse.button === Qt.RightButton) {
                             root.hoveredItem = null;
-                            contextMenu.open(delegateItem, delegateItem.windowData);
+                            root.openMenu(delegateItem.windowData, delegateItem.mapToItem(null, delegateItem.width / 2, 0).x);
                         } else if (mouse.button === Qt.MiddleButton && delegateItem.windowData) {
                             Niri.closeWindow(delegateItem.windowData.id);
                         }
@@ -329,110 +329,33 @@ Item {
                 Tooltip {
                     target: delegateItem
                     text: delegateItem.tooltipText
-                    shown: root.hoveredItem === delegateItem && !contextMenu.isOpen
+                    shown: root.hoveredItem === delegateItem
                 }
             }
         }
     }
 
-    // Right-click menu: pin the app to the dock, or close the window (the
-    // plugin's menu only had Close). It dismisses itself once the pointer
-    // leaves it.
-    Item {
-        id: contextMenu
-
-        property Item anchorItem: null
-        property var windowData: null
-        property bool menuHovered: false
-        readonly property bool isOpen: anchorItem !== null
-
-        function open(item, data) {
-            windowData = data;
-            anchorItem = item;
-            leaveTimer.restart();
-        }
-
-        function close() {
-            anchorItem = null;
-            windowData = null;
-            menuHovered = false;
-        }
-
-        Timer {
-            id: leaveTimer
-            interval: 1500
-            onTriggered: {
-                if (!contextMenu.menuHovered)
-                    contextMenu.close();
-            }
-        }
-
-        Loader {
-            active: contextMenu.isOpen
-            sourceComponent: BarPopup {
-                target: contextMenu.anchorItem
-                padding: Theme.spacingXS
-                visible: true
-
-                Column {
-                    readonly property string appId: DockApps.idForAppId(contextMenu.windowData?.app_id ?? "")
-                    readonly property bool pinned: DockApps.isPinned(appId)
-
-                    width: 140
-
-                    HoverHandler {
-                        onHoveredChanged: {
-                            contextMenu.menuHovered = hovered;
-                            if (!hovered)
-                                leaveTimer.restart();
-                        }
-                    }
-
-                    MenuRow {
-                        text: parent.pinned ? "Unpin from dock" : "Pin to dock"
-                        onClicked: {
-                            DockApps.togglePin(parent.appId);
-                            contextMenu.close();
-                        }
-                    }
-
-                    MenuRow {
-                        text: "Close"
-                        onClicked: {
-                            if (contextMenu.windowData)
-                                Niri.closeWindow(contextMenu.windowData.id);
-                            contextMenu.close();
-                        }
-                    }
+    // Right-click menu above the bar, centred on the window's pill (`centerX`):
+    // the app's launch rows, pin it to the dock, or close the window (the
+    // plugin's menu only had Close).
+    function openMenu(windowData, centerX) {
+        const appId = DockApps.idForAppId(windowData?.app_id ?? "");
+        const pinned = DockApps.isPinned(appId);
+        const windowId = windowData?.id;
+        Popouts.openContextMenuAboveBar(parentScreen, centerX, DockApps.launchRows(appId).concat([
+            {
+                icon: pinned ? "keep_off" : "keep",
+                text: pinned ? "Unpin from dock" : "Pin to dock",
+                action: () => DockApps.togglePin(appId)
+            },
+            {
+                icon: "close",
+                text: "Close",
+                action: () => {
+                    if (windowId !== undefined)
+                        Niri.closeWindow(windowId);
                 }
             }
-        }
-    }
-
-    component MenuRow: Rectangle {
-        id: menuRow
-
-        property string text
-
-        signal clicked
-
-        width: 140
-        height: 32
-        radius: Theme.cornerRadius - Theme.spacingXS
-        color: rowArea.containsMouse ? Theme.widgetHover : "transparent"
-
-        StyledText {
-            anchors.centerIn: parent
-            text: menuRow.text
-            font.pixelSize: Theme.fontSizeSmall
-        }
-
-        MouseArea {
-            id: rowArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: menuRow.clicked()
-        }
+        ]));
     }
 }

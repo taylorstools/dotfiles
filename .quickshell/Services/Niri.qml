@@ -90,6 +90,15 @@ Singleton {
         return true;
     }
 
+    // An action with no arguments, by its niri_ipc name.
+    function action(name) {
+        send({
+            "Action": {
+                [name]: {}
+            }
+        });
+    }
+
     function focusWindow(id) {
         send({
             "Action": {

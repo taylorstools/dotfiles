@@ -30,9 +30,9 @@ PanelWindow {
     // there, like the attached flyouts.
     readonly property real overshoot: Theme.cornerRadius + 1
 
-    // The app whose right-click menu is open, or "".
+    // The app whose right-click menu is open, or "". It keeps the dock out
+    // and the icon lit while the menu is up.
     property string menuApp: ""
-    property Item menuAnchor: null
     property bool hovering: false
     readonly property bool revealed: !Settings.dockAutoHide || hovering || menuApp !== "" || Niri.overviewOpen
 
@@ -239,16 +239,12 @@ PanelWindow {
                         cursorShape: Qt.PointingHandCursor
                         acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
                         onClicked: mouse => {
-                            if (mouse.button === Qt.RightButton) {
-                                root.menuAnchor = app;
-                                root.menuApp = app.modelData;
-                                menuLeave.restart();
-                            } else if (mouse.button === Qt.MiddleButton) {
+                            if (mouse.button === Qt.RightButton)
+                                root.openMenu(app.modelData, app.mapToItem(null, 0, app.height / 2).y);
+                            else if (mouse.button === Qt.MiddleButton)
                                 DockApps.launch(app.modelData);
-                            } else {
-                                root.menuApp = "";
+                            else
                                 DockApps.activate(app.modelData);
-                            }
                         }
                     }
 
@@ -272,122 +268,39 @@ PanelWindow {
         }
     }
 
-    // Right-click menu. Like the taskbar's, it closes itself once the
-    // pointer has been off it for a moment.
-    Timer {
-        id: menuLeave
-        interval: 1500
-        onTriggered: {
-            if (!menuHover.hovered)
+    // Right-click menu floating beside the dock, centred on the icon
+    // (`centerY`; this window starts at the top of the screen).
+    function openMenu(appId, centerY) {
+        const windowCount = DockApps.items[appId]?.windows.length ?? 0;
+        const pinned = DockApps.isPinned(appId);
+        const rows = [
+            {
+                text: Apps.nameFor(appId)
+            }
+        ].concat(DockApps.launchRows(appId), [
+            {
+                icon: pinned ? "keep_off" : "keep",
+                text: pinned ? "Unpin from dock" : "Pin to dock",
+                action: () => DockApps.togglePin(appId)
+            }
+        ]);
+        if (windowCount > 0)
+            rows.push({
+                icon: "close",
+                text: windowCount > 1 ? "Close " + windowCount + " windows" : "Close",
+                action: () => DockApps.closeAll(appId)
+            });
+        menuApp = appId;
+        // dockWidth is the part of the panel that's on screen.
+        const gap = dockWidth + Theme.spacingS;
+        Popouts.openContextMenuBeside(screen, onLeft ? "right" : "left", onLeft ? gap : screen.width - gap, centerY, rows);
+    }
+
+    Connections {
+        target: Popouts
+        function onContextMenuScreenChanged() {
+            if (Popouts.contextMenuScreen === null)
                 root.menuApp = "";
-        }
-    }
-
-    LazyLoader {
-        active: root.menuApp !== "" && root.menuAnchor !== null
-
-        DockPopup {
-            target: root.menuAnchor
-            side: root.onLeft ? "left" : "right"
-            padding: Theme.spacingXS
-            visible: true
-
-            Column {
-                id: menu
-
-                readonly property var item: DockApps.items[root.menuApp] ?? null
-                readonly property int windowCount: item?.windows.length ?? 0
-
-                width: 180
-
-                HoverHandler {
-                    id: menuHover
-                    onHoveredChanged: {
-                        if (!hovered)
-                            menuLeave.restart();
-                    }
-                }
-
-                StyledText {
-                    width: parent.width
-                    leftPadding: Theme.spacingS
-                    topPadding: Theme.spacingXS
-                    bottomPadding: Theme.spacingXS
-                    text: Apps.nameFor(root.menuApp)
-                    color: Theme.outline
-                    font.pixelSize: Theme.fontSizeSmall
-                    elide: Text.ElideRight
-                }
-
-                // Each closes the menu after acting; that destroys the item.
-                MenuItem {
-                    icon: "add"
-                    text: "New window"
-                    onClicked: {
-                        DockApps.launch(root.menuApp);
-                        root.menuApp = "";
-                    }
-                }
-                MenuItem {
-                    icon: DockApps.isPinned(root.menuApp) ? "keep_off" : "keep"
-                    text: DockApps.isPinned(root.menuApp) ? "Unpin from dock" : "Pin to dock"
-                    onClicked: {
-                        DockApps.togglePin(root.menuApp);
-                        root.menuApp = "";
-                    }
-                }
-                MenuItem {
-                    visible: menu.windowCount > 0
-                    icon: "close"
-                    text: menu.windowCount > 1 ? "Close " + menu.windowCount + " windows" : "Close"
-                    onClicked: {
-                        DockApps.closeAll(root.menuApp);
-                        root.menuApp = "";
-                    }
-                }
-            }
-        }
-    }
-
-    component MenuItem: Rectangle {
-        id: menuItem
-
-        property string icon
-        property string text
-
-        signal clicked
-
-        width: 180
-        height: visible ? 32 : 0
-        radius: Theme.cornerRadius - Theme.spacingXS
-        color: itemMouse.containsMouse ? Theme.widgetHover : "transparent"
-
-        Row {
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.spacingS
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.spacingS
-
-            MaterialIcon {
-                anchors.verticalCenter: parent.verticalCenter
-                name: menuItem.icon
-                size: 16
-                color: Theme.surfaceVariantText
-            }
-
-            StyledText {
-                anchors.verticalCenter: parent.verticalCenter
-                text: menuItem.text
-                font.pixelSize: Theme.fontSizeSmall
-            }
-        }
-
-        MouseArea {
-            id: itemMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: menuItem.clicked()
         }
     }
 }

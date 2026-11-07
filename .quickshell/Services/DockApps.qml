@@ -85,6 +85,30 @@ Singleton {
             entry.execute();
     }
 
+    // Right-click menu rows that start something: New window, then whatever
+    // else the app's desktop file offers (Chrome's incognito window, Thunar's
+    // Trash). None for an app with no desktop entry to launch from.
+    function launchRows(id) {
+        const entry = Apps.entryFor(id);
+        if (!entry)
+            return [];
+        const actions = Array.from(entry.actions);
+        // The app's own new-window action if it has one: Firefox's passes
+        // --new-window, for example.
+        const newWindow = actions.find(a => a.id === "new-window") ?? entry;
+        return [
+            {
+                icon: "add",
+                text: "New window",
+                action: () => newWindow.execute()
+            }
+        ].concat(actions.filter(a => a.id !== "new-window").map(a => ({
+                    icon: /private|incognito/.test(a.id) ? "visibility_off" : "open_in_new",
+                    text: a.name,
+                    action: () => a.execute()
+                })));
+    }
+
     // Not running: launch. Running: focus it; if it's already focused, step
     // to its next window.
     function activate(id) {
