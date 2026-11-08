@@ -322,4 +322,11 @@ in
     persistent = true;
     options = "--delete-older-than 7d";
   };
+
+  # Hardlink identical files in the store, like `clean` does by hand.
+  nix.optimise = {
+    automatic = true;
+    dates = [ "weekly" ];
+    persistent = true;
+  };
 }
