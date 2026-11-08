@@ -15,9 +15,12 @@ let
       RuntimeDir="/run/user/$UserUid"
       BusAddr="unix:path=$RuntimeDir/bus"
 
+      # kdotool >= 0.3.0 refuses to run unless KDE_SESSION_VERSION=6 is set,
+      # and a system service doesn't inherit the Plasma session environment.
       run_as_user() {
         runuser -u "$UserName" -- "${envBin}" \
-          XDG_RUNTIME_DIR="$RuntimeDir" DBUS_SESSION_BUS_ADDRESS="$BusAddr" "$@"
+          XDG_RUNTIME_DIR="$RuntimeDir" DBUS_SESSION_BUS_ADDRESS="$BusAddr" \
+          KDE_SESSION_VERSION=6 "$@"
       }
 
       # Logged out
@@ -27,17 +30,28 @@ let
         exit 0
       fi
 
-      # Every KWin window that has a (non-empty) class.
-      mapfile -t Ids < <(run_as_user "${kdotoolBin}" search --class . 2>/dev/null || true)
+      # Every KWin window that has a (non-empty) class. kdotool's stderr is
+      # left alone so failures land in the journal.
+      if ! SearchOut="$(run_as_user "${kdotoolBin}" search --class .)"; then
+        echo "kdotool search failed; can't tell what's open. Skipping nightly reboot."
+        exit 0
+      fi
+      mapfile -t Ids <<< "$SearchOut"
 
+      TotalCount=0
       AppCount=0
       for Id in "''${Ids[@]}"; do
         [ -n "$Id" ] || continue
-        Class="$(run_as_user "${kdotoolBin}" getwindowclassname "$Id" 2>/dev/null || true)"
+        TotalCount=$((TotalCount + 1))
+        Class="$(run_as_user "${kdotoolBin}" getwindowclassname "$Id")" || Class=""
         ClassLower="''${Class,,}"
         case "$ClassLower" in
-          *plasmashell*|python3*|"")
+          *plasmashell*|python3*)
             echo "Ignoring window $Id (class: '$Class')"
+            ;;
+          "")
+            AppCount=$((AppCount + 1))
+            echo "Window $Id has no readable class; counting it to be safe"
             ;;
           *)
             AppCount=$((AppCount + 1))
@@ -45,6 +59,13 @@ let
             ;;
         esac
       done
+
+      # A live Plasma session always has plasmashell windows, so zero windows
+      # total means the query broke, not that the machine is idle.
+      if [ "$TotalCount" -eq 0 ]; then
+        echo "kdotool returned no windows at all (not even plasmashell). Skipping nightly reboot."
+        exit 0
+      fi
 
       echo "Open application windows: $AppCount"
       if [ "$AppCount" -eq 0 ]; then
