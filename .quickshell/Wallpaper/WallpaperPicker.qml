@@ -36,9 +36,10 @@ GridView {
 
             Image {
                 anchors.fill: parent
-                source: "file://" + thumb.modelData
-                // Decoded once at this size and cached for the session.
-                sourceSize.width: 320
+                // The cached small copy (Wallpaper.thumbs); nothing until
+                // those are listed, rather than decoding the full-size image.
+                source: Wallpaper.thumbsReady ? "file://" + (Wallpaper.thumbs[thumb.modelData] || thumb.modelData) : ""
+                sourceSize.width: 480
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 opacity: thumbMouse.containsMouse || thumb.current ? 1 : 0.85

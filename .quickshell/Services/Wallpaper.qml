@@ -23,6 +23,13 @@ Singleton {
     readonly property bool xrayBackdrop: Settings.blur && Settings.blurXray && path !== ""
     // Images in the wallpaper folder, sorted by name.
     property var images: []
+    // Image path -> small JPEG copy for the picker (or the image itself if
+    // ImageMagick couldn't make one). Empty until the first run finishes.
+    // The wallpapers are 5K PNGs, and decoding them every time the picker
+    // showed is what made the grid fill in slowly.
+    property var thumbs: ({})
+    property bool thumbsReady: false
+    readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/qstest/wallpaper-thumbs"
     property bool generating: false
     // Set once a screen has drawn the wallpaper (or found nothing to draw),
     // for the login splash (Wallpaper/LoginReady.qml).
@@ -177,6 +184,55 @@ Singleton {
                 root.images = text.trim().split("\n").filter(l => l);
                 root.listedFolder = lister.folder;
                 root.decideStartup();
+                root.makeThumbs();
+            }
+        }
+    }
+
+    function makeThumbs() {
+        if (thumbnailer.running)
+            thumbnailer.queued = true;
+        else
+            thumbnailer.running = true;
+    }
+
+    // Makes a 480px-wide JPEG per image in thumbDir, named by a hash of the
+    // path, only when it's missing or older than the image, so after the
+    // first run this is just a stat per file. A few at a time: each magick
+    // holds a whole decoded 5K PNG. Prints "image<TAB>thumb" per image.
+    Process {
+        id: thumbnailer
+        property bool queued: false
+        command: ["sh", "-c", `
+            dir=$1; shift
+            mkdir -p "$dir"
+            jobs=$(nproc 2>/dev/null || echo 4); [ "$jobs" -gt 8 ] && jobs=8
+            for f; do
+                t="$dir/$(printf %s "$f" | md5sum | cut -c1-32).jpg"
+                if [ ! -s "$t" ] || [ "$f" -nt "$t" ]; then printf '%s\\0%s\\0' "$f" "$t"; fi
+            done | xargs -0 -r -n2 -P"$jobs" sh -c \
+                'magick -define jpeg:size=960x "$1[0]" -auto-orient -thumbnail 480x -quality 85 "$2.tmp.jpg" && mv -f "$2.tmp.jpg" "$2" || rm -f "$2.tmp.jpg"' sh
+            for f; do
+                t="$dir/$(printf %s "$f" | md5sum | cut -c1-32).jpg"
+                [ -s "$t" ] || t=$f
+                printf '%s\\t%s\\n' "$f" "$t"
+            done`, "sh", root.thumbDir].concat(root.images)
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const map = {};
+                for (const line of text.split("\n")) {
+                    const tab = line.indexOf("\t");
+                    if (tab > 0)
+                        map[line.slice(0, tab)] = line.slice(tab + 1);
+                }
+                root.thumbs = map;
+                root.thumbsReady = true;
+            }
+        }
+        onExited: {
+            if (queued) {
+                queued = false;
+                running = true;
             }
         }
     }
