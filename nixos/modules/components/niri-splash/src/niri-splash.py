@@ -35,10 +35,13 @@ PROBE_GRACE = 5.0        # `niri msg` never answered: uncover anyway
 POLL = 0.1
 
 # Spinner geometry, matching plymouth-theme-minimal's spinnerSize,
-# spinnerRadius and spinnerStroke: a draw-and-erase arc on a square box, one
-# cycle every 36 frames * 2 ticks / 50 per second. Plymouth steps through
-# pre-rendered frames; this draws the same curve continuously.
-RING_BOX, RING_R, RING_STROKE, PERIOD = 28.0, 12.0, 2.4, 1.44
+# spinnerRadius, spinnerStroke, spinnerSpins and spinnerArcMin/Max: an arc
+# orbiting a ring, swelling from a dot to ARC_MAX turns and back once every
+# SPINS revolutions. One loop is 84 frames * 2 ticks / 50 per second.
+# Plymouth steps through pre-rendered frames; this draws the same curve
+# continuously.
+RING_BOX, RING_R, RING_STROKE = 30.0, 12.0, 3.6
+SPINS, ARC_MIN, ARC_MAX, PERIOD = 3, 0.006, 0.45, 3.36
 
 
 # -- Cursor override ----------------------------------------------------------
@@ -367,17 +370,13 @@ class Splash:
         if self.alpha <= 0.0:
             return
         # Same curve as the awk in plymouth-theme-minimal/package.nix: the
-        # head draws round the ring in the first half of the cycle, the tail
-        # erases it in the second, the whole turning half a revolution.
+        # midpoint turns SPINS times per loop at a steady speed while the
+        # length eases between ARC_MIN and ARC_MAX turns on a cosine.
         t = ((time.monotonic() - self._t0) / PERIOD) % 1.0
-        full = 2.0 * math.pi * 0.98
-        base = -math.pi / 2.0 + math.pi * t
-        if t < 0.5:
-            a0, a1 = base, base + full * (2.0 * t) ** 0.8
-        else:
-            a0, a1 = base + full * (2.0 * (t - 0.5)) ** 1.25, base + full
-        if a1 - a0 <= 0.01:
-            return
+        length = ARC_MIN + (ARC_MAX - ARC_MIN) * (0.5 - 0.5 * math.cos(2.0 * math.pi * t))
+        mid = SPINS * t
+        a0 = 2.0 * math.pi * (mid - length / 2.0) - math.pi / 2.0
+        a1 = 2.0 * math.pi * (mid + length / 2.0) - math.pi / 2.0
         r, g, b, a = self.fg
         cr.set_source_rgba(r, g, b, a * self.alpha)
         cr.set_line_width(RING_STROKE)

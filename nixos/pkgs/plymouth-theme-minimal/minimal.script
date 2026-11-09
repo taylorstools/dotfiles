@@ -1,6 +1,6 @@
 # Minimal Plymouth theme: a bordered passphrase field with the nf-fa-lock
-# padlock glyph inset at its right edge, and a draw-and-erase arc spinner the
-# rest of the time.
+# padlock glyph inset at its right edge, and an orbiting ring spinner (an arc
+# that swells and shrinks over several turns) the rest of the time.
 #
 # The prompt string systemd-cryptsetup sends ("Please enter passphrase for
 # disk cryptroot...") arrives as the first argument to display_password and is
@@ -50,8 +50,8 @@ slot.height = field.image.GetHeight();
 slot.y = (screen.height - slot.height) / 2;
 
 # Optional logo above the prompt, injected by package.nix when one is
-# configured. Static: it neither pulses with the prompt nor changes on a
-# rejected passphrase.
+# configured. It pulses with the prompt while a passphrase is checked, but
+# does not change on a rejected one.
 @LOGO@
 
 slot.cy = slot.y + slot.height / 2;
@@ -100,6 +100,22 @@ spinner.sprite.SetOpacity(0);
 spinner.on = 0;
 spinner.tick = 0;
 spinner.index = 0;
+
+# The padlock's stand-in while a passphrase is checked: a smaller copy of the
+# boot ring, centred where the padlock is. It starts from its first frame on
+# every submission, a dot at 12 o'clock, and pulses with the field.
+check.count = @SPINNER_COUNT@;
+@CHECK_FRAMES@
+
+check.sprite = Sprite(check.frames[0]);
+check.sprite.SetX(field.x + field.image.GetWidth() - pad - lock.image.GetWidth() / 2 - check.frames[0].GetWidth() / 2);
+check.sprite.SetY(slot.cy - check.frames[0].GetHeight() / 2);
+check.sprite.SetZ(10);
+check.sprite.SetOpacity(0);
+
+check.on = 0;
+check.tick = 0;
+check.index = 0;
 
 # Plymouth gives no "wrong passphrase" callback, but its call sequence makes
 # one unnecessary. Measured on this machine with an instrumented build:
@@ -262,7 +278,9 @@ fun refresh() {
       state.pulse = 0;
       state.dir = 1;
     }
-    set_prompt_opacity(@PULSE_MIN@ + (1.0 - @PULSE_MIN@) * state.pulse / @PULSE_STEPS@);
+    pulse_opacity = @PULSE_MIN@ + (1.0 - @PULSE_MIN@) * state.pulse / @PULSE_STEPS@;
+    set_prompt_opacity(pulse_opacity);
+    set_logo_opacity(pulse_opacity);
 
     if (state.wait <= 0) {
       state.holding = 0;
@@ -283,21 +301,54 @@ fun refresh() {
       spinner.sprite.SetImage(spinner.frames[spinner.index]);
     }
   }
+
+  if (check.on) {
+    check.tick = check.tick + 1;
+    if (check.tick >= @SPINNER_TICKS@) {
+      check.tick = 0;
+      check.index = check.index + 1;
+      if (check.index >= check.count) {
+        check.index = 0;
+      }
+      check.sprite.SetImage(check.frames[check.index]);
+    }
+  }
+}
+
+# Padlock out, check ring in, from its first frame. Opacity is left to
+# set_prompt_opacity, which knows which of the two is showing.
+fun show_check() {
+  check.on = 1;
+  check.tick = 0;
+  check.index = 0;
+  check.sprite.SetImage(check.frames[0]);
+}
+
+fun hide_check() {
+  check.on = 0;
+  check.sprite.SetOpacity(0);
 }
 
 fun hide_field() {
   state.dots = 0;
+  hide_check();
   field.sprite.SetOpacity(0);
   lock.sprite.SetOpacity(0);
   field.sprite.SetImage(field.image);
   lock.sprite.SetImage(lock.image);
 }
 
-# Fade the whole prompt together: border, padlock and the lit dots. Only the
-# dots that are actually shown are touched, so the unused ones stay hidden.
+# Fade the whole prompt together: border, padlock (or the check ring standing
+# in for it) and the lit dots. Only the dots that are actually shown are
+# touched, so the unused ones stay hidden.
 fun set_prompt_opacity(o) {
   field.sprite.SetOpacity(o);
-  lock.sprite.SetOpacity(o);
+  if (check.on) {
+    lock.sprite.SetOpacity(0);
+    check.sprite.SetOpacity(o);
+  } else {
+    lock.sprite.SetOpacity(o);
+  }
   for (i = 0; i < bullet.max; i++) {
     if (i < state.dots) {
       bullets[i].SetOpacity(o);
@@ -336,10 +387,11 @@ fun display_password(prompt, count) {
     set_logo_opacity(1);
 
     # Being asked again while a submission was in flight means it was
-    # rejected.
+    # rejected: the padlock comes back, red.
     if (state.submitted) {
       state.submitted = 0;
       state.holding = 0;
+      hide_check();
       field.sprite.SetImage(field.error);
       lock.sprite.SetImage(lock.error);
     }
@@ -381,8 +433,11 @@ fun display_normal() {
 
       # Leave the dots exactly as typed. They stay until the answer arrives:
       # cleared by the red on rejection, or hidden with the field on success.
+      # The padlock turns into the check ring for as long as the field is
+      # held, and the logo pulses along with both.
       state.pulse = @PULSE_STEPS@;
       state.dir = 0 - 1;
+      show_check();
       set_prompt_opacity(1);
     } else {
       hide_field();

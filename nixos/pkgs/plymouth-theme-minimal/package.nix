@@ -56,24 +56,43 @@
   # plain centring does the right thing. Set to 0 for true geometric centring.
 , lockOpticalShift ? 0.05
 
-  # Spinner shown while the rest of boot happens: a "draw and erase" arc. Over
-  # the first half of a cycle the arc draws itself round the ring from its
-  # head; over the second half the tail chases the head and erases it, the
-  # whole thing turning half a revolution per cycle. Frames are pre-rendered
-  # at build time and injected into the script, so the count here is the only
-  # place it is written down. Cycle length is spinnerFrames * spinnerTicks / 50
-  # seconds; rotation wants more frames than the old dot row did, or the arc
-  # visibly steps.
+  # Spinner shown while the rest of boot happens, after Windows 11's boot
+  # ring: an arc that orbits clockwise at a steady speed while its length
+  # slowly swells from a dot to spinnerArcMax and back, once every
+  # spinnerSpins revolutions. The arc's midpoint moves uniformly and the
+  # length eases on a cosine, so it never empties and never jumps -- the last
+  # frame leads straight into the first because the loop is a whole number of
+  # turns.
   #
-  # spinnerSize is the side of the square frame, a little over the ring's
-  # diameter plus its stroke so the round caps are not clipped.
+  # Frames are pre-rendered at build time and injected into the script, so
+  # the count here is the only place it is written down. The loop lasts
+  # spinnerFrames * spinnerTicks / 50 seconds (84 * 2 / 50 = 3.36 s, so
+  # 1.12 s and 28 frames per spin). Rotation wants a fine step, about 13
+  # degrees here, or the arc visibly jumps.
+  #
+  # spinnerArcMin and spinnerArcMax are in turns. The minimum is not 0: an
+  # arc whose ends coincide draws nothing in SVG, and this one is meant to be
+  # a dot. spinnerSize is the side of the square frame, a little over the
+  # ring's diameter plus its stroke so the round caps are not clipped.
+  #
   # niri-splash/src/niri-splash.py draws the same ring with the same numbers
-  # (RING_*); change both together or the spinner jumps at the handoff.
-, spinnerSize ? 28
+  # (RING_*, SPINS, ARC_*, PERIOD); change both together or the spinner jumps
+  # at the handoff.
+, spinnerSize ? 30
 , spinnerRadius ? 12
-, spinnerStroke ? 2.4
-, spinnerFrames ? 36
+, spinnerStroke ? 3.6
+, spinnerFrames ? 84
 , spinnerTicks ? 2
+, spinnerSpins ? 3
+, spinnerArcMin ? 0.006
+, spinnerArcMax ? 0.45
+
+  # While a typed passphrase is being checked, the padlock gives way to a
+  # small copy of the same ring, pulsing with the field. This is its outer
+  # diameter, stroke included; the stroke keeps the boot ring's proportion to
+  # it. 18 is the quickshell lock screen's ratio (0.42 of the field height),
+  # so the two checks look alike.
+, checkSpinnerSize ? 18
 
 , foreground ? "#e6e6e6"
 , background ? "#000000"
@@ -93,8 +112,9 @@
   # really measuring how long the rejection took, not how long the grace ran.)
 , verifyGraceTicks ? 150
 
-  # While a passphrase is being checked, the whole prompt -- border, padlock
-  # and the dots you typed -- pulses. pulseSteps is the half-cycle in refresh
+  # While a passphrase is being checked, the whole prompt -- border, the
+  # check ring standing in for the padlock, the dots you typed -- and the
+  # logo pulse. pulseSteps is the half-cycle in refresh
   # ticks, so a full breath is 2 * pulseSteps / rate seconds. At ~50/sec, 32
   # gives about 1.3 seconds. Halve it to double the speed. pulseMin is how far
   # it dims.
@@ -190,6 +210,13 @@ let
   fieldSvg = mkFieldSvg "field.svg" foreground;
   fieldErrorSvg = mkFieldSvg "field-error.svg" errorColour;
 
+  # The check ring scaled down from the boot ring: same stroke-to-diameter
+  # ratio, a unit of transparent margin each side so antialiasing at the
+  # caps is not clipped.
+  checkStroke = checkSpinnerSize * spinnerStroke / (2.0 * spinnerRadius + spinnerStroke);
+  checkRadius = (checkSpinnerSize - checkStroke) / 2.0;
+  checkBox = checkSpinnerSize + 2;
+
   # Font outlines are Y-up, SVG is Y-down, hence the flip.
   mkLockSvg = name: fill: builtins.toFile name ''
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -209,6 +236,10 @@ let
     </svg>
   '';
 in
+assert lib.assertMsg (builtins.isInt spinnerSpins && spinnerSpins >= 1)
+  "plymouth-theme-minimal: spinnerSpins must be a whole number of turns, or the spinner jumps when it loops";
+assert lib.assertMsg (spinnerArcMin > 0 && spinnerArcMin < spinnerArcMax && spinnerArcMax < 1)
+  "plymouth-theme-minimal: need 0 < spinnerArcMin < spinnerArcMax < 1 (turns)";
 runCommand "plymouth-theme-${themeName}"
   {
     nativeBuildInputs = [ librsvg gawk ];
@@ -236,46 +267,53 @@ runCommand "plymouth-theme-${themeName}"
       ${bulletSvg} -o "$dir/bullet.png"
 
     # One arc per frame on a square viewBox. Angles are in radians, clockwise
-    # from 3 o'clock (SVG is Y-down), starting from 12 o'clock. The arc never
-    # spans more than 0.98 of a turn, so an SVG arc command can always draw it
-    # (a full 2*pi arc has coincident endpoints and draws nothing). An empty
-    # frame stays empty: a zero-length path with round caps would draw a dot.
+    # from 3 o'clock (SVG is Y-down), so turns are offset by -pi/2 to count
+    # from 12 o'clock. spinnerArcMin keeps the endpoints apart, so the arc
+    # command always draws and the shortest frame is a round-capped dot.
     # niri-splash's draw_spinner is the same function; keep them in step.
     # awk is here only because the shell has no sin().
-    frames=${toString spinnerFrames}
-    : > spinner-lines.txt
-    i=0
-    while [ "$i" -lt "$frames" ]; do
-      printf 'spinner.frames[%d] = Image("spinner-%02d.png");\n' "$i" "$i" \
-        >> spinner-lines.txt
-      awk -v i="$i" -v n="$frames" -v s=${toString spinnerSize} \
-          -v r=${toString spinnerRadius} -v w=${toString spinnerStroke} '
-        BEGIN {
-          pi = 3.141592653589793;
-          t = i / n;
-          full = 2 * pi * 0.98;
-          base = -pi / 2 + pi * t;
-          if (t < 0.5) {
-            a0 = base;
-            a1 = base + full * (2 * t) ^ 0.8;
-          } else {
-            a0 = base + full * (2 * (t - 0.5)) ^ 1.25;
-            a1 = base + full;
-          }
-          c = s / 2;
-          printf "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 %g %g\">", s, s;
-          if (a1 - a0 > 0.01) {
+    #
+    # ring_frames NAME BOX RADIUS STROKE PIXELS writes NAME-00.png onwards and
+    # NAME-lines.txt, the script lines that load them into NAME.frames. Two
+    # rings use it: the boot spinner and the smaller one that stands in for
+    # the padlock while a passphrase is checked. Same frame count, so the
+    # script steps both on the same ticks.
+    ring_frames() {
+      name=$1 box=$2 radius=$3 stroke=$4 pixels=$5
+      frames=${toString spinnerFrames}
+      : > "$name-lines.txt"
+      i=0
+      while [ "$i" -lt "$frames" ]; do
+        printf '%s.frames[%d] = Image("%s-%02d.png");\n' "$name" "$i" "$name" "$i" \
+          >> "$name-lines.txt"
+        awk -v i="$i" -v n="$frames" -v s="$box" \
+            -v r="$radius" -v w="$stroke" \
+            -v k=${toString spinnerSpins} \
+            -v lmin=${toString spinnerArcMin} -v lmax=${toString spinnerArcMax} '
+          BEGIN {
+            pi = 3.141592653589793;
+            t = i / n;
+            len = lmin + (lmax - lmin) * (0.5 - 0.5 * cos(2 * pi * t));
+            mid = k * t;
+            a0 = 2 * pi * (mid - len / 2) - pi / 2;
+            a1 = 2 * pi * (mid + len / 2) - pi / 2;
+            c = s / 2;
+            printf "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 %g %g\">", s, s;
             printf "<path d=\"M %.3f %.3f A %g %g 0 %d 1 %.3f %.3f\"", \
               c + r * cos(a0), c + r * sin(a0), r, r, (a1 - a0 > pi), \
               c + r * cos(a1), c + r * sin(a1);
             printf " fill=\"none\" stroke=\"${foreground}\" stroke-width=\"%g\" stroke-linecap=\"round\"/>", w;
-          }
-          printf "</svg>";
-        }' > frame.svg
-      rsvg-convert -w ${px spinnerSize} -h ${px spinnerSize} \
-        frame.svg -o "$dir/$(printf 'spinner-%02d' "$i").png"
-      i=$(( i + 1 ))
-    done
+            printf "</svg>";
+          }' > frame.svg
+        rsvg-convert -w "$pixels" -h "$pixels" \
+          frame.svg -o "$dir/$(printf '%s-%02d' "$name" "$i").png"
+        i=$(( i + 1 ))
+      done
+    }
+    ring_frames spinner ${toString spinnerSize} ${toString spinnerRadius} \
+      ${toString spinnerStroke} ${px spinnerSize}
+    ring_frames check ${toString checkBox} ${toString checkRadius} \
+      ${toString checkStroke} ${px checkBox}
 
     # The logo block is injected only when there is a logo: Plymouth's script
     # language does not fail loudly on Image() of a missing file, it just
@@ -313,6 +351,8 @@ runCommand "plymouth-theme-${themeName}"
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/g" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
+        -e "/@CHECK_FRAMES@/r check-lines.txt" \
+        -e "/@CHECK_FRAMES@/d" \
         -e "/@LOGO@/r logo-lines.txt" \
         -e "/@LOGO@/d" \
         -e "/@LOGO_OPACITY@/r logo-opacity.txt" \

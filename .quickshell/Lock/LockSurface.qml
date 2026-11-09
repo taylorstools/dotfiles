@@ -264,11 +264,26 @@ Item {
         // gives way to the red outline, fading out as that fades in; timed
         // from the check, not showChecking, which an accepted password clears
         // and would bring the ring back during the unlock's fade.
+        //
+        // The same ring as the boot splash (nixos/pkgs/plymouth-theme-minimal
+        // and niri-splash): an arc orbiting clockwise from 12 o'clock at a
+        // steady speed, swelling from a dot to arcMax turns and back once
+        // every `spins` turns, stroke 0.3 of the radius. Keep the numbers in
+        // step with those two. A check rarely lasts past the red outline
+        // taking over, so mostly what shows is the dot setting off and
+        // starting to grow.
         Canvas {
             id: checkRing
 
             readonly property color tint: root.lighter
             onTintChanged: requestPaint()
+
+            readonly property real period: 3.36
+            readonly property int spins: 3
+            readonly property real arcMin: 0.006
+            readonly property real arcMax: 0.45
+            readonly property real time: root.lock.checkTime
+            onTimeChanged: requestPaint()
 
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
@@ -279,15 +294,22 @@ Item {
                 const t = root.lock.checkTime;
                 return Math.max(0, Math.min(t / 0.12, 1, 1 - (t - root.lock.showCheckingAfter / 1000) / 0.2));
             }
-            rotation: root.lock.checkTime / 0.75 * 360
 
             onPaint: {
                 const ctx = getContext("2d");
                 ctx.reset();
-                const w = field.outlineWidth;
+                // Outer edge of the stroke on the canvas edge: diameter 24 +
+                // stroke 3.6 in the boot ring's units.
+                const stroke = width * 3.6 / 27.6;
+                const r = (width - stroke) / 2;
+                const t = (time / period) % 1;
+                const len = arcMin + (arcMax - arcMin) * (0.5 - 0.5 * Math.cos(2 * Math.PI * t));
+                const mid = spins * t;
                 ctx.beginPath();
-                ctx.arc(width / 2, height / 2, (width - w) / 2, 0, Math.PI * 1.28);
-                ctx.lineWidth = w;
+                ctx.arc(width / 2, height / 2, r,
+                        2 * Math.PI * (mid - len / 2) - Math.PI / 2,
+                        2 * Math.PI * (mid + len / 2) - Math.PI / 2);
+                ctx.lineWidth = stroke;
                 ctx.lineCap = "round";
                 ctx.strokeStyle = tint;
                 ctx.stroke();
