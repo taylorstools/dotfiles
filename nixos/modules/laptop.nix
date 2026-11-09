@@ -24,7 +24,23 @@ in
 
   programs = {
     direnv.enable = true;
-    localsend.enable = true;
+    localsend = {
+      enable = true;
+      # nixpkgs' localsend 1.18.0 links libz.so.1 but leaves zlib off the
+      # binary's RPATH, so it fails to start. Put zlib on its library path
+      # with a wrapper instead of rebuilding the Flutter app. Drop this
+      # once `ldd .../app/localsend/localsend_app` finds libz by itself.
+      package = pkgs.symlinkJoin {
+        name = "localsend-${pkgs.localsend.version}";
+        paths = [ pkgs.localsend ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram $out/bin/localsend_app \
+            --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [ pkgs.zlib ]}
+        '';
+        inherit (pkgs.localsend) meta;
+      };
+    };
     nix-ld.enable = true;
     obs-studio.enable = true;
   };

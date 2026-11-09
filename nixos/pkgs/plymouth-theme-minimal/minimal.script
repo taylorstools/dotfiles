@@ -50,8 +50,8 @@ slot.height = field.image.GetHeight();
 slot.y = (screen.height - slot.height) / 2;
 
 # Optional logo above the prompt, injected by package.nix when one is
-# configured. It pulses with the prompt while a passphrase is checked, but
-# does not change on a rejected one.
+# configured. Static: it neither dims while a passphrase is checked nor
+# changes on a rejected one.
 @LOGO@
 
 slot.cy = slot.y + slot.height / 2;
@@ -103,7 +103,8 @@ spinner.index = 0;
 
 # The padlock's stand-in while a passphrase is checked: a smaller copy of the
 # boot ring, centred where the padlock is. It starts from its first frame on
-# every submission, a dot at 12 o'clock, and pulses with the field.
+# every submission, a dot at 12 o'clock, and is the only thing that moves
+# while the check runs.
 check.count = @SPINNER_COUNT@;
 @CHECK_FRAMES@
 
@@ -149,9 +150,7 @@ state.reveal = @REVEAL_TICKS@;
 state.submitted = 0;   # passphrase in flight; cleared by typing, not by time
 state.holding = 0;     # field still on screen after a submission
 state.wait = 0;
-state.dots = 0;        # how many dots are currently lit, so the pulse knows
-state.pulse = 0;       # triangle-wave counter driving the thinking pulse
-state.dir = 1;
+state.dots = 0;        # how many dots are currently lit
 
 # The logo and spinner start hidden, so the screen is black until there is
 # something to say. They come up together as "boot is progressing"
@@ -266,22 +265,6 @@ fun refresh() {
   # passphrase was accepted and boot is carrying on.
   if (state.holding) {
     state.wait = state.wait - 1;
-
-    # Triangle wave rather than a sine: no trig in this language, and a linear
-    # ramp is indistinguishable at this speed.
-    state.pulse = state.pulse + state.dir;
-    if (state.pulse >= @PULSE_STEPS@) {
-      state.pulse = @PULSE_STEPS@;
-      state.dir = 0 - 1;
-    }
-    if (state.pulse <= 0) {
-      state.pulse = 0;
-      state.dir = 1;
-    }
-    pulse_opacity = @PULSE_MIN@ + (1.0 - @PULSE_MIN@) * state.pulse / @PULSE_STEPS@;
-    set_prompt_opacity(pulse_opacity);
-    set_logo_opacity(pulse_opacity);
-
     if (state.wait <= 0) {
       state.holding = 0;
       hide_field();
@@ -434,9 +417,8 @@ fun display_normal() {
       # Leave the dots exactly as typed. They stay until the answer arrives:
       # cleared by the red on rejection, or hidden with the field on success.
       # The padlock turns into the check ring for as long as the field is
-      # held, and the logo pulses along with both.
-      state.pulse = @PULSE_STEPS@;
-      state.dir = 0 - 1;
+      # held. Everything else stays solid: the ring alone says it is
+      # checking.
       show_check();
       set_prompt_opacity(1);
     } else {

@@ -92,7 +92,12 @@ binds {
     Mod+Equal   { spawn "sh" "-c" "$HOME/scripts/niri_change-screen-scale.sh --increase"; }
 
     // Claude
-    Mod+Shift+F23 { spawn "claude-desktop"; } // Copilot key
+    // Copilot key: the keyboard sends Meta+Shift+F23. xkeyboard-config 2.49
+    // dropped F23 from that keycode, so it's XF86TouchpadOff, or
+    // XF86Assistant with Shift+Super held; F23 is kept for older keymaps.
+    Mod+Shift+XF86Assistant   { spawn "claude-desktop"; }
+    Mod+Shift+XF86TouchpadOff { spawn "claude-desktop"; }
+    Mod+Shift+F23             { spawn "claude-desktop"; }
 
     // Laptop specific keybinds
     xf86MonBrightnessDown   { spawn "qs" "ipc" "call" "brightness" "decrement" "5"; }
