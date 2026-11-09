@@ -56,23 +56,24 @@
   # plain centring does the right thing. Set to 0 for true geometric centring.
 , lockOpticalShift ? 0.05
 
-  # Spinner shown while the rest of boot happens: a row of dots that brighten
-  # and swell in sequence, echoing the passphrase dots. spinnerWidth is the
-  # width of the whole row, not of one dot -- it wants to be a decent fraction
-  # of fieldWidth or the spinner reads as a speck on its own in the middle of
-  # a black screen. Frames are pre-rendered at build time and injected into
-  # the script, so the count here is the only place it is written down.
-  # Cycle length is spinnerFrames * spinnerTicks / 50 seconds.
-  # spinnerPhase is the lag between adjacent dots in radians: 2*pi/dots reads
-  # as one dot at a time, smaller values as a gentle travelling wave.
-, spinnerWidth ? 74
-, spinnerFrames ? 18
-, spinnerTicks ? 4
-, spinnerDots ? 3
-, spinnerDotMin ? 3.2
-, spinnerDotMax ? 5.0
-, spinnerFadeMin ? 0.25
-, spinnerPhase ? 0.7
+  # Spinner shown while the rest of boot happens: a "draw and erase" arc. Over
+  # the first half of a cycle the arc draws itself round the ring from its
+  # head; over the second half the tail chases the head and erases it, the
+  # whole thing turning half a revolution per cycle. Frames are pre-rendered
+  # at build time and injected into the script, so the count here is the only
+  # place it is written down. Cycle length is spinnerFrames * spinnerTicks / 50
+  # seconds; rotation wants more frames than the old dot row did, or the arc
+  # visibly steps.
+  #
+  # spinnerSize is the side of the square frame, a little over the ring's
+  # diameter plus its stroke so the round caps are not clipped.
+  # niri-splash/src/niri-splash.py draws the same ring with the same numbers
+  # (RING_*); change both together or the spinner jumps at the handoff.
+, spinnerSize ? 28
+, spinnerRadius ? 12
+, spinnerStroke ? 2.4
+, spinnerFrames ? 36
+, spinnerTicks ? 2
 
 , foreground ? "#e6e6e6"
 , background ? "#000000"
@@ -234,31 +235,44 @@ runCommand "plymouth-theme-${themeName}"
     rsvg-convert -w ${px bulletSize} -h ${px bulletSize} \
       ${bulletSvg} -o "$dir/bullet.png"
 
-    # Dots are laid out on a 48x16 viewBox, centred as a row. Each frame is a
-    # phase step; awk is here only because the shell has no sin().
+    # One arc per frame on a square viewBox. Angles are in radians, clockwise
+    # from 3 o'clock (SVG is Y-down), starting from 12 o'clock. The arc never
+    # spans more than 0.98 of a turn, so an SVG arc command can always draw it
+    # (a full 2*pi arc has coincident endpoints and draws nothing). An empty
+    # frame stays empty: a zero-length path with round caps would draw a dot.
+    # niri-splash's draw_spinner is the same function; keep them in step.
+    # awk is here only because the shell has no sin().
     frames=${toString spinnerFrames}
     : > spinner-lines.txt
     i=0
     while [ "$i" -lt "$frames" ]; do
       printf 'spinner.frames[%d] = Image("spinner-%02d.png");\n' "$i" "$i" \
         >> spinner-lines.txt
-      awk -v i="$i" -v n="$frames" \
-          -v dots=${toString spinnerDots} \
-          -v rmin=${toString spinnerDotMin} -v rmax=${toString spinnerDotMax} \
-          -v omin=${toString spinnerFadeMin} -v phase=${toString spinnerPhase} '
+      awk -v i="$i" -v n="$frames" -v s=${toString spinnerSize} \
+          -v r=${toString spinnerRadius} -v w=${toString spinnerStroke} '
         BEGIN {
           pi = 3.141592653589793;
-          start = 24 - (dots - 1) * 7;
-          printf "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 16\">";
-          for (k = 0; k < dots; k++) {
-            t = 0.5 + 0.5 * sin(i / n * 2 * pi - k * phase);
-            r = rmin + (rmax - rmin) * t;
-            o = omin + (1 - omin) * t;
-            printf "<circle cx=\"%g\" cy=\"8\" r=\"%.2f\" fill=\"${foreground}\" fill-opacity=\"%.2f\"/>", start + k * 14, r, o;
+          t = i / n;
+          full = 2 * pi * 0.98;
+          base = -pi / 2 + pi * t;
+          if (t < 0.5) {
+            a0 = base;
+            a1 = base + full * (2 * t) ^ 0.8;
+          } else {
+            a0 = base + full * (2 * (t - 0.5)) ^ 1.25;
+            a1 = base + full;
+          }
+          c = s / 2;
+          printf "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 %g %g\">", s, s;
+          if (a1 - a0 > 0.01) {
+            printf "<path d=\"M %.3f %.3f A %g %g 0 %d 1 %.3f %.3f\"", \
+              c + r * cos(a0), c + r * sin(a0), r, r, (a1 - a0 > pi), \
+              c + r * cos(a1), c + r * sin(a1);
+            printf " fill=\"none\" stroke=\"${foreground}\" stroke-width=\"%g\" stroke-linecap=\"round\"/>", w;
           }
           printf "</svg>";
         }' > frame.svg
-      rsvg-convert -w ${px spinnerWidth} -h ${px (spinnerWidth / 3)} \
+      rsvg-convert -w ${px spinnerSize} -h ${px spinnerSize} \
         frame.svg -o "$dir/$(printf 'spinner-%02d' "$i").png"
       i=$(( i + 1 ))
     done

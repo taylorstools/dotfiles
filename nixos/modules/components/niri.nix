@@ -34,17 +34,27 @@
       # systemd deprecated - it prints a warning at every login and logout.
       # Spell the names out at runtime: identical behaviour, no warning.
       # Drop once https://github.com/YaLTeR/niri/issues/254 lands upstream.
-      niri = prev.niri.overrideAttrs (old: {
-        postInstall = (old.postInstall or "") + ''
-          substituteInPlace $out/bin/niri-session \
+      #
+      # Patched in a thin wrapper rather than with overrideAttrs on niri
+      # itself: changing niri's own derivation means cache.nixos.org never
+      # has it, so every nixpkgs bump that touches any of its dependencies
+      # recompiled niri from source. Here the niri binary stays the cached
+      # build and only the niri-session script is replaced.
+      niri = final.symlinkJoin {
+        inherit (prev.niri) name pname version meta passthru;
+        paths = [ prev.niri ];
+        postBuild = ''
+          rm "$out/bin/niri-session"
+          substitute ${prev.niri}/bin/niri-session "$out/bin/niri-session" \
             --replace-fail \
               'systemctl --user import-environment' \
               'systemctl --user import-environment $(env | sed -n "s/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p")' \
             --replace-fail \
               'dbus-update-activation-environment --all' \
               'dbus-update-activation-environment $(env | sed -n "s/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p")'
+          chmod +x "$out/bin/niri-session"
         '';
-      });
+      };
     })
   ];
 

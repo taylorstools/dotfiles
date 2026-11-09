@@ -6,14 +6,22 @@ let
   # the binding generator refuses. Nothing here needs those tools — the CUPS
   # drivers and SANE backends are independent of them — so build without Qt.
   # The CLI equivalents (hp-setup -i, hp-info, hp-check) are still present.
-  hplip = pkgs.hplip.override { withQt5 = false; };
-  hplipWithPlugin = hplip.override { withPlugin = true; };
+  #
+  # One build serves both CUPS and SANE. The plugin variant is unfree, so it
+  # is never in cache.nixos.org and always builds locally; a separate
+  # plugin-less build for CUPS was a second full hplip compile on every
+  # nixpkgs bump. The plugin only adds the proprietary bits some HP models
+  # need; the CUPS drivers are the same otherwise.
+  hplipWithPlugin = pkgs.hplip.override {
+    withQt5 = false;
+    withPlugin = true;
+  };
 in
 {
   # Printing
   services.printing = {
     enable = true;
-    drivers = [ hplip ];
+    drivers = [ hplipWithPlugin ];
   };
 
   # Scanning

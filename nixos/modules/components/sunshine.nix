@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ ... }:
 
 let
   username = "taylor";
@@ -9,12 +9,11 @@ in
     autoStart = true;
     capSysAdmin = true;
     openFirewall = true;
-
-    package = pkgs.sunshine.overrideAttrs (old: {
-      cmakeFlags = (old.cmakeFlags or [ ]) ++ [
-        (lib.cmakeBool "SUNSHINE_ENABLE_TRAY" false)
-      ];
-    });
+    # The tray icon is turned off at runtime with `system_tray = disabled` in
+    # ~/.config/sunshine/sunshine.conf (dot_config/sunshine), not with
+    # -DSUNSHINE_ENABLE_TRAY=OFF: a build flag changes the derivation, so
+    # cache.nixos.org never has it and every nixpkgs bump recompiled
+    # Sunshine from source on every host.
   };
 
   # nixpkgs' sunshine module still sets the legacy services.avahi.publish.*

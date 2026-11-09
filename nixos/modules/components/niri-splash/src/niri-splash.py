@@ -34,10 +34,11 @@ READY_TIMEOUT = 20.0     # shell never appeared: uncover anyway
 PROBE_GRACE = 5.0        # `niri msg` never answered: uncover anyway
 POLL = 0.1
 
-# Spinner geometry, matching plymouth-theme-minimal: a 48x16 box scaled to
-# SPIN_W, dots 14 units apart, cycle 18 frames * 4 ticks / 50 per second.
-SPIN_W, BOX_W, BOX_H = 74.0, 48.0, 16.0
-DOTS, DOT_MIN, DOT_MAX, FADE_MIN, PHASE, PERIOD = 3, 3.2, 5.0, 0.25, 0.7, 1.44
+# Spinner geometry, matching plymouth-theme-minimal's spinnerSize,
+# spinnerRadius and spinnerStroke: a draw-and-erase arc on a square box, one
+# cycle every 36 frames * 2 ticks / 50 per second. Plymouth steps through
+# pre-rendered frames; this draws the same curve continuously.
+RING_BOX, RING_R, RING_STROKE, PERIOD = 28.0, 12.0, 2.4, 1.44
 
 
 # -- Cursor override ----------------------------------------------------------
@@ -210,11 +211,9 @@ class Window(Gtk.Window):
         self.bg.set_vexpand(True)
         self.bg.set_draw_func(self._draw_bg)
 
-        scale = SPIN_W / BOX_W
-        pad = int(DOT_MAX * scale) + 4
+        side = int(RING_BOX) + 2 * 4
         self.spinner = Gtk.DrawingArea()
-        self.spinner.set_size_request(int(BOX_W * scale) + 2 * pad,
-                                      int(BOX_H * scale) + 2 * pad)
+        self.spinner.set_size_request(side, side)
         self.spinner.set_halign(Gtk.Align.CENTER)
         self.spinner.set_valign(Gtk.Align.CENTER)
         # Centred within (height - margin), so this puts the spinner's centre
@@ -367,17 +366,24 @@ class Splash:
     def draw_spinner(self, cr, w, h):
         if self.alpha <= 0.0:
             return
-        scale = SPIN_W / BOX_W
-        theta = (time.monotonic() - self._t0) / PERIOD * 2.0 * math.pi
-        x0 = w / 2.0 - BOX_W / 2.0 * scale
-        cy = h / 2.0
+        # Same curve as the awk in plymouth-theme-minimal/package.nix: the
+        # head draws round the ring in the first half of the cycle, the tail
+        # erases it in the second, the whole turning half a revolution.
+        t = ((time.monotonic() - self._t0) / PERIOD) % 1.0
+        full = 2.0 * math.pi * 0.98
+        base = -math.pi / 2.0 + math.pi * t
+        if t < 0.5:
+            a0, a1 = base, base + full * (2.0 * t) ** 0.8
+        else:
+            a0, a1 = base + full * (2.0 * (t - 0.5)) ** 1.25, base + full
+        if a1 - a0 <= 0.01:
+            return
         r, g, b, a = self.fg
-        for k in range(DOTS):
-            t = 0.5 + 0.5 * math.sin(theta - k * PHASE)
-            cr.set_source_rgba(r, g, b, a * (FADE_MIN + (1 - FADE_MIN) * t) * self.alpha)
-            cr.arc(x0 + (24.0 - (DOTS - 1) * 7.0 + k * 14.0) * scale, cy,
-                   (DOT_MIN + (DOT_MAX - DOT_MIN) * t) * scale, 0, 2 * math.pi)
-            cr.fill()
+        cr.set_source_rgba(r, g, b, a * self.alpha)
+        cr.set_line_width(RING_STROKE)
+        cr.set_line_cap(cairo.LINE_CAP_ROUND)
+        cr.arc(w / 2.0, h / 2.0, RING_R, a0, a1)
+        cr.stroke()
 
     # -- readiness --------------------------------------------------------
 

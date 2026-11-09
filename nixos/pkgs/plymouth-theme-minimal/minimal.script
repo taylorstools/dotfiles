@@ -1,6 +1,6 @@
 # Minimal Plymouth theme: a bordered passphrase field with the nf-fa-lock
-# padlock glyph inset at its right edge, and a pulsing spinner the rest of
-# the time.
+# padlock glyph inset at its right edge, and a draw-and-erase arc spinner the
+# rest of the time.
 #
 # The prompt string systemd-cryptsetup sends ("Please enter passphrase for
 # disk cryptroot...") arrives as the first argument to display_password and is
