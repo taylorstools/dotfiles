@@ -11,8 +11,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Pinned to a commit: asus-keyboard.nix applies a local patch to this
+    # tool's BPF program, and an upstream change could stop it applying and
+    # fail the nightly upgrade. The repo has no release tags. To update, check
+    # the patch still applies against the new commit, then change the rev.
     asus-px-keyboard-tool = {
-      url = "github:a-chaudhari/asus-px-keyboard-tool";
+      url = "github:a-chaudhari/asus-px-keyboard-tool/73369ea136853aed95513886f130c4072bd94ca6";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
