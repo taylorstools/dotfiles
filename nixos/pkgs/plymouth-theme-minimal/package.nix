@@ -320,6 +320,7 @@ runCommand "plymouth-theme-${themeName}"
       group.height = logo.image.GetHeight() + logo.gap + slot.height;
       group.top = (screen.height - group.height) / 2;
       slot.y = group.top + logo.image.GetHeight() + logo.gap;
+      group.logo = 1;
       logo.sprite = Sprite(logo.image);
       logo.sprite.SetX((screen.width - logo.image.GetWidth()) / 2);
       logo.sprite.SetY(group.top);
@@ -338,6 +339,7 @@ runCommand "plymouth-theme-${themeName}"
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
         -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/g" \
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/g" \
+        -e "s/@SPINNER_INK@/${px (2 * spinnerRadius + spinnerStroke)}/g" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
         -e "/@CHECK_FRAMES@/r check-lines.txt" \

@@ -48,6 +48,7 @@ pad = field.image.GetHeight() * 0.34;   # inner padding at both ends
 # twice, the first time before slot.height existed.
 slot.height = field.image.GetHeight();
 slot.y = (screen.height - slot.height) / 2;
+group.logo = 0;   # set to 1 by the logo block when there is a logo
 
 # Optional logo above the prompt, injected by package.nix when one is
 # configured. Static: it neither dims while a passphrase is checked nor
@@ -93,7 +94,19 @@ spinner.count = @SPINNER_COUNT@;
 
 spinner.sprite = Sprite(spinner.frames[0]);
 spinner.sprite.SetX((screen.width - spinner.frames[0].GetWidth()) / 2);
-spinner.sprite.SetY(slot.cy - spinner.frames[0].GetHeight() / 2);
+# Alone, the spinner sits in the middle of the slot, which is the middle of
+# the screen. Under a logo it drops so the ring's bottom edge lines up with
+# the field's: logo, gap and slot are centred as one block for the prompt,
+# and a ring shorter than the field, centred in the slot, left logo and ring
+# together sitting a few pixels high once the prompt had gone. Lining the
+# bottoms up centres logo and ring too, with the logo still not moving. The
+# ring is never on screen with the field, so its being lower than the
+# field's centre never shows. niri-splash makes the same drop.
+spinner.y = slot.cy - spinner.frames[0].GetHeight() / 2;
+if (group.logo > 0) {
+  spinner.y = slot.y + slot.height - @SPINNER_INK@ / 2 - spinner.frames[0].GetHeight() / 2;
+}
+spinner.sprite.SetY(spinner.y);
 spinner.sprite.SetZ(5);
 spinner.sprite.SetOpacity(0);
 

@@ -219,11 +219,16 @@ class Window(Gtk.Window):
         self.spinner.set_size_request(side, side)
         self.spinner.set_halign(Gtk.Align.CENTER)
         self.spinner.set_valign(Gtk.Align.CENTER)
-        # Centred within (height - margin), so this puts the spinner's centre
-        # (logo_h + gap) / 2 below the screen centre: the slot's centre.
+        # Centred within (height - margin), so a margin of logo_h + gap puts
+        # the spinner's centre (logo_h + gap) / 2 below the screen centre:
+        # the slot's centre. Under a logo, Plymouth then drops the ring so its
+        # bottom edge meets the field's (see minimal.script), which centres
+        # logo and ring together; twice that drop in the margin does the
+        # same here. The ring's height is rounded as Plymouth's bitmap is.
         logo_h = app.layout()["logo_h"]
         if logo_h:
-            self.spinner.set_margin_top(int(round(logo_h + app.opts.logo_gap)))
+            drop = (app.opts.slot_height - round(2 * RING_R + RING_STROKE)) / 2
+            self.spinner.set_margin_top(int(round(logo_h + app.opts.logo_gap + 2 * drop)))
         self.spinner.set_draw_func(
             lambda _a, cr, w, h: app.draw_spinner(cr, w, h))
 
