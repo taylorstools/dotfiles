@@ -9,6 +9,7 @@ import Quickshell.Io
 // level is polled from sysfs a few times a second; that's what lets the OSD
 // notice changes made by anything else.
 //   qs ipc -p <this folder> call brightness increment 5 | decrement 5
+//   qs ipc call brightness set 40 false     (set 40% without the OSD)
 Singleton {
     id: root
 
@@ -21,6 +22,10 @@ Singleton {
     property bool _writeAgain: false
     // While our own writes are landing, sysfs can still hold the old level.
     property double _lastSet: 0
+    // The OSD stays hidden for brightness changes until then: set with
+    // osd = false (hypridle's dim). It runs a moment past the write, since
+    // the poll can still nudge the value once sysfs catches up.
+    property double quietUntil: 0
 
     function refresh() {
         if (!reader.running)
@@ -29,7 +34,9 @@ Singleton {
 
     // Called on every slider move; while one brightnessctl call runs, only
     // the latest value is kept for the next one.
-    function set(v) {
+    function set(v, osd) {
+        if (osd === false)
+            quietUntil = Date.now() + 1000;
         _pending = Math.max(0.01, Math.min(1, v));
         value = _pending;
         _lastSet = Date.now();
@@ -111,6 +118,9 @@ Singleton {
         }
         function decrement(step: int): void {
             root.decrement(step > 0 ? step : 5);
+        }
+        function set(percent: int, osd: bool): void {
+            root.set(percent / 100, osd);
         }
     }
 

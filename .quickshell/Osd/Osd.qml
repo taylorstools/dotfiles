@@ -153,6 +153,8 @@ Scope {
     Connections {
         target: Brightness
         function onValueChanged() {
+            if (Date.now() < Brightness.quietUntil)
+                return;
             root.show("brightness");
         }
     }

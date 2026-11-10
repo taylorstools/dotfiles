@@ -8,7 +8,6 @@ fi
 echo $$ > "$PIDFILE"
 
 cleanup() {
-    qs ipc call osd suppress 0 || true
     rm -f "$PIDFILE"
 }
 trap cleanup EXIT INT TERM
@@ -20,19 +19,23 @@ if [[ ! -f "$STATE" ]]; then
     touch "$STATE"
 fi
 
+# Steps go through the shell with the OSD off (the last argument). Timing
+# the OSD off with `osd suppress` lost a race: the shell polls the backlight,
+# so the last step could land after the suppression ended and show the OSD.
+# Without the shell, brightnessctl sets it directly.
+set_level() {
+    qs ipc call brightness set "$1" false 2>/dev/null \
+        || brightnessctl -c backlight -q set "$1%"
+}
+
+target=10
+step=3
 max=$(brightnessctl -c backlight m)
-target=$(( max / 10 ))
-(( target < 1 )) && target=1
+pct=$(( $(brightnessctl -c backlight g) * 100 / max ))
 
-step=$(( max * 3 / 100 ))
-(( step < 1 )) && step=1
-
-# No brightness OSD while dimming; cleanup turns it back on.
-qs ipc call osd suppress 3600000 || true
-
-while :; do
-    cur=$(brightnessctl -c backlight g)
-    (( cur <= target )) && break
-    brightnessctl -c backlight -q set "$(( cur - step ))"
-    sleep 0.03
+# Each qs call takes ~60 ms, so no sleep is needed to pace the fade.
+while (( pct > target )); do
+    pct=$(( pct - step ))
+    (( pct < target )) && pct=$target
+    set_level "$pct"
 done
