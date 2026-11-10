@@ -43,13 +43,20 @@ Kicker.DashboardWindow {
 
     // TODO: remove this and all focus debug rectangles
     property bool debugFocus: false
-    
+
+    // LOCAL PATCH: bumped every time the drawer opens so the background image
+    // is re-read from disk. The image path never changes (a script rewrites
+    // the same file when the wallpaper changes), so without this the drawer
+    // shows the first image it loaded until plasmashell restarts.
+    property int backgroundRevision: 0
+
     function colorWithAlpha(color, alpha) {
         return Qt.rgba(color.r, color.g, color.b, alpha)
     }
 
     onVisibleChanged: {
         if (visible) {
+            backgroundRevision++;
             // Set favorites here to ensure system actions are available
             systemFavoritesModel.favorites = plasmoid.configuration.favoriteSystemActions;
         } else {
@@ -134,7 +141,18 @@ Kicker.DashboardWindow {
         Component {
             id: backgroundImageComponent
             Image {
-                source: plasmoid.configuration.customBackgroundImagePath ?? ""
+                // LOCAL PATCH: no cache, and a query string that changes on
+                // every open, so a rewritten file is picked up (see
+                // backgroundRevision). The query is ignored for local files.
+                cache: false
+                source: {
+                    const path = plasmoid.configuration.customBackgroundImagePath ?? "";
+                    if (!path) {
+                        return "";
+                    }
+                    const url = path.startsWith("file:") ? path : "file://" + path;
+                    return url + "?r=" + root.backgroundRevision;
+                }
                 opacity: plasmoid.configuration.backgroundOpacity / 100
             }
         }
