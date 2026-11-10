@@ -11,9 +11,9 @@ let
   # usr/lib and usr/share out of the official .deb and makeWrappers the Electron
   # ELF itself, so no launcher script exists here to interpret them. Setting
   # them is a no-op; a raw --password-store is the knob.
-  wrapperArgs =
+  flags =
     lib.optionals (cfg.passwordStore != null)
-      [ "--add-flags" "--password-store=${cfg.passwordStore}" ];
+      [ "--password-store=${cfg.passwordStore}" ];
 
   wrapped = pkgs.symlinkJoin {
     name = "claude-desktop-wrapped";
@@ -24,9 +24,22 @@ let
     # or sourceProvenance and reports itself only as claude-desktop-wrapped.
     inherit (cfg.package) meta;
 
-    nativeBuildInputs = [ pkgs.makeWrapper ];
+    # Not makeWrapper: it execs, and so does the FHS launcher, leaving bwrap
+    # as the launched process itself. The FHS env runs bwrap --die-with-parent,
+    # so whatever started it must outlive it. niri's spawn double-forks, and
+    # since bubblewrap 0.13 (nixpkgs, Nov 2026) its short-lived middle process
+    # exiting kills a cold start before Electron prints anything: the Copilot
+    # key bind did nothing while the dock and launcher still worked. This shell
+    # waits instead, so bwrap's parent lives as long as the app. The trailing
+    # exit keeps bash from exec'ing the last command.
     postBuild = ''
-      wrapProgram $out/bin/claude-desktop ${lib.escapeShellArgs wrapperArgs}
+      rm $out/bin/claude-desktop
+      cat > $out/bin/claude-desktop <<'EOF'
+      #!${pkgs.runtimeShell}
+      ${lib.escapeShellArgs ([ "${cfg.package}/bin/claude-desktop" ] ++ flags)} "$@"
+      exit $?
+      EOF
+      chmod +x $out/bin/claude-desktop
     '';
   };
 in
