@@ -68,8 +68,16 @@ while true; do
     if ASPECT="$(screen_aspect)"; then
         echo "Aspect Ratio: $ASPECT"
         CROP=(-gravity center -crop "$ASPECT" +repage)
+        SCREEN_TRIES=0
+    elif (( ${SCREEN_TRIES:=0} < 15 )); then
+        # Right after login KScreen often has no outputs yet ("There are no
+        # outputs - creating placeholder screen"); give it a moment.
+        (( SCREEN_TRIES++ ))
+        sleep 2
+        continue
     else
         echo "Couldn't read the screen resolution, not cropping." >&2
+        SCREEN_TRIES=0
     fi
 
     # Create effects wallpaper for app drawer; state is recorded only on success
