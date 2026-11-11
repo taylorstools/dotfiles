@@ -1,6 +1,20 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
+  # Flake inputs hosted on the home Forgejo, found from flake.lock by URL the
+  # same way flake-update finds them. Their sources are rooted in the system
+  # closure below: nix.gc does not treat flake input sources as roots, and
+  # once one is collected, evaluating the flake has to fetch it again, which
+  # fails the whole rebuild whenever git.lan is out of reach. GitHub inputs
+  # are left alone; they can always be fetched again, and nixpkgs alone is
+  # ~300 MB per revision.
+  forgejoUrl = "http://git.lan:3000";
+  flakeLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
+  forgejoInputs = lib.attrNames (lib.filterAttrs
+    (_: node: builtins.isString node
+      && lib.hasPrefix forgejoUrl (flakeLock.nodes.${node}.original.url or ""))
+    flakeLock.nodes.root.inputs);
+
   username = config.myOptions.user.name;
   userHome = config.users.users.${username}.home;
   logFile = "${userHome}/upgrade.log";
@@ -262,6 +276,8 @@ in
   };
 
   environment.systemPackages = [ clearFailure ];
+
+  system.extraDependencies = map (name: inputs.${name}.outPath) forgejoInputs;
 
   # The .path unit below needs somewhere to watch before the first upgrade
   # has ever recorded a result.
