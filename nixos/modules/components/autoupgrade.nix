@@ -332,12 +332,20 @@ in
     };
   };
 
+  # nix-collect-garbage can only prune generations by age, so the count-based
+  # pruning runs first: keep the last 5 system generations (the current one
+  # always survives), matching lanzaboote's configurationLimit, then collect.
   nix.gc = {
     automatic = true;
     dates = "daily";
     persistent = true;
-    options = "--delete-older-than 7d";
   };
+
+  systemd.services.nix-gc.preStart = ''
+    ${config.nix.package}/bin/nix-env \
+      --profile /nix/var/nix/profiles/system \
+      --delete-generations +5
+  '';
 
   # Hardlink identical files in the store, like `clean` does by hand.
   nix.optimise = {
