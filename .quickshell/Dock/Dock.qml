@@ -248,20 +248,12 @@ PanelWindow {
                         }
                     }
 
-                    LazyLoader {
-                        active: appMouse.containsMouse && root.menuApp === "" && root.revealed
-
-                        DockPopup {
-                            target: app
-                            side: root.onLeft ? "left" : "right"
-                            padding: Theme.spacingS
-                            visible: true
-
-                            StyledText {
-                                text: app.name
-                                font.pixelSize: Theme.fontSizeSmall
-                            }
-                        }
+                    Tooltip {
+                        target: app
+                        side: root.onLeft ? "right" : "left"
+                        gap: Theme.spacingS
+                        text: app.name
+                        shown: appMouse.containsMouse && root.menuApp === "" && root.revealed
                     }
                 }
             }

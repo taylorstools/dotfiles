@@ -440,7 +440,10 @@ Scope {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         orientation: ListView.Horizontal
-                        spacing: Theme.spacingXS
+                        // Spacing, tab widths and title margins are snapped to
+                        // physical pixels: at scale 1.875 a 4 or 12px step is a
+                        // half pixel, and a title drawn half a pixel off blurs.
+                        spacing: Theme.snap(Theme.spacingXS)
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
                         model: NotepadStore.tabs
@@ -454,7 +457,7 @@ Scope {
                             readonly property bool current: index === NotepadStore.currentIndex
                             readonly property bool renaming: root.renamingIndex === index
 
-                            width: Math.max(96, Math.min(240, (tabList.width - tabList.spacing * (tabList.count - 1)) / Math.max(1, tabList.count)))
+                            width: Theme.snap(Math.max(96, Math.min(240, (tabList.width - tabList.spacing * (tabList.count - 1)) / Math.max(1, tabList.count))))
                             height: tabList.height
                             radius: Theme.cornerRadius
                             // The same fill as the text below, so the open tab reads as part of it.
@@ -480,7 +483,7 @@ Scope {
                             StyledText {
                                 anchors.left: parent.left
                                 anchors.right: closeTabButton.visible ? closeTabButton.left : parent.right
-                                anchors.leftMargin: Theme.spacingM
+                                anchors.leftMargin: Theme.snap(Theme.spacingM)
                                 anchors.rightMargin: closeTabButton.visible ? Theme.spacingXS : Theme.spacingM
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: !tabItem.renaming
@@ -492,7 +495,7 @@ Scope {
                             TextInput {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
-                                anchors.leftMargin: Theme.spacingM
+                                anchors.leftMargin: Theme.snap(Theme.spacingM)
                                 anchors.rightMargin: Theme.spacingM
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: tabItem.renaming
