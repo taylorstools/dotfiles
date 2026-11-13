@@ -280,11 +280,12 @@ Scope {
 
         stdout: StdioCollector {
             onStreamFinished: {
+                // path<TAB>/display<TAB>display; the middle field is only for fzf.
                 root.results = text.split("\n").filter(l => l).map(l => {
-                    const tab = l.indexOf("\t");
+                    const fields = l.split("\t");
                     return {
-                        "path": l.slice(0, tab),
-                        "display": l.slice(tab + 1)
+                        "path": fields[0],
+                        "display": fields[2]
                     };
                 });
                 list.currentIndex = 0;

@@ -10,7 +10,11 @@
 #   kind PATH             dir, editor, editor-choice, other or missing
 #   run DIR QUERY PATH    the Alt+Enter rules, launched detached
 #
-# The list commands print "full path<TAB>display" lines, folders ending in /.
+# The list commands print "full path<TAB>/display<TAB>display" lines, folders
+# ending in /. fzf matches the middle field: its leading / gives top-level
+# names the same start-of-name bonus that deeper names get after their /;
+# without it, fzf's path scheme ranks ~/upgrade.log below
+# .config/.../upgrade.jsonlz4.
 
 set -uo pipefail
 
@@ -51,7 +55,7 @@ list_dir() {
             name = $2
             if ($1 == "d") name = name "/"
             rank = (substr(name, 1, 1) == ".") * 2 + ($1 != "d")
-            print rank, tolower(name), dir name, name
+            print rank, tolower(name), dir name, "/" name, name
         }' |
         LC_ALL=C sort -t$'\t' -k1,1n -k2,2 |
         cut -f3-
@@ -69,7 +73,7 @@ list_below() {
     fi
     fd --hidden --min-depth 2 --type f --type d --color never "${skip[@]}" \
         --base-directory "$dir" . 2>/dev/null |
-        awk -v dir="$dir" 'BEGIN { OFS = "\t" } { print dir $0, $0 }'
+        awk -v dir="$dir" 'BEGIN { OFS = "\t" } { print dir $0, "/" $0, $0 }'
 }
 
 # The app the user's own mimeapps.list sets as default for a MIME type, if any.
