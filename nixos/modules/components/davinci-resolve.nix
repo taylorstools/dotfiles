@@ -25,5 +25,13 @@ in
     environment.systemPackages = [
       inputs.davinci-resolve.packages.${pkgs.stdenv.hostPlatform.system}.default
     ];
+
+    # The input lives on the home Forgejo (git.lan), not GitHub. nix.gc does
+    # not treat flake input sources as roots, and once this one is collected,
+    # evaluating the flake has to fetch it again, which fails the whole
+    # rebuild whenever git.lan is out of reach. Root it in the system closure.
+    # This belongs here rather than in autoupgrade.nix: rooting it on hosts
+    # that do not use Resolve makes their evaluation fetch it too.
+    system.extraDependencies = [ inputs.davinci-resolve.outPath ];
   };
 }
