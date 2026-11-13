@@ -87,8 +87,21 @@ in
     # with "No such file or directory" and falls back to the typed passphrase.
     # pkgs.systemd is the build clevis references, not necessarily the
     # initrd's systemd package.
+    #
+    # The nixpkgs module also copies in only the tpm2-tools it expected
+    # clevis to call (createprimary, flushcontext, load, unseal). Clevis 24
+    # unseals PCR-bound keys through a policy session instead, which needs
+    # startauthsession and policypcr as well. Without them the TPM pin fails
+    # with "command not found", the sss policy (Tang AND TPM) falls short,
+    # and every boot falls back to the passphrase even with Tang reachable.
+    # Each tool is a symlink to the same multicall tpm2 binary, so these add
+    # nothing but the links. If a later clevis calls another tool, list it
+    # here: `grep -oE 'tpm2_[a-z]+' $(nix build --print-out-paths
+    # nixpkgs#clevis)/bin/clevis-decrypt-tpm2 | sort -u`.
     boot.initrd.systemd.storePaths = [
       "${pkgs.systemd}/lib/systemd/systemd-reply-password"
+      "${pkgs.tpm2-tools}/bin/tpm2_startauthsession"
+      "${pkgs.tpm2-tools}/bin/tpm2_policypcr"
     ];
     #endregion
   };
