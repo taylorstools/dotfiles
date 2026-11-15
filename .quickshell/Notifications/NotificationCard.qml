@@ -24,6 +24,10 @@ Rectangle {
     // not a picture to show large.
     readonly property string imageSource: notification?.image ?? ""
     readonly property bool imageIsIcon: imageSource.startsWith("image://icon/") && !imageSource.startsWith("image://icon//")
+    // Image files are loaded directly, not through the icon provider: it
+    // turns a request with only a width (sourceSize below) into a 2x2 pixmap,
+    // so the picture came out as a blur.
+    readonly property string imageUrl: imageSource.startsWith("image://icon//") ? "file://" + imageSource.slice("image://icon/".length) : imageSource
     // The shell's own notifications name a Material Symbol for their icon:
     //   notify-send --hint=string:x-material-symbol:save
     //               [--hint=string:x-material-symbol-tone:warning]
@@ -184,7 +188,7 @@ Rectangle {
                 Image {
                     id: image
                     anchors.fill: parent
-                    source: root.imageIsIcon ? "" : root.imageSource
+                    source: root.imageIsIcon ? "" : root.imageUrl
                     fillMode: Image.PreserveAspectCrop
                     sourceSize.width: 480
                     asynchronous: true
