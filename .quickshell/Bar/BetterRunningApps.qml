@@ -42,7 +42,7 @@ Item {
     property real maxWidthFraction: (Number(Settings.runningAppsMaxWidthPercent) || 100) / 100  // fraction of the screen width running apps may occupy before shrinking
     property real reservedBarWidth: Settings.runningAppsReservedWidth      // additional px to subtract from the budget
 
-    readonly property real itemSpacing: 3
+    readonly property real itemSpacing: Theme.barGap
     // The focus underline along each pill's bottom edge. The icon and title
     // sit near the middle of the part of the pill above it: centred exactly
     // they looked a little high, so 1px lower (Taylor's call).

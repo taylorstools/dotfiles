@@ -228,8 +228,10 @@ rows emit `clicked` and the code that uses them does the outer work.
   Sizes snap to physical pixels: widget 26.67 / bar 37.33 (50 / 70 px), so
   text is 12px and control-center icons 16px; widget padding is 6 ×
   widgetThickness / 30 (5.33); 4px end margins; Text.NativeRendering for text
-  and icons. The gaps between right-side widgets and two 1px offsets in
-  `Bar.qml` are measured values (commented). The workspace pills: active
+  and icons. The right-side widgets and the running-app pills
+  are `Theme.barGap` apart (3 scaled, snapped to whole physical px: 6 here),
+  so a hovered widget next to an open one looks even; two 1px
+  offsets in `Bar.qml` are measured values (commented). The workspace pills: active
   1.05×, inactive 0.7×, height 0.5× widget thickness, spacing 8.
 - **The tray is collapsed behind a chevron** (`Config.collapseTray`),
   Windows-style.

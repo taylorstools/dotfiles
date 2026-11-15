@@ -133,16 +133,14 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
 
-        // The gaps between these widgets were measured against Taylor's old bar on
-        // this screen (in physical pixels), since they don't follow one rule.
+        // One even gap (Theme.barGap) between the widgets, so two highlighted
+        // neighbours (one open, one hovered) sit the same distance apart.
         SystemTray {
             id: systemTray
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Gap {
-            pixels: 3
-        }
+        Gap {}
 
         Battery {
             id: battery
@@ -150,9 +148,7 @@ PanelWindow {
             parentScreen: bar.screen
         }
 
-        Gap {
-            pixels: 1
-        }
+        Gap {}
 
         StatusIcons {
             id: statusIcons
@@ -160,9 +156,7 @@ PanelWindow {
             parentScreen: bar.screen
         }
 
-        Gap {
-            pixels: 6
-        }
+        Gap {}
 
         BetterClock {
             id: clock
@@ -207,9 +201,7 @@ PanelWindow {
     }
 
     component Gap: Item {
-        property real pixels: 0
-
-        width: pixels / Theme.dpr
+        width: Theme.barGap
         height: 1
     }
 }
