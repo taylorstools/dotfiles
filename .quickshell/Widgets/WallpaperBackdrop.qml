@@ -14,11 +14,18 @@ import qs.Services
 // bar, so the bar only ever blurs the wallpaper, and a flyout that blurred
 // the window behind it came out grey next to it.
 //
-// A child of the panel, under its colour (z -1), so it shares the panel's
-// shape, opacity, scale and slide. The panel is assumed to sit straight in
-// its window (panelX/panelY otherwise, as the notification cards do); a
-// slide done with a Translate goes in slideX/slideY. The window should drop
-// niri's blur while this is active: it would only blur what this covers.
+// A child of the panel (z -1), so it shares the panel's shape, opacity,
+// scale and slide. The panel is assumed to sit straight in its window
+// (panelX/panelY otherwise, as the notification cards do); a slide done with
+// a Translate goes in slideX/slideY. The window should drop niri's blur
+// while this is active: it would only blur what this covers.
+//
+// While active it also draws the panel's colour (tint), and the panel takes
+// panelColor - transparent - instead of its own. Wallpaper and tint are then
+// clipped and antialiased once, together. With the tint on the panel, each
+// layer was antialiased on its own, and an edge that fell between physical
+// pixels (fractional scaling, a slide, a rounded corner) let through more
+// wallpaper than the inside: a bright line along that edge.
 ClippingRectangle {
     id: root
 
@@ -28,10 +35,9 @@ ClippingRectangle {
     property real panelY: panel.y
     property real slideX: 0
     property real slideY: 0
-    // The panel's border, which the ring below tints under. Qt reports a
-    // width of 1 even for a Rectangle with no border set, so a panel without
-    // one (the bar) sets 0 here, or the ring tints its edge twice.
-    property real borderWidth: panel.border?.width ?? 0
+    // The panel's colour. The panel sets `color: backdrop.panelColor`.
+    property color tint: Theme.popupBackground
+    readonly property color panelColor: active ? "transparent" : tint
 
     readonly property bool active: Settings.blur && Settings.blurXray && Wallpaper.path !== ""
 
@@ -103,14 +109,11 @@ ClippingRectangle {
         }
     }
 
-    // Qt doesn't paint a Rectangle's colour under its border, so a
-    // see-through border (Border opacity) showed the bare wallpaper as a
-    // bright ring. Tint the ring like the rest of the panel.
+    // The panel's colour, inside the clip. It also goes under the panel's
+    // border, which Qt leaves unpainted, so a see-through border (Border
+    // opacity) doesn't show the bare wallpaper as a bright ring.
     Rectangle {
         anchors.fill: parent
-        radius: root.radius
-        color: "transparent"
-        border.width: root.borderWidth
-        border.color: root.panel.color ?? "transparent"
+        color: root.tint
     }
 }

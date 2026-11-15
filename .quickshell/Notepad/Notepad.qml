@@ -379,6 +379,7 @@ Scope {
 
             // X-ray: the blurred wallpaper under the panel's colour.
             WallpaperBackdrop {
+                id: backdrop
                 window: window
                 onActiveChanged: window.applyBlur()
             }
@@ -388,7 +389,7 @@ Scope {
             // Slides in from the screen edge; Settings > Appearance sets the speed.
             x: (1 - motion.progress) * (width + window.edgeGap)
             radius: Theme.notepadRadius
-            color: Theme.popupBackground
+            color: backdrop.panelColor
             border.width: Theme.attachPanels ? 0 : 1
             border.color: Theme.blurBorder
 

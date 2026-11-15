@@ -126,6 +126,8 @@ PanelWindow {
 
         // X-ray: the blurred wallpaper under the panel's colour.
         WallpaperBackdrop {
+            id: backdrop
+            tint: Theme.barBackground
             window: root
             onActiveChanged: root.applyBlur()
         }
@@ -138,7 +140,7 @@ PanelWindow {
         width: root.dockWidth + root.overshoot
         height: column.implicitHeight + root.spacing * 2
         radius: Theme.cornerRadius
-        color: Theme.barBackground
+        color: backdrop.panelColor
         // The Dock page's Border toggle turns it on; its colour is the panel
         // border from Settings > Appearance.
         border.width: root.border

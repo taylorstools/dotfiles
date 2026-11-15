@@ -228,6 +228,7 @@ Scope {
 
             // X-ray: the blurred wallpaper under the panel's colour.
             WallpaperBackdrop {
+                id: backdrop
                 window: window
                 onActiveChanged: window.applyBlur()
             }
@@ -240,7 +241,7 @@ Scope {
             }
             height: 48
             radius: height / 2
-            color: Theme.popupBackground
+            color: backdrop.panelColor
             border.width: 1
             border.color: (root.kind === "mic" && root.muted) || (root.kind === "toast" && root.toastError) ? Theme.error : Theme.blurBorder
             opacity: root.shown ? 1 : 0

@@ -155,6 +155,8 @@ PanelWindow {
             notification: modelData
             popup: true
             width: ListView.view.width
+            // Its colour is drawn by the backdrop while x-ray is on.
+            color: backdrop.panelColor
 
             onLeavingChanged: {
                 if (leaving)
@@ -190,6 +192,7 @@ PanelWindow {
             // X-ray: the blurred wallpaper under the card's colour. Card
             // positions count from the list's content (see cardBlur).
             WallpaperBackdrop {
+                id: backdrop
                 window: root
                 panelX: stack.contentItem.x + card.x
                 panelY: stack.contentItem.y + card.y

@@ -142,12 +142,13 @@ Item {
 
                 anchors.fill: parent
                 radius: Theme.cornerRadius / 2
-                color: Theme.popupBackground
+                color: backdrop.panelColor
                 border.width: 1
                 border.color: Theme.blurBorder
 
                 // X-ray: the blurred wallpaper under the panel's colour.
                 WallpaperBackdrop {
+                    id: backdrop
                     window: tipWindow
                     onActiveChanged: tipWindow.applyBlur()
                 }

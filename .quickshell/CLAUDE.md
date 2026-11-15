@@ -191,10 +191,13 @@ rows emit `clicked` and the code that uses them does the outer work.
   wallpaper blurred by a `MultiEffect` at quarter size (`blurMax` from the
   strength slider), lined up with the screen, as a `z: -1` child under each
   panel's colour, so it shares the panel's shape, opacity, scale and slide
-  and cancels them out to stay put. It tints the ring under the panel's
-  border too (Qt leaves it unfilled, so a see-through border showed bare
-  wallpaper); Qt reports `border.width` 1 even with no border set, so the
-  bar passes `borderWidth: 0` (that ring was a dark line round the bar). Where the window sits is worked out from
+  and cancels them out to stay put. While active it also draws the panel's
+  colour (`tint`), and the panel takes `color: backdrop.panelColor`
+  (transparent then): wallpaper and tint are clipped and antialiased once,
+  together. With the tint on the panel, an edge between physical pixels (at
+  1.875, the battery flyout's left edge sat at x = 2167.5) let more
+  wallpaper through than the inside, a bright 1px line. The fill also covers
+  the ring under the panel's border, which Qt leaves unpainted. Where the window sits is worked out from
   its anchors and margins (the bar's is the only exclusive zone a window has
   to allow for). `Wallpaper.xrayBackdrop` says when it's on, and every
   surface drops niri's blur then. It covers every shell surface; the settings

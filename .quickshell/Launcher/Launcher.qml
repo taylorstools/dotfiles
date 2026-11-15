@@ -232,6 +232,7 @@ Scope {
 
             // X-ray: the blurred wallpaper under the panel's colour.
             WallpaperBackdrop {
+                id: backdrop
                 window: launcherWindow
                 onActiveChanged: launcherWindow.applyBlur()
             }
@@ -247,7 +248,7 @@ Scope {
             width: Config.launcherWidth
             height: pad * 3 + searchBox.height + rowHeight * Config.launcherVisibleRows
             radius: Theme.cornerRadius
-            color: Theme.popupBackground
+            color: backdrop.panelColor
             border.width: 1
             border.color: Theme.blurBorder
 

@@ -29,12 +29,13 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Theme.barBackground
+        color: backdrop.panelColor
 
         // X-ray: the blurred wallpaper under the panel's colour.
         WallpaperBackdrop {
+            id: backdrop
+            tint: Theme.barBackground
             window: bar
-            borderWidth: 0
             onActiveChanged: bar.applyBlur()
         }
     }

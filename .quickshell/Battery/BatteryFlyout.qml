@@ -161,6 +161,7 @@ Scope {
 
             // X-ray: the blurred wallpaper under the panel's colour.
             WallpaperBackdrop {
+                id: backdrop
                 window: window
                 slideY: (1 - motion.progress) * 16
                 onActiveChanged: window.applyBlur()
@@ -184,7 +185,7 @@ Scope {
             width: Config.batteryFlyoutWidth + overshoot
             height: content.implicitHeight + pad * 2 + overshoot
             radius: Theme.flyoutRadius
-            color: Theme.popupBackground
+            color: backdrop.panelColor
             border.width: Theme.edgePanelBorder ? 1 : 0
             border.color: Theme.blurBorder
 
