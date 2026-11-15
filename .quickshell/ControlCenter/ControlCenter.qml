@@ -635,6 +635,9 @@ Scope {
                             Layout.bottomMargin: 4
                             Layout.leftMargin: 4
                             Layout.rightMargin: 4
+                            // The refresh button is Wi-Fi only; keep its height
+                            // on Bluetooth too so the panel doesn't change size.
+                            Layout.minimumHeight: refreshButton.implicitHeight
                             spacing: 6
 
                             StyledText {
