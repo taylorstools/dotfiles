@@ -363,34 +363,49 @@ Scope {
                         elide: Text.ElideRight
                     }
 
-                    IconButton {
-                        implicitHeight: 34
-                        icon: "settings"
-                        restColor: Theme.surfaceContainerHigh
-                        onClicked: {
-                            root.close();
-                            Popouts.settingsOpen = true;
-                        }
-                    }
+                    // Settings, lock and power as one group, styled like the
+                    // tab bars (Wi-Fi/Bluetooth, power modes, the calendar's).
+                    Rectangle {
+                        implicitWidth: headerActions.implicitWidth + 6
+                        implicitHeight: 38
+                        radius: 10
+                        color: Theme.surfaceContainer
 
-                    IconButton {
-                        implicitHeight: 34
-                        icon: "lock"
-                        restColor: Theme.surfaceContainerHigh
-                        onClicked: {
-                            root.close();
-                            Power.lock();
-                        }
-                    }
+                        Row {
+                            id: headerActions
+                            anchors.centerIn: parent
+                            spacing: 4
 
-                    // The full-screen power menu (PowerMenu/PowerMenu.qml).
-                    IconButton {
-                        implicitHeight: 34
-                        icon: "power_settings_new"
-                        restColor: Theme.surfaceContainerHigh
-                        onClicked: {
-                            root.close();
-                            Popouts.powerMenuRequested();
+                            IconButton {
+                                implicitHeight: 32
+                                radius: 8
+                                icon: "settings"
+                                onClicked: {
+                                    root.close();
+                                    Popouts.settingsOpen = true;
+                                }
+                            }
+
+                            IconButton {
+                                implicitHeight: 32
+                                radius: 8
+                                icon: "lock"
+                                onClicked: {
+                                    root.close();
+                                    Power.lock();
+                                }
+                            }
+
+                            // The full-screen power menu (PowerMenu/PowerMenu.qml).
+                            IconButton {
+                                implicitHeight: 32
+                                radius: 8
+                                icon: "power_settings_new"
+                                onClicked: {
+                                    root.close();
+                                    Popouts.powerMenuRequested();
+                                }
+                            }
                         }
                     }
                 }

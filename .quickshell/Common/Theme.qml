@@ -125,10 +125,6 @@ Singleton {
     readonly property real widgetPadding: snap(6 * widgetThickness / 30)
     // Gap between the bar's ends and its first/last widget.
     readonly property real barEdgeMargin: 4
-    // Gap between bar widgets and between taskbar pills: 3 scaled with the
-    // screen, rounded to whole physical pixels so every gap draws the same
-    // width (6 px on your screen).
-    readonly property real barGap: snap(3)
 
     readonly property real spacingXXS: 2
     readonly property real spacingXS: 4

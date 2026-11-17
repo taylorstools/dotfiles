@@ -42,7 +42,10 @@ Item {
     property real maxWidthFraction: (Number(Settings.runningAppsMaxWidthPercent) || 100) / 100  // fraction of the screen width running apps may occupy before shrinking
     property real reservedBarWidth: Settings.runningAppsReservedWidth      // additional px to subtract from the budget
 
-    readonly property real itemSpacing: Theme.barGap
+    // Pills sit edge to edge like the bar's right-side widgets, so the icon
+    // and title sit this much further in from the pill's left edge (whole
+    // physical px).
+    readonly property real contentShift: Theme.snap(2)
     // The focus underline along each pill's bottom edge. The icon and title
     // sit near the middle of the part of the pill above it: centred exactly
     // they looked a little high, so 1px lower (Taylor's call).
@@ -109,7 +112,7 @@ Item {
             return 0;
         if (budget <= 0)
             return fullTitleWidth;
-        const fixed = (windowCount - 1) * itemSpacing + horizontalPadding * 2;
+        const fixed = horizontalPadding * 2;
         return (budget - fixed) / windowCount - iconAreaWidth;
     }
 
@@ -118,7 +121,7 @@ Item {
             return 0;
         const rawTitle = titleBudgetFor(budget);
         const perApp = rawTitle >= minTitleWidth ? (iconAreaWidth + Math.min(fullTitleWidth, Math.max(0, rawTitle))) : iconOnlyWidth;
-        return Math.round(windowCount * perApp + (windowCount - 1) * itemSpacing + horizontalPadding * 2);
+        return Math.round(windowCount * perApp + horizontalPadding * 2);
     }
 
     // The settings budget is a ceiling; the bar's allotment can only tighten it.
@@ -181,7 +184,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: root.horizontalPadding
         anchors.verticalCenter: parent.verticalCenter
-        spacing: root.itemSpacing
+        spacing: 0
 
         Repeater {
             model: root.modelKeys
@@ -240,7 +243,7 @@ Item {
                     IconImage {
                         id: iconImg
                         anchors.left: parent.left
-                        anchors.leftMargin: root.labelsVisible ? Theme.spacingXS : Math.max(0, (delegateItem.visualWidth - width) / 2)
+                        anchors.leftMargin: root.labelsVisible ? Theme.spacingXS + root.contentShift : Math.max(0, (delegateItem.visualWidth - width) / 2)
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.verticalCenterOffset: root.contentOffset
                         implicitSize: root.appIconSize

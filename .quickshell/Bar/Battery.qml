@@ -37,11 +37,17 @@ Item {
     Row {
         id: row
         anchors.centerIn: parent
+        // Centre the ink, not the boxes: the battery glyphs (all of them,
+        // charging ones too) span 280–680 of Material Symbols' 960 grid, so
+        // the icon's square box has empty space on its left that pushed the
+        // visible content right of the hover/active highlight's centre.
+        anchors.horizontalCenterOffset: -Theme.snap(batteryIcon.width * 280 / 960 / 2)
         // 1 apart (plus 2 physical px, measured), and
         // the -4 icon offset.
         spacing: 1 + 2 / Theme.dpr
 
         MaterialIcon {
+            id: batteryIcon
             anchors.verticalCenter: parent.verticalCenter
             name: root.icon
             size: Theme.barIconSize(root.barThickness, false, -4)

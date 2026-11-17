@@ -133,14 +133,12 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
 
-        // One even gap (Theme.barGap) between the widgets, so two highlighted
-        // neighbours (one open, one hovered) sit the same distance apart.
+        // No gaps: the widgets sit edge to edge, so an open widget and a
+        // hovered neighbour read as one highlight.
         SystemTray {
             id: systemTray
             anchors.verticalCenter: parent.verticalCenter
         }
-
-        Gap {}
 
         Battery {
             id: battery
@@ -148,15 +146,11 @@ PanelWindow {
             parentScreen: bar.screen
         }
 
-        Gap {}
-
         StatusIcons {
             id: statusIcons
             anchors.verticalCenter: parent.verticalCenter
             parentScreen: bar.screen
         }
-
-        Gap {}
 
         BetterClock {
             id: clock
@@ -198,10 +192,5 @@ PanelWindow {
                 }
             }
         }
-    }
-
-    component Gap: Item {
-        width: Theme.barGap
-        height: 1
     }
 }
