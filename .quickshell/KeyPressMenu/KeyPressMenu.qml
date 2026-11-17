@@ -16,6 +16,22 @@ Scope {
     id: root
 
     property bool shown: false
+
+    // One centred panel at a time: opening this one closes the others.
+    onShownChanged: {
+        if (shown)
+            Popouts.centerPanel = "keypress";
+        else if (Popouts.centerPanel === "keypress")
+            Popouts.centerPanel = "";
+    }
+    Connections {
+        target: Popouts
+        function onCenterPanelChanged() {
+            if (root.shown && Popouts.centerPanel !== "keypress")
+                root.hide();
+        }
+    }
+
     readonly property var entries: (Settings.keyPressEntries ?? []).filter(e => (e.key ?? "") !== "")
 
     function show() {

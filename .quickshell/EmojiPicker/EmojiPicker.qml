@@ -18,6 +18,22 @@ Scope {
     id: root
 
     property bool shown: false
+
+    // One centred panel at a time: opening this one closes the others.
+    onShownChanged: {
+        if (shown)
+            Popouts.centerPanel = "emoji";
+        else if (Popouts.centerPanel === "emoji")
+            Popouts.centerPanel = "";
+    }
+    Connections {
+        target: Popouts
+        function onCenterPanelChanged() {
+            if (root.shown && Popouts.centerPanel !== "emoji")
+                root.hide();
+        }
+    }
+
     property string query: ""
     // -1 = recent, else an index into Emoji.groups.
     property int category: -1

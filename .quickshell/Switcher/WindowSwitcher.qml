@@ -38,9 +38,29 @@ Scope {
     readonly property string hintKeys: "abcdefghijklmnopqrstuvwxyz0123456789"
 
     property bool shown: false
+
+    // One centred panel at a time: opening this one closes the others.
+    onShownChanged: {
+        if (shown)
+            Popouts.centerPanel = "switcher";
+        else if (Popouts.centerPanel === "switcher")
+            Popouts.centerPanel = "";
+    }
+    Connections {
+        target: Popouts
+        function onCenterPanelChanged() {
+            if (root.shown && Popouts.centerPanel !== "switcher")
+                root.hide();
+        }
+    }
+
     property bool searching: false
     // The window focused when the switcher opened.
     property var fromId: null
+    // The last real window with focus. Another centred panel open holds the
+    // keyboard, so niri reports no focused window; opening from that panel
+    // uses this instead, or the hand-back to the window would close it.
+    property var lastWindowId: null
     // [{ id, appId, name, title, wsId, wsIdx, wsCurrent, key, src, pos }]
     property var entries: []
     // Window id -> letter, kept for the niri session (see the FileView).
@@ -68,7 +88,7 @@ Scope {
         const target = screens.find(s => s.name === Niri.focusedOutput) ?? screens[0];
         if (target)
             window.screen = target;
-        fromId = Niri.focusedWindowId;
+        fromId = Niri.focusedWindowId ?? (Popouts.centerPanel !== "" ? lastWindowId : null);
         searching = false;
         message = "";
         input.text = "";
@@ -323,6 +343,14 @@ Scope {
         }
         function close(): void {
             root.hide();
+        }
+    }
+
+    Connections {
+        target: Niri
+        function onFocusedWindowIdChanged() {
+            if (Niri.focusedWindowId !== null && Niri.focusedWindowId !== undefined)
+                root.lastWindowId = Niri.focusedWindowId;
         }
     }
 

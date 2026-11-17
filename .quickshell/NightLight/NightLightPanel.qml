@@ -17,6 +17,22 @@ Scope {
     id: root
 
     property bool shown: false
+
+    // One centred panel at a time: opening this one closes the others.
+    onShownChanged: {
+        if (shown)
+            Popouts.centerPanel = "nightpanel";
+        else if (Popouts.centerPanel === "nightpanel")
+            Popouts.centerPanel = "";
+    }
+    Connections {
+        target: Popouts
+        function onCenterPanelChanged() {
+            if (root.shown && Popouts.centerPanel !== "nightpanel")
+                root.hide();
+        }
+    }
+
     // What the slider shows; NightLight catches up shortly after (see apply).
     property int pending: NightLight.temperature
 

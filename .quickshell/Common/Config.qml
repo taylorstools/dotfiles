@@ -22,7 +22,10 @@ Singleton {
 
     // Launcher
     readonly property real launcherWidth: 560
-    readonly property int launcherVisibleRows: 8
+    // Shared by the launcher and the clipboard panel. 508 = the launcher's
+    // padding and search box plus exactly 10 of its 44px rows.
+    readonly property real launcherHeight: 508
+    readonly property int launcherVisibleRows: 10      // launcher PageUp/PageDown step
 
     // OSD (volume / brightness / mic)
     readonly property real osdWidth: 280

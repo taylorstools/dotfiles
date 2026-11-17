@@ -17,6 +17,22 @@ Scope {
     id: root
 
     property bool shown: false
+
+    // One centred panel at a time: opening this one closes the others.
+    onShownChanged: {
+        if (shown)
+            Popouts.centerPanel = "launcher";
+        else if (Popouts.centerPanel === "launcher")
+            Popouts.centerPanel = "";
+    }
+    Connections {
+        target: Popouts
+        function onCenterPanelChanged() {
+            if (root.shown && Popouts.centerPanel !== "launcher")
+                root.hide();
+        }
+    }
+
     property string query: ""
     // Opened by typing in the overview.
     property bool fromOverview: false
@@ -246,7 +262,7 @@ Scope {
 
             anchors.centerIn: parent
             width: Config.launcherWidth
-            height: pad * 3 + searchBox.height + rowHeight * Config.launcherVisibleRows
+            height: Config.launcherHeight
             radius: Theme.cornerRadius
             color: backdrop.panelColor
             border.width: 1

@@ -29,6 +29,12 @@ Singleton {
     property string contextMenuSide: "top"
     property var contextMenuItems: []
 
+    // The centred panel that's open (launcher, runner, clipboard, switcher,
+    // keypress, emoji, snip, nightpanel, powermenu), or "". Only one shows at
+    // a time: each sets this when it opens, clears it when it closes, and
+    // closes itself when another takes it.
+    property string centerPanel: ""
+
     readonly property bool flyoutOpen: controlCenterScreen !== null || clockScreen !== null || batteryScreen !== null || trayScreen !== null
 
     // Floating above the taskbar, centred on x.

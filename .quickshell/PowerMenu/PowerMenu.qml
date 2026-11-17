@@ -19,6 +19,21 @@ Scope {
 
     property bool shown: false
 
+    // One centred panel at a time: opening this one closes the others.
+    onShownChanged: {
+        if (shown)
+            Popouts.centerPanel = "powermenu";
+        else if (Popouts.centerPanel === "powermenu")
+            Popouts.centerPanel = "";
+    }
+    Connections {
+        target: Popouts
+        function onCenterPanelChanged() {
+            if (root.shown && Popouts.centerPanel !== "powermenu")
+                root.shown = false;
+        }
+    }
+
     readonly property var allButtons: [
         {
             "icon": "lock",
