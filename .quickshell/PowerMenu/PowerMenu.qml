@@ -8,7 +8,7 @@ import qs.Services
 import qs.Widgets
 
 // Full-screen power menu, a copy of Taylor's wlogout setup: six buttons in a
-// row over the effects wallpaper (the dimmed, blurred one the lock uses),
+// row over the dimmed, blurred wallpaper the lock uses (BlurredWallpaper),
 // icons in matugen's light-scheme tertiary that grow and brighten on hover.
 // Keys as in wlogout: L lock, E log out, Z sleep, S shut down, R reboot,
 // W reboot into Windows; Esc closes. Each button's command, and whether it
@@ -91,41 +91,11 @@ Scope {
     readonly property real hoverIconSize: 85
     readonly property real labelLift: 63
 
-    // Decoding this picture takes 140 ms. Done on open, it froze the shell every
-    // time, so it's read ahead on another thread (`background`) and kept, and
-    // read again only when the effects script rewrites the file. A new query
-    // string is what makes Qt read the file again.
-    readonly property string backgroundFile: Quickshell.env("HOME") + "/.config/.EffectsWallpaper.png"
-
-    function refreshBackground() {
-        background.source = "file://" + backgroundFile + "?v=" + Date.now();
-    }
-
-    Component.onCompleted: refreshBackground()
-
-    FileView {
-        path: root.backgroundFile
-        preload: false
-        watchChanges: true
-        printErrors: false
-        onFileChanged: backgroundRefresh.restart()
-    }
-
-    // magick writes the file in place: read it once that has settled.
-    Timer {
-        id: backgroundRefresh
-        interval: 1000
-        onTriggered: root.refreshBackground()
-    }
-
     function open() {
         if (!motion.mapped) {
             const screens = Array.from(Quickshell.screens);
             window.screen = screens.find(s => s.name === Niri.focusedOutput) ?? screens[0];
         }
-        // It wasn't there to read earlier (the script hadn't run yet, say).
-        if (background.status === Image.Error)
-            refreshBackground();
         shown = true;
     }
 
@@ -216,14 +186,11 @@ Scope {
                 color: "black"
             }
 
-            Image {
-                id: background
+            // The blurred, darkened wallpaper (the old effects wallpaper). Already
+            // decoded for the overview backdrop (Wallpaper/Backdrop.qml), so
+            // opening never waits on it.
+            BlurredWallpaper {
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
-                sourceSize: Theme.largestScreenPixels
-                asynchronous: true
-                // A new picture replaces the old one only once it's ready.
-                retainWhileLoading: true
             }
 
             // A click outside the buttons closes.

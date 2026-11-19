@@ -3,14 +3,8 @@
 // greetd starts the next session, and that one comes up locked.
 spawn-sh-at-startup "$HOME/scripts/niri_lock-at-startup.sh"
 
-// swaybg, held until the startup splash is covering the screen so the
-// wallpaper is never seen being painted. No-ops where niri-splash is not
-// installed. See myOptions.niri-splash.
-spawn-sh-at-startup "$HOME/scripts/niri_set-wallpaper.sh --at-login &"
-
-// Script that makes the dimmed background image for the power menu and the
-// lock screen
-spawn-sh-at-startup "$HOME/scripts/niri_make-effects-wallpaper.sh"
+// Puts niri's cursor back if the startup splash never shows to do it.
+spawn-sh-at-startup "$HOME/scripts/niri_splash-cursor-guard.sh &"
 
 // libinput-gestures
 spawn-sh-at-startup "systemctl --user start libinput-gestures &"

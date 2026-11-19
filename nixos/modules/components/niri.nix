@@ -101,7 +101,6 @@
     python3
     showtime
     slurp
-    swaybg # the effects wallpaper scripts
     (tesseract.override { enableLanguages = [ "eng" ]; }) # ocr-snip.sh
     xed-editor
     xsettingsd

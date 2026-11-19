@@ -75,12 +75,60 @@ Singleton {
             return;
         }
         generating = true;
+        generator.ranFor = path;
         generator.running = true;
     }
 
-    onPathChanged: regenerate.restart()
+    // The wallpaper the shell's colours were last made from (generate.sh
+    // finished, or failed): whether Theme is this wallpaper's yet. The lock
+    // screen fades its picture and colours together once it is.
+    property string colorsPath: ""
+    readonly property bool colorsCurrent: colorsPath === path
+
+    // Each wallpaper's own width in pixels, read when it becomes the
+    // wallpaper: the effects blur (Widgets/BlurredWallpaper.qml) is measured
+    // in the picture's pixels, as ImageMagick's was.
+    property var imageWidths: ({})
+
+    function measure(p) {
+        if (!p || imageWidths[p] !== undefined)
+            return;
+        if (sizer.running) {
+            sizer.queued = p;
+            return;
+        }
+        sizer.forPath = p;
+        sizer.running = true;
+    }
+
+    Process {
+        id: sizer
+        property string forPath: ""
+        property string queued: ""
+        command: ["magick", "identify", "-ping", "-format", "%w", forPath + "[0]"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const widths = Object.assign({}, root.imageWidths);
+                widths[sizer.forPath] = parseInt(text) || 0;
+                root.imageWidths = widths;
+            }
+        }
+        onRunningChanged: {
+            if (!running && queued) {
+                const p = queued;
+                queued = "";
+                root.measure(p);
+            }
+        }
+    }
+
+    onPathChanged: {
+        regenerate.restart();
+        measure(path);
+    }
     onStartupPendingChanged: regenerate.restart()
     Component.onCompleted: {
+        measure(path);
         if (sessionMarkerFile.text() === "") {
             Quickshell.execDetached(["sh", "-c", 'echo 1 > "$1"', "sh", sessionMarker]);
             startupPending = true;
@@ -164,8 +212,11 @@ Singleton {
         stderr: StdioCollector {
             id: generatorErr
         }
+        // The wallpaper this run is for.
+        property string ranFor: ""
         onExited: code => {
             root.generating = false;
+            root.colorsPath = ranFor;
             root.lastError = code === 0 ? "" : ("matugen: " + generatorErr.text.trim().split("\n")[0]);
         }
     }

@@ -91,9 +91,6 @@ Scope {
         return user.charAt(0).toUpperCase() + user.slice(1);
     }
     readonly property string marker: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/qstest-locked." + (Quickshell.env("WAYLAND_DISPLAY") || "wayland")
-    // Reloaded on every lock: the effects script rewrites it per wallpaper.
-    property string backgroundSource: ""
-
     // hyprlock_battery.sh: a battery a tenth full per step, a plug while charging.
     readonly property string batteryText: {
         const percent = Math.round(BatteryInfo.level);
@@ -102,10 +99,70 @@ Scope {
         return icon + "  " + percent + "%";
     }
 
-    // A new query string is a new entry in Qt's image cache: this lock reads
-    // the current file once, and all its surfaces share the result.
-    function refreshBackground() {
-        backgroundSource = "file://" + Quickshell.env("HOME") + "/.config/.EffectsWallpaper.png?v=" + Date.now();
+    readonly property bool showing: locked || locking || previewing
+
+    // The lock screen's colours (LockSurface's $light and $lighter). They
+    // follow Theme, except while the wallpaper changes under the lock (the
+    // auto-change keeps running): the picture (Widgets/BlurredWallpaper.qml)
+    // and Theme's colours (matugen, Wallpaper.colorsCurrent) are each ready
+    // at their own moment. So the colours stay as they were, the new picture
+    // waits once loaded (holdBackground) until the colours are ready too, and
+    // both fade over together (backgroundFading).
+    property color heldLight: "black"
+    property color heldLighter: "black"
+    // 0 = the held colours, 1 = Theme's.
+    property real colorMix: 1
+    readonly property int backgroundFadeDuration: Math.max(0, Number(Settings.wallpaperFadeDuration) || 0)
+    readonly property bool holdBackground: colorMix < 1 && !colorFade.running && !Wallpaper.colorsCurrent
+
+    function mixColor(a, b, t) {
+        return t >= 1 ? b : Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t);
+    }
+    readonly property color light: mixColor(heldLight, Theme.tertiaryLightScheme, colorMix)
+    readonly property color lighter: mixColor(heldLighter, Theme.tertiary, colorMix)
+
+    function holdColors() {
+        colorFade.stop();
+        heldLight = light;
+        heldLighter = lighter;
+        colorMix = 0;
+        colorHoldTimeout.restart();
+    }
+
+    function releaseColors() {
+        colorHoldTimeout.stop();
+        if (colorMix < 1 && !colorFade.running)
+            colorFade.restart();
+    }
+
+    // A surface's new picture has started fading in.
+    function backgroundFading() {
+        releaseColors();
+    }
+
+    Connections {
+        target: Wallpaper
+        function onPathChanged() {
+            if (root.showing)
+                root.holdColors();
+        }
+    }
+
+    NumberAnimation {
+        id: colorFade
+        target: root
+        property: "colorMix"
+        to: 1
+        duration: root.backgroundFadeDuration
+        easing.type: Easing.InOutQuad
+    }
+
+    // matugen failed or the picture never loaded: don't keep the old colours
+    // (or the old picture) for good.
+    Timer {
+        id: colorHoldTimeout
+        interval: 15000
+        onTriggered: root.releaseColors()
     }
 
     function lock() {
@@ -128,7 +185,9 @@ Scope {
         }
         if (locked || locking)
             return;
-        refreshBackground();
+        colorFade.stop();
+        colorHoldTimeout.stop();
+        colorMix = 1;
         password = "";
         pendingPassword = "";
         authState = "";
@@ -402,10 +461,8 @@ Scope {
 
     // Locked from the start: set up what lock() would have.
     Component.onCompleted: {
-        if (locked) {
-            refreshBackground();
+        if (locked)
             startAuth();
-        }
     }
 
     IpcHandler {
@@ -423,7 +480,6 @@ Scope {
         function preview(): void {
             if (root.locked)
                 return;
-            root.refreshBackground();
             root.password = "";
             root.pendingPassword = "";
             root.authState = "";
@@ -521,7 +577,7 @@ Scope {
             id: previewSurface
             anchors.fill: parent
             lock: root
-            backgroundSource: root.previewing ? root.backgroundSource : ""
+            showBackground: root.previewing
         }
 
         onVisibleChanged: {

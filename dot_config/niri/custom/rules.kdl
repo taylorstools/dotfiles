@@ -6,9 +6,10 @@ window-rule {
     draw-border-with-background false
 }
 
-// Put swaybg inside the overview backdrop.
+// The shell's blurred wallpaper (.quickshell/Wallpaper/Backdrop.qml) goes
+// inside the overview backdrop.
 layer-rule {
-    match namespace="^wallpaper$"
+    match namespace="^qstest:backdrop$"
     place-within-backdrop true
 }
 

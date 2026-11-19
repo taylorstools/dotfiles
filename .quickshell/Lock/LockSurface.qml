@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 // What one screen of the lock shows, a copy of Taylor's hyprlock.conf
 // (dot_config/hypr before the switch): the effects wallpaper, date and time,
@@ -17,14 +18,14 @@ Item {
     // Off for the copy that fades in and out (Lock.qml): it shows the lock
     // as it stands, without replaying the dots' typing animations.
     property bool animated: true
-    // The wallpaper. The preview's surface, hidden nearly all the time, blanks
-    // this so it doesn't decode and hold a copy on every lock (Lock.qml).
-    property string backgroundSource: lock.backgroundSource
+    // The wallpaper. The preview's surface, hidden nearly all the time, turns
+    // this off so it holds no copy of the picture (Lock.qml).
+    property bool showBackground: true
 
     // matugen's tertiary in the light and dark scheme ($light and $lighter
-    // in hyprlock.conf).
-    readonly property color light: Theme.tertiaryLightScheme
-    readonly property color lighter: Theme.tertiary
+    // in hyprlock.conf), held back by the Lock while the wallpaper changes.
+    readonly property color light: lock.light
+    readonly property color lighter: lock.lighter
     // One pixel of the 2880x1800 screen on this one. The smaller ratio, like
     // CSS's vmin, so a wider or narrower screen doesn't push anything off it.
     // 1 until the surface has a size: a font size of 0 makes Qt print a warning.
@@ -52,14 +53,17 @@ Item {
         color: "black"
     }
 
-    Image {
+    // Blurred and darkened (the old effects wallpaper). A new one while
+    // locked (the auto-change runs under the lock) fades in once the colours
+    // are ready too, and the Lock fades the colours with it.
+    BlurredWallpaper {
         anchors.fill: parent
-        fillMode: Image.PreserveAspectCrop
-        // Cached on purpose: every surface of one lock shares a single decode
-        // (Lock.refreshBackground). Loading is synchronous, and decoding it
-        // anew for each surface froze the animations for 140 ms at a time.
-        source: root.backgroundSource
-        sourceSize: Theme.largestScreenPixels
+        active: root.showBackground
+        // The first frame must have it; a cache hit, normally (Backdrop.qml).
+        asynchronous: false
+        hold: root.lock.holdBackground
+        fadeDuration: root.lock.backgroundFadeDuration
+        onFading: root.lock.backgroundFading()
     }
 
     // Date: 42pt, top edge at 23% down.

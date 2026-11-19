@@ -45,6 +45,13 @@ ShellRoot {
         Background {}
     }
 
+    // The blurred wallpaper behind niri's overview.
+    Variants {
+        model: Quickshell.screens
+
+        Backdrop {}
+    }
+
     // Tells the login splash the desktop is drawn.
     LoginReady {}
 
