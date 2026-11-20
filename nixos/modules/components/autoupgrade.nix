@@ -99,10 +99,23 @@ let
     '
   '';
 
+  # switch-to-configuration exits 4 when the new generation was activated (and
+  # is the boot default) but some units failed to start, restart or reload.
+  # nixos-rebuild passes that through unchanged. The upgrade itself landed, so
+  # it is counted as a success rather than a failed rebuild; see
+  # SuccessExitStatus below. Exit 2 (activation script failed) and anything
+  # else still count as failures.
+  partialSwitchStatus = 4;
+
   # Runs after every nixos-upgrade run (including ExecStartPre failures) and
   # records systemd's verdict so the session can report on it.
   recordStatus = pkgs.writeShellScript "nixos-upgrade-record-status" ''
     set -euo pipefail
+    if [ "''${SERVICE_RESULT:-}" = "success" ] \
+       && [ "''${EXIT_STATUS:-}" = "${toString partialSwitchStatus}" ]; then
+      printf '[%(%b %d %I:%M:%S %p)T] %s\n' -1 \
+        "Switched, but some units failed (exit ${toString partialSwitchStatus}); not reported as a failed upgrade."
+    fi
     ${pkgs.coreutils}/bin/install -d -m 0755 ${statusDir}
     {
       echo "result=''${SERVICE_RESULT:-unknown}"
@@ -208,6 +221,8 @@ let
       if [ "$Result" = "success" ]; then
         if grep -q '^cleared-by=' "$StatusFile"; then
           echo "Last automatic upgrade failure was cleared by a successful manual update."
+        elif grep -qx 'exit-status=${toString partialSwitchStatus}' "$StatusFile"; then
+          echo "Last automatic upgrade switched, but some units failed to start; see ${logFile}."
         else
           echo "Last automatic upgrade succeeded."
         fi
@@ -278,6 +293,9 @@ in
       "${stampOutput} ${preUpgrade}"
     ];
     ExecStart = lib.mkForce "${stampOutput} ${upgradeScript}";
+    # Only applies to ExecStart, not the ExecStartPre steps, so an exit 4
+    # from the pull or flake update still fails the run.
+    SuccessExitStatus = [ partialSwitchStatus ];
     ExecStopPost = [ "${recordStatus}" ];
   };
 
