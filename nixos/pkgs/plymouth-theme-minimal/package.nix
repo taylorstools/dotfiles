@@ -87,13 +87,6 @@
 , spinnerArcMin ? 0.006
 , spinnerArcMax ? 0.45
 
-  # While a typed passphrase is being checked, the padlock gives way to a
-  # small copy of the same ring; the rest of the prompt stays solid. This is its outer
-  # diameter, stroke included; the stroke keeps the boot ring's proportion to
-  # it. 18 is the quickshell lock screen's ratio (0.42 of the field height),
-  # so the two checks look alike.
-, checkSpinnerSize ? 18
-
 , foreground ? "#e6e6e6"
 , background ? "#000000"
   # Border colour after a rejected passphrase. Reverts to foreground as soon
@@ -105,12 +98,20 @@
   # is detected by call sequence, not by this timer, so getting it wrong costs
   # nothing but when the spinner appears on a correct passphrase.
   #
-  # In ticks, not seconds, because the script has no clock. A pulse this theme
-  # used to have, timed purely in ticks, was the honest way to measure the
-  # tick rate, and it put refresh() at roughly the documented 50/sec. So 150
-  # is about three seconds. (An earlier 500 here came from timing a spinner flash, which was
+  # In ticks, not seconds, because the script has no clock. The pulse period
+  # is the honest way to measure the tick rate -- it is pure tick count -- and
+  # it puts refresh() at roughly the documented 50/sec. So 150 is about three
+  # seconds. (An earlier 500 here came from timing a spinner flash, which was
   # really measuring how long the rejection took, not how long the grace ran.)
 , verifyGraceTicks ? 150
+
+  # While a passphrase is being checked, the whole prompt -- border, padlock
+  # and the dots you typed -- pulses. No spinner: the padlock stays. The logo
+  # stays solid. pulseSteps is the half-cycle in refresh ticks, so a full
+  # breath is 2 * pulseSteps / rate seconds. At ~50/sec, 32 gives about 1.3
+  # seconds. Halve it to double the speed. pulseMin is how far it dims.
+, pulseSteps ? 32
+, pulseMin ? 0.35
 
   # Seconds to keep the passphrase field hidden after it is first asked for.
   # On a machine that unlocks over the network the request is answered from
@@ -201,13 +202,6 @@ let
   fieldSvg = mkFieldSvg "field.svg" foreground;
   fieldErrorSvg = mkFieldSvg "field-error.svg" errorColour;
 
-  # The check ring scaled down from the boot ring: same stroke-to-diameter
-  # ratio, a unit of transparent margin each side so antialiasing at the
-  # caps is not clipped.
-  checkStroke = checkSpinnerSize * spinnerStroke / (2.0 * spinnerRadius + spinnerStroke);
-  checkRadius = (checkSpinnerSize - checkStroke) / 2.0;
-  checkBox = checkSpinnerSize + 2;
-
   # Font outlines are Y-up, SVG is Y-down, hence the flip.
   mkLockSvg = name: fill: builtins.toFile name ''
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -265,10 +259,7 @@ runCommand "plymouth-theme-${themeName}"
     # awk is here only because the shell has no sin().
     #
     # ring_frames NAME BOX RADIUS STROKE PIXELS writes NAME-00.png onwards and
-    # NAME-lines.txt, the script lines that load them into NAME.frames. Two
-    # rings use it: the boot spinner and the smaller one that stands in for
-    # the padlock while a passphrase is checked. Same frame count, so the
-    # script steps both on the same ticks.
+    # NAME-lines.txt, the script lines that load them into NAME.frames.
     ring_frames() {
       name=$1 box=$2 radius=$3 stroke=$4 pixels=$5
       frames=${toString spinnerFrames}
@@ -303,8 +294,6 @@ runCommand "plymouth-theme-${themeName}"
     }
     ring_frames spinner ${toString spinnerSize} ${toString spinnerRadius} \
       ${toString spinnerStroke} ${px spinnerSize}
-    ring_frames check ${toString checkBox} ${toString checkRadius} \
-      ${toString checkStroke} ${px checkBox}
 
     # The logo block is injected only when there is a logo: Plymouth's script
     # language does not fail loudly on Image() of a missing file, it just
@@ -337,13 +326,13 @@ runCommand "plymouth-theme-${themeName}"
         -e "s/@REVEAL_SECONDS@/${toString passwordRevealSeconds}/g" \
         -e "s/@SHOW_AT_START@/${if showAtStart then "1" else "0"}/g" \
         -e "s/@VERIFY_GRACE@/${toString verifyGraceTicks}/g" \
+        -e "s/@PULSE_STEPS@/${toString pulseSteps}/g" \
+        -e "s/@PULSE_MIN@/${toString pulseMin}/g" \
         -e "s/@SPINNER_COUNT@/${toString spinnerFrames}/g" \
         -e "s/@SPINNER_TICKS@/${toString spinnerTicks}/g" \
         -e "s/@SPINNER_INK@/${px (2 * spinnerRadius + spinnerStroke)}/g" \
         -e "/@SPINNER_FRAMES@/r spinner-lines.txt" \
         -e "/@SPINNER_FRAMES@/d" \
-        -e "/@CHECK_FRAMES@/r check-lines.txt" \
-        -e "/@CHECK_FRAMES@/d" \
         -e "/@LOGO@/r logo-lines.txt" \
         -e "/@LOGO@/d" \
         -e "/@LOGO_OPACITY@/r logo-opacity.txt" \

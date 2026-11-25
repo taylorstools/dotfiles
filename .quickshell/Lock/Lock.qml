@@ -61,28 +61,6 @@ Scope {
         onTriggered: root.showChecking = true
     }
 
-    // Seconds into the current check, which drives the ring in the password
-    // field (LockSurface). Kept here rather than per screen so the screens stay
-    // in step and the copy that fades out carries on from the same point:
-    // authState stays "checking" until the unlock has finished. A preview that
-    // accepts the password also leaves it "checking", with nothing on screen,
-    // hence the rest of the condition. Counts up rather than looping, so the
-    // ring only fades in once; an hour is far past any check.
-    property real checkTime: 0
-
-    NumberAnimation {
-        target: root
-        property: "checkTime"
-        running: root.authState === "checking" && (root.locked || root.previewing || root.unlocking)
-        from: 0
-        to: 3600
-        duration: 3600000
-        onRunningChanged: {
-            if (!running)
-                root.checkTime = 0;
-        }
-    }
-
     // Sent once PAM asks: Enter can come before PAM is ready for it.
     property string pendingPassword: ""
 
