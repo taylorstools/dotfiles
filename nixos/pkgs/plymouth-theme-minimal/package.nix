@@ -108,10 +108,10 @@
   # While a passphrase is being checked, the whole prompt -- border, padlock
   # and the dots you typed -- pulses. No spinner: the padlock stays. The logo
   # stays solid. pulseSteps is the half-cycle in refresh ticks, so a full
-  # breath is 2 * pulseSteps / rate seconds. At ~50/sec, 32 gives about 1.3
-  # seconds. Halve it to double the speed. pulseMin is how far it dims.
-, pulseSteps ? 32
-, pulseMin ? 0.35
+  # breath is 2 * pulseSteps / rate seconds. At ~50/sec, 25 gives about 1.0
+  # second. Halve it to double the speed. pulseMin is how far it dims.
+, pulseSteps ? 25
+, pulseMin ? 0.2
 
   # Seconds to keep the passphrase field hidden after it is first asked for.
   # On a machine that unlocks over the network the request is answered from
