@@ -21,6 +21,11 @@ in
         so the handoff from firmware to initrd has no visible seam.
         "spinner" is the same animation with no logo. Any other value has to
         be supplied by myOptions.plymouth.themePackages.
+
+        The splash also comes back up when the booted system powers off,
+        reboots, halts or kexecs, with the same theme. The fleet's "minimal"
+        theme draws a plain black screen there (see its script); "bgrt" and
+        "spinner" show their usual logo and animation.
       '';
     };
 
@@ -41,16 +46,6 @@ in
       '';
     };
 
-    shutdownSplash = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Bring the splash back up when the booted system powers off, reboots,
-        halts or kexecs. Off by default: the splash is only for the way up.
-        This covers the booted system only; a poweroff from the initrd (the
-        LUKS prompt) still goes through the initrd's own units.
-      '';
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -92,21 +87,6 @@ in
           ExecStart = "-${lib.getExe' config.boot.plymouth.package "plymouth"} update --status=luks-unlocked";
         };
       };
-
-    # The upstream module hangs these on the shutdown targets, and each one
-    # starts a fresh plymouthd in shutdown mode. It shows up only when
-    # shutdown runs longer than the theme's show delay, which is why it
-    # appears on some shutdowns and not others. enable = false masks the unit
-    # (a symlink to /dev/null), which also beats the .wants links the plymouth
-    # package ships. plymouth-switch-root-initramfs goes too: with no splash
-    # running it has nothing to hand over to the shutdown initramfs.
-    systemd.services = lib.mkIf (!cfg.shutdownSplash) (lib.genAttrs [
-      "plymouth-halt"
-      "plymouth-kexec"
-      "plymouth-poweroff"
-      "plymouth-reboot"
-      "plymouth-switch-root-initramfs"
-    ] (_: { enable = false; }));
 
     boot.consoleLogLevel = lib.mkIf cfg.quietBoot 0;
   };

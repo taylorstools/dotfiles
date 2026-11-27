@@ -439,25 +439,35 @@ fun update_status(status) {
   }
 }
 
-Plymouth.SetUpdateStatusFunction(update_status);
-Plymouth.SetRootMountedFunction(unlock_observed);
-Plymouth.SetBootProgressFunction(boot_progress);
+# Only the way up gets a picture. The same theme is loaded when the booted
+# system powers off, reboots, halts or kexecs (plymouthd --mode=shutdown or
+# --mode=reboot), and there it is a plain black screen: every sprite above
+# starts at opacity 0 over a black background, and with no callbacks wired
+# nothing ever raises one. The splash is still worth running then, because
+# it holds the console in graphics mode, so the kernel and systemd lines
+# printed while the machine goes down never reach the screen.
+if (Plymouth.GetMode() == "boot") {
+  Plymouth.SetUpdateStatusFunction(update_status);
+  Plymouth.SetRootMountedFunction(unlock_observed);
+  Plymouth.SetBootProgressFunction(boot_progress);
 
-Plymouth.SetRefreshFunction(refresh);
-Plymouth.SetDisplayPasswordFunction(display_password);
-Plymouth.SetDisplayNormalFunction(display_normal);
-Plymouth.SetDisplayQuestionFunction(fun (prompt, entry) { display_normal(); });
-Plymouth.SetMessageFunction(fun (text) { });
+  Plymouth.SetRefreshFunction(refresh);
+  Plymouth.SetDisplayPasswordFunction(display_password);
+  Plymouth.SetDisplayNormalFunction(display_normal);
+  Plymouth.SetDisplayQuestionFunction(fun (prompt, entry) { display_normal(); });
+  Plymouth.SetMessageFunction(fun (text) { });
 
-# Logo and spinner from the moment the splash comes up (showAtStart). Right
-# for a machine that unlocks with nothing to ask, such as TPM2: there is
-# nothing to wait on, so the screen may as well say boot is under way. If the
-# unlock fails and a passphrase is asked for after all, reveal_now() swaps the
-# spinner for the field under the same logo.
-#
-# Everything else starts black. A machine that always prompts goes straight to
-# the field. One that unlocks over the network stays black through the
-# hold-back until either the disk opens (unlock_observed) or the field is due.
-if (@SHOW_AT_START@ > 0) {
-  show_progress();
+  # Logo and spinner from the moment the splash comes up (showAtStart). Right
+  # for a machine that unlocks with nothing to ask, such as TPM2: there is
+  # nothing to wait on, so the screen may as well say boot is under way. If
+  # the unlock fails and a passphrase is asked for after all, reveal_now()
+  # swaps the spinner for the field under the same logo.
+  #
+  # Everything else starts black. A machine that always prompts goes straight
+  # to the field. One that unlocks over the network stays black through the
+  # hold-back until either the disk opens (unlock_observed) or the field is
+  # due.
+  if (@SHOW_AT_START@ > 0) {
+    show_progress();
+  }
 }
